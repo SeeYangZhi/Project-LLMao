@@ -42,18 +42,6 @@ API_DELAY = 15.0  # 15 second delay between requests per worker
 MAX_WORKERS_PER_KEY = 1  # 1 worker per key to avoid rate limits
 MAX_RETRIES = 3
 RETRY_DELAY = 10.0  # Wait 10 seconds before retry
-MAX_CONCURRENT_KEYS = 2  # Use only 2 keys at a time to avoid rate limits
-
-# Limit to fewer concurrent keys
-api_keys = api_keys[:MAX_CONCURRENT_KEYS]
-print(f"Using {len(api_keys)} key(s) concurrently (MAX_CONCURRENT_KEYS={MAX_CONCURRENT_KEYS})")
-
-# Config - Conservative to avoid rate limits
-BATCH_SIZE = 50
-API_DELAY = 15.0  # 15 second delay between requests per worker
-MAX_WORKERS_PER_KEY = 1  # 1 worker per key to avoid rate limits
-MAX_RETRIES = 3
-RETRY_DELAY = 10.0  # Wait 10 seconds before retry
 
 # Thread-safe lock for file writing
 file_lock = threading.Lock()
