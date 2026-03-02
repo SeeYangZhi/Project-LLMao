@@ -5,6 +5,6 @@ description = "Sarcasm style transfer - generate non-sarcastic versions from sar
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "openai>=1.0.0",
-    "python-dotenv>=1.0.0",
+    "openai>=2.24.0",
+    "python-dotenv>=1.2.2",
 ]
