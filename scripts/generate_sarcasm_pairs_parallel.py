@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Generate sarcasm pairs using MiniMax M2.5 via OpenCode Zen API.
-Parallel version with multiple workers per API key.
+Parallel version with conservative rate limiting.
 
 Usage:
     uv run python scripts/generate_sarcasm_pairs_parallel.py
@@ -9,7 +9,6 @@ Usage:
 
 import json
 import os
-import re
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -37,10 +36,12 @@ if not api_keys:
 
 print(f"Found {len(api_keys)} API key(s)")
 
-# Config
+# Config - Conservative to avoid rate limits
 BATCH_SIZE = 50
-API_DELAY = 0.1  # Reduced delay since we have multiple workers
-MAX_WORKERS_PER_KEY = 3  # 3 workers per key = 15 concurrent with 5 keys
+API_DELAY = 2.0  # 2 second delay between requests per worker
+MAX_WORKERS_PER_KEY = 1  # 1 worker per key to avoid rate limits
+MAX_RETRIES = 3
+RETRY_DELAY = 10.0  # Wait 10 seconds before retry
 
 # Thread-safe lock for file writing
 file_lock = threading.Lock()
@@ -48,7 +49,6 @@ progress_lock = threading.Lock()
 
 # Shared counters
 total_generated = 0
-request_count = 0
 
 SYSTEM_PROMPT = """You are a sarcasm style transfer expert.
 
@@ -120,7 +120,7 @@ def save_batch(pairs: list[dict], output_path: Path):
 
 
 def generate_single(item: dict, direction: str, api_key: str) -> dict:
-    """Generate a single pair using specific API key."""
+    """Generate a single pair using specific API key with retries."""
     headline = item["headline"]
 
     if direction == "sarcastic_to_non":
@@ -138,46 +138,49 @@ def generate_single(item: dict, direction: str, api_key: str) -> dict:
         base_url="https://opencode.ai/zen/v1",
     )
 
-    try:
-        response = client.chat.completions.create(
-            model="minimax-m2.5-free",
-            messages=messages,
-            temperature=0.7,
-            max_tokens=2000,
-        )
+    for attempt in range(MAX_RETRIES):
+        try:
+            response = client.chat.completions.create(
+                model="minimax-m2.5-free",
+                messages=messages,
+                temperature=0.7,
+                max_tokens=2000,
+                response_format={"type": "json_object"},
+            )
 
-        result_text = response.choices[0].message.content
-        if not result_text:
-            reasoning = response.choices[0].message.reasoning
-            if reasoning:
-                json_match = re.search(r"\{[^{}]*\}", reasoning)
-                if json_match:
-                    result_text = json_match.group()
+            result_text = response.choices[0].message.content
+            if not result_text:
+                return None
 
-        if not result_text:
-            return None
+            result = json.loads(result_text)
 
-        result = json.loads(result_text)
-
-        if direction == "sarcastic_to_non":
-            return {
-                "sarcastic": headline,
-                "non_sarcastic": result.get("non_sarcastic", ""),
-                "strategy_detected": result.get("strategy_detected", ""),
-                "direction": direction,
-            }
-        else:
-            return {
-                "sarcastic": result.get("sarcastic", ""),
-                "non_sarcastic": headline,
-                "strategy_applied": result.get("strategy_applied", ""),
-                "direction": direction,
-            }
-    except Exception as e:
-        print(f"  Error processing '{headline[:50]}...': {e}")
-        return None
-    finally:
-        time.sleep(API_DELAY)
+            if direction == "sarcastic_to_non":
+                return {
+                    "sarcastic": headline,
+                    "non_sarcastic": result.get("non_sarcastic", ""),
+                    "strategy_detected": result.get("strategy_detected", ""),
+                    "direction": direction,
+                }
+            else:
+                return {
+                    "sarcastic": result.get("sarcastic", ""),
+                    "non_sarcastic": headline,
+                    "strategy_applied": result.get("strategy_applied", ""),
+                    "direction": direction,
+                }
+        except Exception as e:
+            if attempt < MAX_RETRIES - 1:
+                print(
+                    f"  Retry {attempt + 1}/{MAX_RETRIES} for '{headline[:50]}...': {e}"
+                )
+                time.sleep(RETRY_DELAY)
+            else:
+                print(
+                    f"  Failed after {MAX_RETRIES} attempts: '{headline[:50]}...': {e}"
+                )
+                return None
+        finally:
+            time.sleep(API_DELAY)
 
 
 def process_batch(
@@ -225,6 +228,9 @@ def main():
     print(f"Non-sarcastic (remaining): {len(non_sarcastic_headlines)}")
     print(
         f"Using {len(api_keys)} API keys × {MAX_WORKERS_PER_KEY} workers = {len(api_keys) * MAX_WORKERS_PER_KEY} concurrent requests"
+    )
+    print(
+        f"Rate limit: {API_DELAY}s delay between requests, {MAX_RETRIES} retries with {RETRY_DELAY}s backoff"
     )
 
     if not sarcastic_headlines and not non_sarcastic_headlines:
