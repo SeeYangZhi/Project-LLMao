@@ -1,7 +1,10 @@
 [project]
 name = "project-llmao"
 version = "0.1.0"
-description = "Add your description here"
+description = "Sarcasm style transfer - generate non-sarcastic versions from sarcastic headlines"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "openai>=1.0.0",
+    "python-dotenv>=1.0.0",
+]
