@@ -1,5 +1,39 @@
 # NHDSD Binary Reclassification Plan
 
+**Status**: COMPLETED  
+**Created**: 2026-03-03  
+**Completed**: 2026-03-04  
+**Model**: stepfun/step-3.5-flash:free (via OpenRouter)
+
+---
+
+> Reclassify the NHDSD dataset using binary classification (sarcastic vs non-sarcastic) with stepfun/step-3.5-flash:free model. Distrusts original labels.
+
+## Results
+
+- **Total headlines processed**: 28,497 (after cleaning and deduplication)
+- **6 headlines censored**: HTTP 451 blocked by StepFun's content filter
+- **Agreement with original labels**: 80.19% (22,853 headlines)
+- **Disagreements**: 19.81% (5,644 headlines)
+  - 3,560 originally sarcastic → reclassified as non-sarcastic
+  - 2,084 originally non-sarcastic → reclassified as sarcastic
+
+### Output Files
+
+| File | Description | Count |
+|------|-------------|-------|
+| `data/processed/nhdsd_cleaned.json` | Cleaned dataset | 28,497 |
+| `data/processed/nhdsd_reclassified.jsonl` | Fresh binary labels | 28,497 |
+| `data/processed/censored_headlines.jsonl` | Blocked by filter | 6 |
+| `data/processed/label_disagreements.jsonl` | For manual review | 5,644 |
+
+---
+
+## Original Objective
+
+Clean and reclassify ALL ~28,619 headlines from the NHDSD dataset with fresh binary labels (is_sarcastic: 0 or 1) using the stepfun 3.5 model. The original NHDSD labels are not trusted.
+# NHDSD Binary Reclassification Plan
+
 > Reclassify the NHDSD dataset using binary classification (sarcastic vs non-sarcastic) with stepfun/step-3.5-flash:free model. Distrusts original labels.
 
 ## Objective
