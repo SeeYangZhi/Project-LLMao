@@ -12,3 +12,4 @@ wheels/
 .env*
 
 claude.md
+.claude/
