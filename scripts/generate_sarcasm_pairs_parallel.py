@@ -27,7 +27,7 @@ MAX_RETRIES = 5
 RATE_LIMIT_PER_MINUTE = 40
 RATE_LIMIT_DELAY = 60.0 / RATE_LIMIT_PER_MINUTE
 
-OUTPUT_FILE = "data/processed/sarcasm_pairs_step35.jsonl"
+OUTPUT_FILE = "data/processed/sarcasm_pairs_step35_clean.jsonl"
 
 # Model (using free tier)
 MODEL = "stepfun/step-3.5-flash:free"
@@ -123,8 +123,6 @@ def process_batch(
             message = response.choices[0].message
             content = message.content
 
-            # Get reasoning if available
-            reasoning = getattr(message, "reasoning_details", None)
             finish_reason = response.choices[0].finish_reason
 
             # Check if content was filtered
@@ -175,7 +173,6 @@ def process_batch(
                             "type": "sarcastic_to_non"
                             if is_sarcastic
                             else "non_to_sarcastic",
-                            "reasoning": reasoning,
                             "model_used": MODEL,
                             "article_link": item.get("article_link", ""),
                         }
