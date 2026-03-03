@@ -17,21 +17,26 @@
 - **Disagreements**: 19.81% (5,644 headlines)
   - 3,560 originally sarcastic → reclassified as non-sarcastic
   - 2,084 originally non-sarcastic → reclassified as sarcastic
+- Confidence on disagreements:
+  - High: 60.0%
+  - Medium: 30.2%
+  - Low: 9.8%
 
 ### Output Files
 
-| File | Description | Count |
-|------|-------------|-------|
-| `data/processed/nhdsd_cleaned.json` | Cleaned dataset | 28,497 |
-| `data/processed/nhdsd_reclassified.jsonl` | Fresh binary labels | 28,497 |
-| `data/processed/censored_headlines.jsonl` | Blocked by filter | 6 |
-| `data/processed/label_disagreements.jsonl` | For manual review | 5,644 |
+| File                                       | Description         | Count  |
+| ------------------------------------------ | ------------------- | ------ |
+| `data/processed/nhdsd_cleaned.json`        | Cleaned dataset     | 28,497 |
+| `data/processed/nhdsd_reclassified.jsonl`  | Fresh binary labels | 28,497 |
+| `data/processed/censored_headlines.jsonl`  | Blocked by filter   | 6      |
+| `data/processed/label_disagreements.jsonl` | For manual review   | 5,644  |
 
 ---
 
 ## Original Objective
 
 Clean and reclassify ALL ~28,619 headlines from the NHDSD dataset with fresh binary labels (is_sarcastic: 0 or 1) using the stepfun 3.5 model. The original NHDSD labels are not trusted.
+
 # NHDSD Binary Reclassification Plan
 
 > Reclassify the NHDSD dataset using binary classification (sarcastic vs non-sarcastic) with stepfun/step-3.5-flash:free model. Distrusts original labels.
@@ -63,6 +68,7 @@ uv run python scripts/reclassify_nhdsd_binary.py
 ```
 
 This will:
+
 1. Load the NHDSD dataset
 2. Clean the data (remove duplicates, normalize text)
 3. Classify ALL headlines as sarcastic (1) or non-sarcastic (0)
@@ -100,10 +106,10 @@ print(f'  Non-sarcastic (0): {counts[0]}')
 
 ## Output Files
 
-| File | Description |
-|------|-------------|
-| `data/processed/nhdsd_cleaned.json` | Cleaned NHDSD dataset (deduplicated) |
-| `data/processed/nhdsd_reclassified.jsonl` | Fresh binary labels (JSONL format) |
+| File                                      | Description                          |
+| ----------------------------------------- | ------------------------------------ |
+| `data/processed/nhdsd_cleaned.json`       | Cleaned NHDSD dataset (deduplicated) |
+| `data/processed/nhdsd_reclassified.jsonl` | Fresh binary labels (JSONL format)   |
 
 ### Output Schema (JSONL)
 
@@ -128,6 +134,7 @@ The script supports automatic resume:
 4. **Rate limit handling**: Automatic detection and backoff for 429 errors
 
 To resume after interruption:
+
 ```bash
 # Simply re-run the script - it will continue from where it left off
 uv run python scripts/reclassify_nhdsd_binary.py
@@ -164,16 +171,17 @@ print(f'Agreement with original: {agreement}/{len(original)} ({100*agreement/len
 
 ## Time Estimates
 
-| Phase | Duration | Notes |
-|-------|----------|-------|
-| Data cleaning | < 1 min | Local processing |
-| Classification | ~14-15 hours | API rate limited |
-| Validation | 10-15 min | Manual sampling |
-| **Total** | **~15 hours** | Mostly automated |
+| Phase          | Duration      | Notes            |
+| -------------- | ------------- | ---------------- |
+| Data cleaning  | < 1 min       | Local processing |
+| Classification | ~14-15 hours  | API rate limited |
+| Validation     | 10-15 min     | Manual sampling  |
+| **Total**      | **~15 hours** | Mostly automated |
 
 ## Monitoring Progress
 
 During execution, the script outputs progress:
+
 ```
 Loading dataset from Sarcasm_Headlines_Dataset_v2.json...
 Total headlines: 28619
@@ -197,6 +205,7 @@ Worker 1: Batch 1 complete (50 items). Total: 100
 ## Troubleshooting
 
 ### API Key Issues
+
 ```bash
 # Verify key is set
 echo $OPENROUTER_API_KEY
@@ -206,10 +215,12 @@ export OPENROUTER_API_KEY="sk-or-v1-..."
 ```
 
 ### Rate Limit Exceeded
+
 - Script automatically handles rate limits with backoff
 - If consistently hitting limits, reduce `MAX_WORKERS` in script
 
 ### Resume Not Working
+
 - Check output file exists: `ls -la data/processed/nhdsd_reclassified.jsonl`
 - Verify file has valid JSONL format: `head -1 data/processed/nhdsd_reclassified.jsonl | python -m json.tool`
 
