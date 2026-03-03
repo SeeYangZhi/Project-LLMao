@@ -1,138 +1,77 @@
-# Execution Plan: Generate Sarcasm Pairs with MiniMax M2.5
+# Execution Plan: Generate Sarcasm Pairs
 
 **Status**: COMPLETED
 **Created**: 2026-03-02
 **Completed**: 2026-03-03
-**Model**: MiniMax M2.5 Free (opencode/minimax-m2.5-free)
+**Model**: StepFun Step 3.5 Flash Free (via OpenRouter)
 
 ## Results
 
-✅ Successfully generated ~28,611 pairs (99.97% completion)
-- 13,634 sarcastic → non-sarcastic pairs
-- 14,977 non-sarcastic → sarcastic pairs
+- Sarcastic → non-sarcastic pairs
+- Non-sarcastic → sarcastic pairs
 - Strategy annotations included for all generated pairs
 
-⚠️ **8 items remaining**: Content filtered by API (to be manually processed later)
+### Unprocessed Headlines (8)
 
-## Output Location
+6 headlines are permanently blocked by StepFun's **input-level censorship filter** (HTTP 451). The filter rejects the request before the model sees it — prompt engineering cannot bypass this. These contain explicit/sexual content from TheOnion satirical articles.
 
-`data/processed/sarcasm_pairs_minimax.jsonl`
-**Status**: ACTIVE
-**Created**: 2026-03-02
-**Model**: MiniMax M2.5 Free (opencode/minimax-m2.5-free)
+Stored in: `data/processed/remaining_headlines.jsonl`
+
+## Output Files
+
+| File                                              | Description                 | Size |
+| ------------------------------------------------- | --------------------------- | ---- |
+| `data/processed/sarcasm_pairs_step35_clean.jsonl` | Clean output (no reasoning) | 11MB |
+| `data/processed/remaining_headlines.jsonl`        | 8 unprocessable headlines   | <1KB |
 
 ## Objective
 
-Generate parallel sarcastic/non-sarcastic headline pairs from the NHDSD dataset using MiniMax M2.5 via OpenCode Zen API.
+Generate parallel sarcastic/non-sarcastic headline pairs from the NHDSD dataset using free LLM APIs.
 
 ## Rationale
 
 The NHDSD dataset contains:
+
 - 13,634 sarcastic headlines from TheOnion
 - 14,985 non-sarcastic headlines from HuffPost
 - **Total: 28,619 headlines**
 
-These are NOT naturally paired - they're from different articles. To train a style transfer model, we need parallel pairs. MiniMax M2.5 Free offers:
-- **Free** (no API cost)
-- **200K context** (handle long prompts)
-- **Fast inference** (~100 tokens/sec)
-- **Strong coding/reasoning** (80.2% SWE-bench)
+These are NOT naturally paired — they're from different articles. To train a style transfer model, we need parallel pairs.
 
 ## Approach
 
-Use few-shot prompting with MiniMax to generate non-sarcastic versions of sarcastic headlines (and vice versa).
+Used few-shot prompting to generate non-sarcastic versions of sarcastic headlines (and vice versa). Batched headlines in groups for efficiency.
 
 ### Strategy Categories (from iSarcasm Dataset)
 
-Based on the iSarcasmEval dataset which has complete category annotations:
-
-| Tag | Description | Example |
-|-----|-------------|--------|
-| `<sarcasm>` | Contradicts state of affairs, critical towards addressee | "Great job on the update, everything is broken now" |
-| `<irony>` | Contradicts state of affairs, not obviously critical | "I love waiting in line at the DMV for hours" |
-| `<satire>` | Appears to support, but contains mockery | "Wow, another meeting that could have been an email" |
-| `<understatement>` | Undermines importance of situation | "It's just a minor setback" (for a disaster) |
-| `<overstatement>` | Obviously exaggerated terms | "I've told you a million times!" |
-| `<rhetorical_question>` | Question with inference contradicting reality | "Isn't it just the best feeling to be ignored?" |
-
-### Prompt Template
-
-```
-You are a sarcasm style transfer expert. Given a headline, generate the opposite style version.
-
-Sarcasm Strategies (from iSarcasm dataset):
-- sarcasm: Contradicts state of affairs, critical towards addressee
-- irony: Contradicts state of affairs, not obviously critical
-- satire: Appears to support, but contains mockery
-- understatement: Undermines importance
-- overstatement: Obviously exaggerated terms
-- rhetorical_question: Question with inference contradicting reality
-
-Example 1:
-Sarcastic: "Great job on the update, everything is broken now"
-Non-sarcastic: "The latest update has caused multiple issues"
-Strategy: sarcasm
-
-Example 2:
-Sarcastic: "I love waiting in line at the DMV for hours"
-Non-sarcastic: "Waiting at the DMV takes several hours"
-Strategy: irony
-
-Now generate for:
-Sarcastic: "{headline}"
-Non-sarcastic:
-```
+| Tag                   | Description                                              |
+| --------------------- | -------------------------------------------------------- |
+| `sarcasm`             | Contradicts state of affairs, critical towards addressee |
+| `irony`               | Contradicts state of affairs, not obviously critical     |
+| `satire`              | Appears to support, but contains mockery                 |
+| `understatement`      | Undermines importance of situation                       |
+| `overstatement`       | Obviously exaggerated terms                              |
+| `rhetorical_question` | Question with inference contradicting reality            |
 
 ## Technical Details
 
 ### API Configuration
-- **Endpoint**: `https://opencode.ai/zen/v1/chat/completions`
-- **Model**: `minimax-m2.5-free`
-- **Format**: OpenAI-compatible (`@ai-sdk/openai-compatible`)
 
-### Implementation Steps
+- **Endpoint**: OpenRouter (`https://openrouter.ai/api/v1`)
+- **Model**: `stepfun/step-3.5-flash:free`
+- **Format**: OpenAI-compatible
 
-1. **Set up API client**
-   - Get OpenCode Zen API key
-   - Configure Python client with openai-compatible SDK
+### Scripts
 
-2. **Load dataset**
-   - Read NHDSD JSON
-   - Filter sarcastic headlines (is_sarcastic=1)
+- `scripts/generate_sarcasm_pairs_parallel.py` — Main parallel batch processing script
 
-3. **Batch generation**
-   - Process in batches (avoid rate limits)
-   - Use few-shot prompting
-   - Track strategy type
+## Risks Encountered
 
-4. **Save outputs**
-   - Store as JSONL: `{"sarcastic": "...", "non_sarcastic": "...", "strategy": "..."}`
-   - Log API costs (should be free)
-
-## Expected Outputs
-
-- 13,634 sarcastic → non-sarcastic pairs
-- 14,985 non-sarcastic → sarcastic pairs
-- **Total: 28,619 pairs**
-- Strategy annotation for each pair
-- File: `data/processed/sarcasm_pairs_minimax.jsonl`
-
-## Risks & Mitigations
-
-| Risk | Mitigation |
-|------|------------|
-| API rate limits | Batch processing with delays |
-| Quality issues | Sample human evaluation |
-| Model unavailable | Fall back to local LLM |
-
-## Timeline
-
-- [ ] Step 1: API setup (5 min)
-- [ ] Step 2: Load & filter data (10 min)  
-- [ ] Step 3: Generate pairs (1-2 hrs)
-- [ ] Step 4: Quality check (15 min)
-- [ ] Step 5: Save & document (10 min)
+| Risk              | Outcome                                   |
+| ----------------- | ----------------------------------------- |
+| API rate limits   | Handled with batching + delays            |
+| Content filtering | 8 headlines blocked by input-level filter |
 
 ---
 
-*Last updated: 2026-03-02*
+_Last updated: 2026-03-03_
