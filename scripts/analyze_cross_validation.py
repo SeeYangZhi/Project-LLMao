@@ -9,8 +9,6 @@ Usage:
 
 import argparse
 import json
-from collections import Counter
-from pathlib import Path
 
 
 def load_jsonl(path: str) -> list[dict]:
@@ -129,7 +127,7 @@ def generate_report(stats: dict) -> dict:
             "models": [
                 "original_nhdsd",
                 "stepfun/step-3.5-flash:free",
-                "openai/gpt-oss-120b:free",
+                "nvidia/nemotron-3-nano-30b-a3b:free",
             ],
         },
         "vote_outcomes": {
@@ -312,7 +310,7 @@ def main():
     parser.add_argument(
         "--input",
         type=str,
-        default="data/processed/cross_validation_openai.jsonl",
+        default="data/processed/cross_validation_secondary.jsonl",
         help="Path to cross-validation results",
     )
     parser.add_argument(

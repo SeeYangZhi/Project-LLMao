@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "total_disagreements": 5644,
+    "cross_validated": 5644,
+    "models": [
+      "original_nhdsd",
+      "stepfun/step-3.5-flash:free",
+      "nvidia/nemotron-3-nano-30b-a3b:free"
+    ]
+  },
+  "vote_outcomes": {
+    "original_and_openai_agree": {
+      "count": 1568,
+      "pct": 27.78,
+      "interpretation": "StepFun likely wrong; original label probably correct"
+    },
+    "stepfun_and_openai_agree": {
+      "count": 4076,
+      "pct": 72.22,
+      "interpretation": "Original label likely wrong; genuine mislabel in NHDSD"
+    }
+  },
+  "by_original_label": {
+    "originally_sarcastic": {
+      "total": 3560,
+      "openai_agrees_with_original": 509,
+      "openai_agrees_with_stepfun": 3051
+    },
+    "originally_non_sarcastic": {
+      "total": 2084,
+      "openai_agrees_with_original": 1059,
+      "openai_agrees_with_stepfun": 1025
+    }
+  },
+  "by_source": {
+    "theonion_disagreements": 3561,
+    "huffpost_disagreements": 2083
+  },
+  "confidence_analysis": {
+    "high_confidence_both": 2148,
+    "mixed_confidence": 3496
+  },
+  "ground_truth_assessment": {
+    "estimated_nhdsd_error_rate": 72.22,
+    "estimated_mislabels": 4076,
+    "interpretation": "~72.2% of disagreements are likely true NHDSD errors"
+  }
+}
