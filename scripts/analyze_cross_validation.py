@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Analyze cross-validation results: compare original, stepfun, and openai labels.
+"""Analyze cross-validation results: compare original, stepfun, and secondary model labels.
 
 Usage:
     uv run python scripts/analyze_cross_validation.py
@@ -9,8 +8,6 @@ Usage:
 
 import argparse
 import json
-from collections import Counter
-from pathlib import Path
 
 
 def load_jsonl(path: str) -> list[dict]:
@@ -27,19 +24,19 @@ def analyze_votes(data: list[dict]) -> dict:
     total = len(data)
 
     # Vote outcomes
-    original_and_openai_agree = 0
-    stepfun_and_openai_agree = 0
+    original_and_secondary_agree = 0
+    stepfun_and_secondary_agree = 0
 
     # By direction (originally sarcastic vs non-sarcastic)
     originally_sarcastic = {
         "total": 0,
-        "original_and_openai": 0,
-        "stepfun_and_openai": 0,
+        "original_and_secondary": 0,
+        "stepfun_and_secondary": 0,
     }
     originally_non_sarcastic = {
         "total": 0,
-        "original_and_openai": 0,
-        "stepfun_and_openai": 0,
+        "original_and_secondary": 0,
+        "stepfun_and_secondary": 0,
     }
 
     # Confidence analysis
@@ -53,9 +50,9 @@ def analyze_votes(data: list[dict]) -> dict:
     for item in data:
         original = item.get("original_label", 0)
         stepfun = item.get("stepfun_label", 0)
-        openai = item.get("is_sarcastic", 0)
+        secondary = item.get("is_sarcastic", 0)
         stepfun_conf = item.get("stepfun_confidence", "medium")
-        openai_conf = item.get("confidence", "medium")
+        secondary_conf = item.get("confidence", "medium")
 
         # Track by original source
         article_link = item.get("article_link", "")
@@ -65,33 +62,33 @@ def analyze_votes(data: list[dict]) -> dict:
             huffpost_disagreements.append(item)
 
         # Determine vote outcome
-        if original == openai:
-            original_and_openai_agree += 1
+        if original == secondary:
+            original_and_secondary_agree += 1
             if original == 1:
-                originally_sarcastic["original_and_openai"] += 1
+                originally_sarcastic["original_and_secondary"] += 1
                 originally_sarcastic["total"] += 1
             else:
-                originally_non_sarcastic["original_and_openai"] += 1
+                originally_non_sarcastic["original_and_secondary"] += 1
                 originally_non_sarcastic["total"] += 1
-        elif stepfun == openai:
-            stepfun_and_openai_agree += 1
+        elif stepfun == secondary:
+            stepfun_and_secondary_agree += 1
             if original == 1:
-                originally_sarcastic["stepfun_and_openai"] += 1
+                originally_sarcastic["stepfun_and_secondary"] += 1
                 originally_sarcastic["total"] += 1
             else:
-                originally_non_sarcastic["stepfun_and_openai"] += 1
+                originally_non_sarcastic["stepfun_and_secondary"] += 1
                 originally_non_sarcastic["total"] += 1
 
         # Confidence tracking
-        if stepfun_conf == "high" and openai_conf == "high":
+        if stepfun_conf == "high" and secondary_conf == "high":
             high_confidence_both += 1
         else:
             mixed_confidence += 1
 
     return {
         "total": total,
-        "original_and_openai_agree": original_and_openai_agree,
-        "stepfun_and_openai_agree": stepfun_and_openai_agree,
+        "original_and_secondary_agree": original_and_secondary_agree,
+        "stepfun_and_secondary_agree": stepfun_and_secondary_agree,
         "originally_sarcastic": originally_sarcastic,
         "originally_non_sarcastic": originally_non_sarcastic,
         "high_confidence_both": high_confidence_both,
@@ -106,11 +103,11 @@ def generate_report(stats: dict) -> dict:
     total = stats["total"]
 
     # Calculate percentages
-    original_openai_pct = (
-        stats["original_and_openai_agree"] / total * 100 if total > 0 else 0
+    original_secondary_pct = (
+        stats["original_and_secondary_agree"] / total * 100 if total > 0 else 0
     )
-    stepfun_openai_pct = (
-        stats["stepfun_and_openai_agree"] / total * 100 if total > 0 else 0
+    stepfun_secondary_pct = (
+        stats["stepfun_and_secondary_agree"] / total * 100 if total > 0 else 0
     )
 
     # By direction
@@ -118,8 +115,8 @@ def generate_report(stats: dict) -> dict:
     non_sarc_total = stats["originally_non_sarcastic"]["total"]
 
     # Estimate NHDSD error rate
-    # If OpenAI agrees with StepFun, and they both disagree with original, original is wrong
-    estimated_mislabels = stats["stepfun_and_openai_agree"]
+    # If Secondary model agrees with StepFun, and they both disagree with original, original is wrong
+    estimated_mislabels = stats["stepfun_and_secondary_agree"]
     estimated_error_rate = estimated_mislabels / total * 100 if total > 0 else 0
 
     return {
@@ -129,38 +126,38 @@ def generate_report(stats: dict) -> dict:
             "models": [
                 "original_nhdsd",
                 "stepfun/step-3.5-flash:free",
-                "openai/gpt-oss-120b:free",
+                "nvidia/nemotron-3-nano-30b-a3b:free",
             ],
         },
         "vote_outcomes": {
-            "original_and_openai_agree": {
-                "count": stats["original_and_openai_agree"],
-                "pct": round(original_openai_pct, 2),
+            "original_and_secondary_agree": {
+                "count": stats["original_and_secondary_agree"],
+                "pct": round(original_secondary_pct, 2),
                 "interpretation": "StepFun likely wrong; original label probably correct",
             },
-            "stepfun_and_openai_agree": {
-                "count": stats["stepfun_and_openai_agree"],
-                "pct": round(stepfun_openai_pct, 2),
+            "stepfun_and_secondary_agree": {
+                "count": stats["stepfun_and_secondary_agree"],
+                "pct": round(stepfun_secondary_pct, 2),
                 "interpretation": "Original label likely wrong; genuine mislabel in NHDSD",
             },
         },
         "by_original_label": {
             "originally_sarcastic": {
                 "total": sarc_total,
-                "openai_agrees_with_original": stats["originally_sarcastic"][
-                    "original_and_openai"
+                "secondary_agrees_with_original": stats["originally_sarcastic"][
+                    "original_and_secondary"
                 ],
-                "openai_agrees_with_stepfun": stats["originally_sarcastic"][
-                    "stepfun_and_openai"
+                "secondary_agrees_with_stepfun": stats["originally_sarcastic"][
+                    "stepfun_and_secondary"
                 ],
             },
             "originally_non_sarcastic": {
                 "total": non_sarc_total,
-                "openai_agrees_with_original": stats["originally_non_sarcastic"][
-                    "original_and_openai"
+                "secondary_agrees_with_original": stats["originally_non_sarcastic"][
+                    "original_and_secondary"
                 ],
-                "openai_agrees_with_stepfun": stats["originally_non_sarcastic"][
-                    "stepfun_and_openai"
+                "secondary_agrees_with_stepfun": stats["originally_non_sarcastic"][
+                    "stepfun_and_secondary"
                 ],
             },
         },
@@ -198,18 +195,18 @@ def print_report(report: dict):
     # Vote outcomes
     print("🗳️  VOTE OUTCOMES")
     print("-" * 70)
-    orig_openai = report["vote_outcomes"]["original_and_openai_agree"]
-    stepfun_openai = report["vote_outcomes"]["stepfun_and_openai_agree"]
+    orig_secondary = report["vote_outcomes"]["original_and_secondary_agree"]
+    stepfun_secondary = report["vote_outcomes"]["stepfun_and_secondary_agree"]
 
     print(
-        f"OpenAI agrees with Original:  {orig_openai['count']:>5,} ({orig_openai['pct']:>5.1f}%)"
+        f"Secondary model agrees with Original:  {orig_secondary['count']:>5,} ({orig_secondary['pct']:>5.1f}%)"
     )
-    print(f"  → {orig_openai['interpretation']}")
+    print(f"  → {orig_secondary['interpretation']}")
     print()
     print(
-        f"OpenAI agrees with StepFun:   {stepfun_openai['count']:>5,} ({stepfun_openai['pct']:>5.1f}%)"
+        f"Secondary model agrees with StepFun:   {stepfun_secondary['count']:>5,} ({stepfun_secondary['pct']:>5.1f}%)"
     )
-    print(f"  → {stepfun_openai['interpretation']}")
+    print(f"  → {stepfun_secondary['interpretation']}")
     print()
 
     # By original label
@@ -219,12 +216,20 @@ def print_report(report: dict):
     non_sarc = report["by_original_label"]["originally_non_sarcastic"]
 
     print(f"Originally Sarcastic:      {sarc['total']:>5,}")
-    print(f"  OpenAI agrees w/ Original: {sarc['openai_agrees_with_original']:>5,}")
-    print(f"  OpenAI agrees w/ StepFun:  {sarc['openai_agrees_with_stepfun']:>5,}")
+    print(
+        f"  Secondary model agrees w/ Original: {sarc['secondary_agrees_with_original']:>5,}"
+    )
+    print(
+        f"  Secondary model agrees w/ StepFun:  {sarc['secondary_agrees_with_stepfun']:>5,}"
+    )
     print()
     print(f"Originally Non-Sarcastic:  {non_sarc['total']:>5,}")
-    print(f"  OpenAI agrees w/ Original: {non_sarc['openai_agrees_with_original']:>5,}")
-    print(f"  OpenAI agrees w/ StepFun:  {non_sarc['openai_agrees_with_stepfun']:>5,}")
+    print(
+        f"  Secondary model agrees w/ Original: {non_sarc['secondary_agrees_with_original']:>5,}"
+    )
+    print(
+        f"  Secondary model agrees w/ StepFun:  {non_sarc['secondary_agrees_with_stepfun']:>5,}"
+    )
     print()
 
     # By source
@@ -270,9 +275,9 @@ def save_csv(data: list[dict], output_path: str):
                 "headline",
                 "original_label",
                 "stepfun_label",
-                "openai_label",
+                "secondary_label",
                 "stepfun_confidence",
-                "openai_confidence",
+                "secondary_confidence",
                 "vote_outcome",
                 "article_link",
             ]
@@ -281,13 +286,13 @@ def save_csv(data: list[dict], output_path: str):
         for item in data:
             original = item.get("original_label", 0)
             stepfun = item.get("stepfun_label", 0)
-            openai = item.get("is_sarcastic", 0)
+            secondary = item.get("is_sarcastic", 0)
 
             # Determine outcome
-            if original == openai:
-                outcome = "openai_agrees_original"
-            elif stepfun == openai:
-                outcome = "openai_agrees_stepfun"
+            if original == secondary:
+                outcome = "secondary_agrees_original"
+            elif stepfun == secondary:
+                outcome = "secondary_agrees_stepfun"
             else:
                 outcome = "unknown"
 
@@ -296,7 +301,7 @@ def save_csv(data: list[dict], output_path: str):
                     item.get("headline", ""),
                     original,
                     stepfun,
-                    openai,
+                    secondary,
                     item.get("stepfun_confidence", "medium"),
                     item.get("confidence", "medium"),
                     outcome,
@@ -312,7 +317,7 @@ def main():
     parser.add_argument(
         "--input",
         type=str,
-        default="data/processed/cross_validation_openai.jsonl",
+        default="data/processed/cross_validation_secondary.jsonl",
         help="Path to cross-validation results",
     )
     parser.add_argument(

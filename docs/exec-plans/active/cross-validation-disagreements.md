@@ -3,7 +3,7 @@
 **Status**: COMPLETED  
 **Created**: 2026-03-04  
 **Completed**: 2026-03-04  
-**Model**: openai/gpt-oss-120b:free (via OpenRouter)
+**Secondary Model**: nvidia/nemotron-3-nano-30b-a3b:free (via OpenRouter)
 
 ---
 
@@ -12,26 +12,37 @@
 ## Results
 
 - **Total disagreements cross-validated**: 5,644
-- **OpenAI agreement with original**: ~X% (StepFun was likely wrong)
-- **OpenAI agreement with StepFun**: ~Y% (Original NHDSD label was likely wrong)
-- **Estimated NHDSD error rate**: ~Z%
+- **Secondary model agrees with Original**: 1,568 (27.8%) - StepFun was likely wrong
+- **Secondary model agrees with StepFun**: 4,076 (72.2%) - Original NHDSD label was likely wrong
+- **Estimated NHDSD error rate**: 72.2% of disagreements
+
+### Key Findings
+
+| Metric | Value |
+|--------|-------|
+| Originally Sarcastic (3,560) | 509 kept, 3,051 reclassified |
+| Originally Non-Sarcastic (2,084) | 1,059 kept, 1,025 reclassified |
+| TheOnion disagreements | 3,561 |
+| HuffPost disagreements | 2,083 |
+| High confidence (both models) | 2,148 |
+| Mixed/lower confidence | 3,496 |
 
 ### Output Files
 
 | File | Description |
 |------|-------------|
-| `data/processed/cross_validation_openai.jsonl` | OpenAI classifications for all 5,644 disagreements |
+| `data/processed/cross_validation_secondary.jsonl` | Secondary model classifications for all 5,644 disagreements |
 | `data/processed/cross_validation_comparison.json` | Three-way comparison statistics |
 
 ---
 
 ## Objective
 
-The initial reclassification found 5,644 headlines (19.81%) where stepfun/step-3.5-flash:free disagreed with the original NHDSD labels. This cross-validation uses a completely different model (openai/gpt-oss-120b:free) to create a three-way vote and determine which labels are trustworthy.
+The initial reclassification found 5,644 headlines (19.81%) where stepfun/step-3.5-flash:free disagreed with the original NHDSD labels. This cross-validation uses a completely different model (nvidia/nemotron-3-nano-30b-a3b:free) to create a three-way vote and determine which labels are trustworthy.
 
 ## Prerequisites
 
-- OpenRouter API key with access to openai/gpt-oss-120b:free
+- OpenRouter API key with access to nvidia/nemotron-3-nano-30b-a3b:free
 - Input file: `data/processed/label_disagreements.jsonl` (5,644 records)
 
 ```bash
@@ -52,8 +63,8 @@ uv run python scripts/cross_validate_disagreements.py
 
 This will:
 1. Load the 5,644 disagreed headlines
-2. Classify each using openai/gpt-oss-120b:free
-3. Save results to cross_validation_openai.jsonl
+2. Classify each using nvidia/nemotron-3-nano-30b-a3b:free
+3. Save results to cross_validation_secondary.jsonl
 4. Support resume if interrupted
 
 ### Step 2: Run Analysis
@@ -73,14 +84,14 @@ Generates three-way comparison statistics.
 
 ## Output Schema
 
-### cross_validation_openai.jsonl
+### cross_validation_secondary.jsonl
 
 ```json
 {
   "headline": "headline text",
   "is_sarcastic": 1,
   "confidence": "high",
-  "model_used": "openai/gpt-oss-120b:free",
+  "model_used": "nvidia/nemotron-3-nano-30b-a3b:free",
   "article_link": "https://...",
   "original_label": 1,
   "stepfun_label": 0,
@@ -94,24 +105,24 @@ Generates three-way comparison statistics.
 {
   "metadata": { "total_disagreements": 5644, ... },
   "vote_outcomes": {
-    "original_and_openai_agree": { "count": 0, "pct": 0.0 },
-    "stepfun_and_openai_agree": { "count": 0, "pct": 0.0 }
+    "original_and_secondary_agree": { "count": 1568, "pct": 27.78 },
+    "stepfun_and_secondary_agree": { "count": 4076, "pct": 72.22 }
   },
   "ground_truth_assessment": {
-    "estimated_nhdsd_error_rate": 0.0,
-    "recommended_relabels": 0
+    "estimated_nhdsd_error_rate": 72.22,
+    "estimated_mislabels": 4076
   }
 }
 ```
 
 ## Analysis Approach
 
-Since these are all disagreements (original != stepfun), OpenAI's vote determines:
+Since these are all disagreements (original != stepfun), the secondary model's vote determines:
 
-1. **OpenAI agrees with original** → StepFun was likely wrong, trust original label
-2. **OpenAI agrees with StepFun** → Both models vs original suggests genuine NHDSD mislabel
+1. **Secondary agrees with original** → StepFun was likely wrong, trust original label (27.8% of cases)
+2. **Secondary agrees with StepFun** → Both models vs original suggests genuine NHDSD mislabel (72.2% of cases)
 
-Confidence-weighted analysis prioritizes high-confidence agreements for auto-relabeling.
+**Key insight**: 72.2% of disagreements are likely true NHDSD errors, suggesting ~4,076 mislabeled headlines in the original dataset.
 
 ## Time Estimates
 
@@ -135,9 +146,10 @@ Edit script to reduce `RATE_LIMIT_PER_MINUTE` if hitting 429 errors.
 ## Next Steps
 
 1. Review comparison statistics
-2. Create corrected dataset based on high-confidence mislabels
-3. Update docs/DATASET.md with findings
-4. Proceed to model fine-tuning with cleaned labels
+2. Create corrected dataset: use StepFun labels where both models agree (4,076 headlines)
+3. Flag ambiguous cases for human review (2,148 high-confidence disagreements)
+4. Update docs/DATASET.md with findings
+5. Proceed to model fine-tuning with cleaned labels
 
 ---
 

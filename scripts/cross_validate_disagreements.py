@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Cross-validate label disagreements using openai/gpt-oss-120b:free via OpenRouter.
+"""Cross-validate label disagreements using nvidia/nemotron-3-nano-30b-a3b:free via OpenRouter.
 
 Usage:
     export OPENROUTER_API_KEY="your_key"
@@ -27,10 +26,10 @@ RATE_LIMIT_PER_MINUTE = 20
 RATE_LIMIT_DELAY = 60.0 / RATE_LIMIT_PER_MINUTE
 
 INPUT_FILE = "data/processed/label_disagreements.jsonl"
-OUTPUT_FILE = "data/processed/cross_validation_openai.jsonl"
+OUTPUT_FILE = "data/processed/cross_validation_secondary.jsonl"
 
 # Model
-MODEL = "openai/gpt-oss-120b:free"
+MODEL = "nvidia/nemotron-3-nano-30b-a3b:free"
 
 # Thread-safe locks
 file_lock = threading.Lock()
@@ -50,7 +49,7 @@ def get_openrouter_client():
     return OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
 
 
-def rate_limited_request(client, messages, max_tokens=4000):
+def rate_limited_request(client, messages, max_tokens=250000):
     """Make a rate-limited request to OpenRouter."""
     global last_request_time
 
