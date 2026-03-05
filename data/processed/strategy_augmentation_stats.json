@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "source_pairs": 14985,
+    "variants_generated": 74956,
+    "timestamp": "2026-03-05T10:46:46"
+  },
+  "strategy_distribution": {
+    "sarcasm": 10217,
+    "irony": 12003,
+    "satire": 12923,
+    "overstatement": 12806,
+    "rhetorical_question": 13937,
+    "understatement": 13070
+  },
+  "by_existing_strategy": {
+    "understatement": 10227,
+    "sarcasm": 24201,
+    "irony": 14937,
+    "overstatement": 10845,
+    "satire": 9856,
+    "rhetorical_question": 4890
+  }
+}

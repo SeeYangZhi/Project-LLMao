@@ -20,7 +20,7 @@ from openai import OpenAI
 load_dotenv()
 
 # Config
-BATCH_SIZE = 10  # Number of source headlines per batch
+BATCH_SIZE = 1  # Number of source headlines per batch
 MAX_WORKERS = 5
 MAX_RETRIES = 5
 RATE_LIMIT_PER_MINUTE = 40
@@ -62,7 +62,7 @@ def get_openrouter_client():
     return OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
 
 
-def rate_limited_request(client, messages, max_tokens=4000):
+def rate_limited_request(client, messages, max_tokens=200000):
     """Make a rate-limited request to OpenRouter."""
     global last_request_time
 
