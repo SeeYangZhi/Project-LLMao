@@ -1,6 +1,6 @@
 # Strategy Augmentation Plan
 
-**Status**: PENDING  
+**Status**: IN PROGRESS  
 **Created**: 2026-03-04  
 **Model**: stepfun/step-3.5-flash:free (via OpenRouter)
 
@@ -22,31 +22,58 @@ The current sarcasm pairs dataset contains 14,985 `non_to_sarcastic` pairs where
   - **overstatement**: "This update completely destroyed my computer forever"
   - **rhetorical_question**: "Isn't it wonderful when updates work perfectly on the first try?"
 
-## Current Data State
+## Current Progress
 
-**Input**: `data/processed/sarcasm_pairs_step35_clean.jsonl`
+### Completed Steps
+
+- [x] Augmentation script developed (`scripts/augment_strategy_variants.py`)
+- [x] 3 censored headlines filtered out (`data/processed/censored_headlines_strategy.jsonl`)
+- [x] Full augmentation run: 74,225 deduplicated variants generated
+- [x] Pair splitting: `non_to_sarcastic` (14,948) and `sarcastic_to_non` (13,588) separated
+- [x] Merge script: combined original + augmented into complete dataset
+- [x] Deduplication fix: removed duplicate strategies per source headline
+- [x] Completeness analysis: identified 508 incomplete sources
+
+### Remaining Steps
+
+- [ ] Re-run augmentation for 508 incomplete sources (missing 1-2 strategies each)
+- [ ] Re-merge into final complete dataset
+- [ ] Create stratified train/val/test splits
+- [ ] Update docs/DATASET.md with augmentation details
+
+## Data State (After Augmentation)
+
+**Sources**: 14,948 deduplicated `non_to_sarcastic` headlines (after dedup + censorship removal)
 
 | Metric | Value |
 |--------|-------|
-| Total pairs | 28,573 |
-| `non_to_sarcastic` | 14,985 (target for augmentation) |
-| `sarcastic_to_non` | 13,588 (ignore) |
+| Total sources | 14,948 |
+| Complete (6/6 strategies) | 14,440 (96.6%) |
+| Incomplete (missing 1-2) | 508 (3.4%) |
+| Total augmented variants | 74,225 |
+| Merged complete dataset | 89,173 records |
 
-**Existing Strategy Distribution** (in non_to_sarcastic pairs):
-- sarcasm: ~4,600
-- irony: ~3,200  
-- satire: ~2,700
-- overstatement: ~2,100
-- understatement: ~1,700
-- rhetorical_question: ~550
-
+**Missing Strategy Breakdown** (across 508 incomplete sources):
+- overstatement: 133 missing
+- satire: 120 missing
+- rhetorical_question: 99 missing
+- sarcasm: 90 missing
+- understatement: 84 missing
+- irony: 0 missing
 ## Deliverables
 
 | Artifact | Path | Description |
 |----------|------|-------------|
 | Augmentation script | `scripts/augment_strategy_variants.py` | Generates 5 variants per headline |
-| Augmented data | `data/processed/sarcasm_pairs_strategy_augmented.jsonl` | ~74,925 new strategy variants |
-| Validation report | `data/processed/strategy_augmentation_stats.json` | Distribution and quality metrics |
+| Split script | `scripts/split_pairs_by_type.py` | Splits pairs by type |
+| Merge script | `scripts/merge_augmented_variants.py` | Merges original + augmented |
+| Dedup/fix script | `scripts/fix_augmented_variants.py` | Deduplicates augmented strategies |
+| Augmented data | `data/processed/sarcasm_pairs_strategy_augmented.jsonl` | 74,225 augmented strategy variants |
+| Non-to-sarcastic pairs | `data/processed/sarcasm_pairs_non_to_sarcastic.jsonl` | 14,948 deduplicated source pairs |
+| Sarcastic-to-non pairs | `data/processed/sarcasm_pairs_sarcastic_to_non.jsonl` | 13,588 reverse pairs |
+| Complete dataset | `data/processed/sarcasm_pairs_non_to_sarcastic_complete.jsonl` | 89,173 merged (needs fix for 508 incomplete) |
+| Incomplete sources | `data/processed/incomplete_strategy_sources.jsonl` | 508 sources needing re-augmentation |
+| Stats | `data/processed/strategy_augmentation_stats.json` | Distribution and quality metrics |
 
 ## Prerequisites
 
@@ -261,12 +288,14 @@ Reduce `RATE_LIMIT_PER_MINUTE` in script (e.g., to 20) and re-run.
 ### JSON Parsing Failures
 Script includes fallback extraction (markdown blocks, raw find).
 
-## Next Steps After Completion
+## Next Steps
 
-1. Combine with existing pairs for complete dataset
-2. Create stratified train/val/test splits by strategy
-3. Use for multi-strategy style transfer training
-4. Update docs/DATASET.md with augmentation details
+1. **Fix 508 incomplete sources**: Re-run `augment_strategy_variants.py` targeting only the missing strategies from `incomplete_strategy_sources.jsonl`
+2. **Re-merge**: Run `merge_augmented_variants.py` to produce final complete dataset
+3. **Validate completeness**: Verify all 14,948 sources have exactly 6 strategy variants
+4. Create stratified train/val/test splits by strategy
+5. Use for multi-strategy style transfer training
+6. Update docs/DATASET.md with augmentation details
 
 ---
 
