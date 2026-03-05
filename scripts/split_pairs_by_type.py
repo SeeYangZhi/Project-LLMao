@@ -7,7 +7,7 @@ Usage:
 
 Generates:
     - data/processed/sarcasm_pairs_non_to_sarcastic.jsonl
-    - data/processed/sarcasm_pairs_sarcastic_to_non_sarcastic.jsonl
+    - data/processed/sarcasm_pairs_sarcastic_to_non.jsonl
 """
 
 import json

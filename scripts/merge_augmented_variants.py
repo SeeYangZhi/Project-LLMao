@@ -131,6 +131,15 @@ def main():
     print(f"  Sources with 6 variants: {complete_6}")
     print(f"  Sources with != 6 variants: {incomplete}")
 
+    if incomplete != 0:
+        print(f"\n❌ ERROR: {incomplete} sources do not have exactly 6 variants!")
+        print(f"   Complete (6/6): {complete_6}")
+        print(f"   Incomplete:     {incomplete}")
+        print(f"   Expected total: {len(original_pairs) * 6} records ({len(original_pairs)} sources × 6)")
+        print(f"   Actual total:   {len(complete_pairs)} records")
+        print(f"   Output NOT saved. Fix incomplete sources before merging.")
+        raise SystemExit(1)
+
     # Save merged file
     print(f"\nSaving complete dataset...")
     save_jsonl(complete_pairs, output_file)
