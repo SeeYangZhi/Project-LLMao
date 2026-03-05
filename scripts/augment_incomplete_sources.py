@@ -446,15 +446,32 @@ def main():
     print(f"Patch output: {output_path}")
     print(f"{'=' * 60}")
 
-    # Merge patch into main augmented file
+    # Merge patch into main augmented file (idempotent: dedup by headline+strategy)
     print(f"\nMerging patch into {MAIN_AUGMENTED_FILE}...")
     patch_records = load_jsonl(str(output_path))
 
+    existing_keys = set()
+    if Path(MAIN_AUGMENTED_FILE).exists():
+        with open(MAIN_AUGMENTED_FILE, "r") as f:
+            for line in f:
+                try:
+                    item = json.loads(line)
+                    key = f"{item.get('original_headline', '')}||{item.get('strategy', '')}"
+                    existing_keys.add(key.lower())
+                except Exception:
+                    pass
+
+    new_records = []
+    for record in patch_records:
+        key = f"{record.get('original_headline', '')}||{record.get('strategy', '')}"
+        if key.lower() not in existing_keys:
+            new_records.append(record)
+
     with open(MAIN_AUGMENTED_FILE, "a") as f:
-        for record in patch_records:
+        for record in new_records:
             f.write(json.dumps(record) + "\n")
 
-    print(f"  Appended {len(patch_records)} records to {MAIN_AUGMENTED_FILE}")
+    print(f"  Appended {len(new_records)} new records to {MAIN_AUGMENTED_FILE} (skipped {len(patch_records) - len(new_records)} duplicates)")
 
     # Verify final counts
     print("\nVerifying augmented file...")

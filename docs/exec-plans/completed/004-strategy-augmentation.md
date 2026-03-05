@@ -55,13 +55,15 @@ The current sarcasm pairs dataset contains 14,985 `non_to_sarcastic` pairs where
 | Train split | 71,730 records (11,955 sources) |
 | Val split | 8,952 records (1,492 sources) |
 | Test split | 9,006 records (1,501 sources) |
-**Missing Strategy Breakdown** (across 508 incomplete sources):
-- overstatement: 133 missing
-- satire: 120 missing
-- rhetorical_question: 99 missing
-- sarcasm: 90 missing
-- understatement: 84 missing
-- irony: 0 missing
+
+**Previously Missing Strategies (resolved)** — across 508 previously incomplete sources:
+- overstatement: 133 patched
+- satire: 120 patched
+- rhetorical_question: 99 patched
+- sarcasm: 90 patched
+- understatement: 84 patched
+- irony: 49 patched
+
 ## Deliverables
 
 | Artifact | Path | Description |
@@ -290,14 +292,14 @@ Reduce `RATE_LIMIT_PER_MINUTE` in script (e.g., to 20) and re-run.
 ### JSON Parsing Failures
 Script includes fallback extraction (markdown blocks, raw find).
 
-## Next Steps
+## Completed Steps (Final)
 
-1. **Fix 508 incomplete sources**: Re-run `augment_strategy_variants.py` targeting only the missing strategies from `incomplete_strategy_sources.jsonl`
-2. **Re-merge**: Run `merge_augmented_variants.py` to produce final complete dataset
-3. **Validate completeness**: Verify all 14,948 sources have exactly 6 strategy variants
-4. Create stratified train/val/test splits by strategy
-5. Use for multi-strategy style transfer training
-6. Update docs/DATASET.md with augmentation details
+1. Fixed 508 incomplete sources via `augment_incomplete_sources.py` targeting only missing strategies
+2. Re-merged into final complete dataset (89,688 records, 100% coverage)
+3. Validated completeness: all 14,948 sources have exactly 6 strategy variants
+4. Created stratified train/val/test splits by strategy (`data/splits/`)
+5. Updated docs/DATASET.md with augmentation details
+6. Ready for multi-strategy style transfer training
 
 ---
 
