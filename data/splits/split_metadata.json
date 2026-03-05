@@ -1,0 +1,31 @@
+{
+  "seed": 42,
+  "train_ratio": 0.8,
+  "val_ratio": 0.1,
+  "test_ratio": 0.1,
+  "source_file": "data/processed/sarcasm_pairs_non_to_sarcastic_complete.jsonl",
+  "total_sources": 14948,
+  "total_records": 89688,
+  "splits": {
+    "train": {
+      "sources": 11955,
+      "records": 71730
+    },
+    "val": {
+      "sources": 1492,
+      "records": 8952
+    },
+    "test": {
+      "sources": 1501,
+      "records": 9006
+    }
+  },
+  "strategy_distribution": {
+    "irony": 2982,
+    "overstatement": 2168,
+    "rhetorical_question": 972,
+    "sarcasm": 4828,
+    "satire": 1962,
+    "understatement": 2036
+  }
+}
