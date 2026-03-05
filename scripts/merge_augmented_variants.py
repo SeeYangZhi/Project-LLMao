@@ -119,25 +119,39 @@ def main():
     for strategy, count in strategies.most_common():
         print(f"  {strategy}: {count}")
 
-    # Verify variant counts per source
-    sources_with_counts = defaultdict(int)
+    # Verify each source has exactly the 6 expected strategies
+    expected_strategies = {"sarcasm", "irony", "satire", "understatement", "overstatement", "rhetorical_question"}
+    source_strategies = defaultdict(set)
     for p in complete_pairs:
-        sources_with_counts[p.get("original_headline", "")] += 1
+        source_strategies[p.get("original_headline", "")].add(p.get("strategy", ""))
 
-    complete_6 = sum(1 for count in sources_with_counts.values() if count == 6)
-    incomplete = sum(1 for count in sources_with_counts.values() if count != 6)
+    complete_6 = 0
+    mismatched = []
+    for source, strategies_found in source_strategies.items():
+        if strategies_found == expected_strategies:
+            complete_6 += 1
+        else:
+            missing = expected_strategies - strategies_found
+            extra = strategies_found - expected_strategies
+            mismatched.append((source, missing, extra))
 
-    print(f"\nPer-source variant counts:")
-    print(f"  Sources with 6 variants: {complete_6}")
-    print(f"  Sources with != 6 variants: {incomplete}")
+    print(f"\nPer-source strategy coverage:")
+    print(f"  Sources with all 6 strategies: {complete_6}")
+    print(f"  Sources with mismatches: {len(mismatched)}")
 
-    if incomplete != 0:
-        print(f"\n❌ ERROR: {incomplete} sources do not have exactly 6 variants!")
-        print(f"   Complete (6/6): {complete_6}")
-        print(f"   Incomplete:     {incomplete}")
+    if mismatched:
+        print(f"\n❌ ERROR: {len(mismatched)} sources have incorrect strategy coverage!")
+        for source, missing, extra in mismatched[:10]:
+            print(f"   '{source[:60]}...'")
+            if missing:
+                print(f"     Missing:    {', '.join(sorted(missing))}")
+            if extra:
+                print(f"     Unexpected: {', '.join(sorted(extra))}")
+        if len(mismatched) > 10:
+            print(f"   ... and {len(mismatched) - 10} more")
         print(f"   Expected total: {len(original_pairs) * 6} records ({len(original_pairs)} sources × 6)")
         print(f"   Actual total:   {len(complete_pairs)} records")
-        print(f"   Output NOT saved. Fix incomplete sources before merging.")
+        print(f"   Output NOT saved. Fix sources before merging.")
         raise SystemExit(1)
 
     # Save merged file
