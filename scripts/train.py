@@ -199,6 +199,38 @@ def build_compute_metrics(tokenizer, seq2seq: bool):
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+def reverse_non_to_sar_records(split: str, seed: int) -> list[dict]:
+    """Load non-to-sar split, pick one random variant per source, reverse the pair.
+
+    Each source has 6 strategy variants all mapping to the same non_sarcastic_source.
+    We pick one random variant per source to avoid duplicating targets.
+    Returns records in sar-to-non format: original_headline=sarcastic, generated_headline=non-sarcastic.
+    """
+    import random
+
+    rng = random.Random(seed)
+    path = PROJECT_ROOT / "data" / "splits" / f"{split}.jsonl"
+    records = load_jsonl(path)
+
+    # Group by non_sarcastic_source, pick one random variant
+    by_source: dict[str, list[dict]] = {}
+    for r in records:
+        key = r["non_sarcastic_source"]
+        by_source.setdefault(key, []).append(r)
+
+    reversed_records = []
+    for source, variants in by_source.items():
+        chosen = rng.choice(variants)
+        reversed_records.append({
+            "original_headline": chosen["generated_headline"],  # sarcastic → input
+            "generated_headline": chosen["non_sarcastic_source"],  # non-sarcastic → target
+            "strategy": chosen["strategy"],
+            "type": "sarcastic_to_non",
+        })
+
+    return reversed_records
+
+
 def parse_args():
     p = argparse.ArgumentParser(description="Train sarcasm style transfer model")
     p.add_argument("--model", type=str, default="t5-base",
@@ -206,6 +238,8 @@ def parse_args():
     p.add_argument("--direction", type=str, default="sar-to-non",
                     choices=["sar-to-non", "non-to-sar"],
                     help="Transfer direction")
+    p.add_argument("--augment_reversed", action="store_true",
+                    help="For sar-to-non: also include reversed non-to-sar pairs (1 per source)")
     p.add_argument("--lr", type=float, default=3e-4, help="Learning rate")
     p.add_argument("--batch_size", type=int, default=16, help="Batch size per device")
     p.add_argument("--epochs", type=int, default=5, help="Number of training epochs")
@@ -240,8 +274,19 @@ def main():
 
     # Load data
     data_paths = get_data_paths(args.direction)
-    raw_train = prepare_examples(load_jsonl(data_paths["train"]), args.direction, args.model)
-    raw_val = prepare_examples(load_jsonl(data_paths["val"]), args.direction, args.model)
+    train_records = load_jsonl(data_paths["train"])
+    val_records = load_jsonl(data_paths["val"])
+
+    # Optionally augment sar-to-non with reversed non-to-sar pairs
+    if args.augment_reversed and args.direction == "sar-to-non":
+        reversed_train = reverse_non_to_sar_records("train", args.seed)
+        reversed_val = reverse_non_to_sar_records("val", args.seed)
+        print(f"Augmenting with {len(reversed_train)} reversed train + {len(reversed_val)} reversed val pairs")
+        train_records.extend(reversed_train)
+        val_records.extend(reversed_val)
+
+    raw_train = prepare_examples(train_records, args.direction, args.model)
+    raw_val = prepare_examples(val_records, args.direction, args.model)
 
     train_ds = Dataset.from_list(raw_train)
     val_ds = Dataset.from_list(raw_val)
