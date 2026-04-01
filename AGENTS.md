@@ -10,10 +10,6 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Development environment
 uv sync
-
-# Run experiments
-uv run python -m src.train
-uv run python -m src.evaluate
 ```
 
 ## Project Overview
@@ -37,19 +33,18 @@ docs/
 ├── EXPERIMENTS.md           # Experiment tracking & results
 ├── EVALUATION.md            # Metrics: BLEU, perplexity, human eval
 ├── REPORT_GUIDE.md          # CS4248 final report requirements
-└── exec-plans/              # Execution plans (active & completed)
-    ├── active/              # In-progress plans
-    └── completed/           # Finished plans
+└── exec-plans/completed/    # Completed data pipeline execution plans
 ```
 
 ## Key Conventions
 
 ### Code Organization
 
-- `src/` - Main application code
-- `scripts/` - Data processing, experiments
-- `notebooks/` - Analysis & exploration
-- `tests/` - Test suite
+- `notebooks/` - Jupyter notebooks (classification pipeline, analysis)
+- `scripts/data_prep/` - Completed data processing pipeline scripts
+- `data/raw/` - Original NHDSD dataset
+- `data/processed/` - Final generated datasets (intermediate artifacts in `intermediate/`)
+- `data/splits/` - Train/val/test splits (stratified, source-level)
 
 ### Sarcasm Strategies (from iSarcasm dataset)
 

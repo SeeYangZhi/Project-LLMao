@@ -10,24 +10,59 @@
 
 ## Task Statement
 
-- Given a sarcastic headline, generate a non-sarcastic version (or vice versa).
+- Given a sarcastic headline, generate a non-sarcastic version that conveys the same underlying meaning.
+- Secondary direction: given a non-sarcastic headline and a strategy control code, generate a sarcastic version using that specific strategy.
 
-## Proposed Method
+## Method
 
-### Data preparation
+### Data Preparation: Synthetic Parallel Corpus Construction
 
-- Pair or group headlines by topic (using similarity metrics or keyword overlap) to create pseudo-parallel sarcastic/non-sarcastic pairs.
-- Based on existing NHDSD dataset, generate non-sarcastic/sarcastic versions of it.
-  - Use a pretrained LLM with few-shot prompting to do style transfer between sarcastic and non-sarcastic tones.
-- Classify sarcasm strategies
-  — Use manual annotation to tag sarcastic headlines with their strategy type (hyperbole, incongruity, false sincerity, etc.) Prepend strategy tokens
-  — Train the model with a control code: "<hyperbole> Serious headline here" → "Sarcastic version here".
-- Based on the data generated
-  - Fine-tune a small pretrained model on these pairs. Good candidates include T5-small or T5-base (seq2seq, natural for input→output tasks), GPT-2 (causal LM, frame it as "Serious: [input] → Sarcastic: [output]"), or BART (designed for text generation and denoising tasks). These are all small enough to fine-tune on a single GPU with modest compute.
+No large-scale paired sarcasm style transfer dataset exists, so we use an LLM (StepFun Step-3.5 Flash via OpenRouter) to construct a synthetic parallel corpus. This follows the established paradigm of using capable models for dataset creation (Taori et al., 2023; Li et al., 2023). A secondary model (Nemotron) cross-validates label quality on disagreements.
+
+- Starting from the NHDSD dataset (28,619 headlines), generate opposite-style counterparts using few-shot prompting
+- Annotate each sarcastic variant with one of 6 strategy control codes: `<sarcasm>`, `<irony>`, `<satire>`, `<understatement>`, `<overstatement>`, `<rhetorical_question>`
+- Augment each source with 5 additional strategy variants for complete coverage
+- Result: 89,688 strategy-annotated paired records, split 80/10/10 at source level
+
+### Why Large LLMs for Preprocessing, Small Models for the Task
+
+The LLM serves strictly as a **synthetic data annotator** — it creates the training signal that doesn't exist in the wild, analogous to human annotation at scale. The research contribution is whether small, efficient models can learn **controllable, strategy-aware** style transfer from this synthetic supervision. This distinction is:
+
+- **Scientific**: A fine-tuned T5/GPT-2/BART is inspectable and allows ablation of control codes. The LLM is a black box.
+- **Practical**: A fine-tuned T5-base runs inference in ~10ms on a single GPU. An LLM API call costs per-token and takes 1-2s. For any deployable application (content moderation, sentiment correction), a small model is necessary.
+- **Controllable**: Our models respond to explicit strategy control codes for deterministic, strategy-specific outputs. The LLM does not offer this structured control.
+
+### Model Training
+
+Primary focus: **sarcastic → non-sarcastic** (de-sarcasm), with secondary experiments on non-sarcastic → sarcastic using strategy control codes.
+
+Fine-tune small pretrained models on the synthetic parallel pairs:
+- **T5-base** (seq2seq): `<strategy> source_headline` → `target_headline`
+- **GPT-2** (causal LM): `<strategy> source_headline → target_headline`
+- **BART** (denoising seq2seq): same framing as T5
+
+All models are small enough to fine-tune on a single GPU with modest compute.
 
 ## Proposed Evaluation
 
 - Use both automatic metrics (BLEU, perplexity) and a simple human evaluation (or classifier-based evaluation — feed generated headlines into your sarcasm detector to check if they're actually detected as sarcastic).
+
+## Project Structure
+
+```
+Project LLMao/
+├── notebooks/                  # Jupyter notebooks (classification pipeline)
+├── scripts/data_prep/          # Completed data processing pipeline
+├── data/
+│   ├── raw/                    # Original NHDSD dataset (28,619 headlines)
+│   ├── processed/              # Final generated datasets (89,688 records)
+│   │   └── intermediate/       # Pipeline artifacts
+│   └── splits/                 # Train/val/test splits (80/10/10)
+├── docs/                       # Architecture, methods, evaluation, etc.
+├── AGENTS.md                   # Project guide & conventions
+├── README.md
+└── pyproject.toml
+```
 
 # Context of Main Dataset:
 
