@@ -4,11 +4,11 @@ Loads a trained checkpoint and evaluates on the test set.
 Computes BLEU, METEOR, and generates sample outputs.
 
 Usage:
-    python scripts/evaluate.py --checkpoint outputs/t5-base/sar-to-non/final \
+    python scripts/eval.py --checkpoint outputs/t5-base/sar-to-non/final \
         --direction sar-to-non
 
     # Custom test file
-    python scripts/evaluate.py --checkpoint outputs/gpt2/sar-to-non/final \
+    python scripts/eval.py --checkpoint outputs/gpt2/sar-to-non/final \
         --direction sar-to-non --test_file data/splits/sar_to_non/test.jsonl
 """
 
@@ -22,7 +22,9 @@ from pathlib import Path
 import nltk
 import numpy as np
 import torch
-from datasets import Dataset
+from nltk.translate.bleu_score import corpus_bleu, SmoothingFunction
+from nltk.translate.meteor_score import meteor_score as nltk_meteor
+from rouge_score import rouge_scorer
 from transformers import (
     AutoModelForCausalLM,
     AutoModelForSeq2SeqLM,
@@ -115,36 +117,41 @@ def generate_causal(model, tokenizer, inputs: list[str], max_length: int, batch_
     return outputs
 
 
+def _bleu(predictions: list[str], references: list[str]) -> float:
+    """Corpus BLEU using nltk."""
+    refs = [[nltk.word_tokenize(r)] for r in references]
+    hyps = [nltk.word_tokenize(p) for p in predictions]
+    smooth = SmoothingFunction().method1
+    return corpus_bleu(refs, hyps, smoothing_function=smooth)
+
+
+def _meteor(predictions: list[str], references: list[str]) -> float:
+    """Average METEOR score."""
+    scores = [
+        nltk_meteor([nltk.word_tokenize(r)], nltk.word_tokenize(p))
+        for p, r in zip(predictions, references)
+    ]
+    return sum(scores) / len(scores) if scores else 0.0
+
+
+def _rouge_l(predictions: list[str], references: list[str]) -> float:
+    """Average ROUGE-L F1."""
+    scorer = rouge_scorer.RougeScorer(["rougeL"], use_stemmer=True)
+    scores = [scorer.score(r, p)["rougeL"].fmeasure for p, r in zip(predictions, references)]
+    return sum(scores) / len(scores) if scores else 0.0
+
+
 def compute_metrics(predictions: list[str], references: list[str]) -> dict:
-    import evaluate
-
-    results = {}
-
-    # BLEU
-    bleu = evaluate.load("bleu")
-    bleu_result = bleu.compute(
-        predictions=predictions,
-        references=[[r] for r in references],
-    )
-    results["bleu"] = round(bleu_result["bleu"], 4)
-
-    # METEOR
-    meteor = evaluate.load("meteor")
-    meteor_result = meteor.compute(predictions=predictions, references=references)
-    results["meteor"] = round(meteor_result["meteor"], 4)
-
-    # ROUGE-L
-    rouge = evaluate.load("rouge")
-    rouge_result = rouge.compute(predictions=predictions, references=references)
-    results["rouge_l"] = round(rouge_result["rougeL"], 4)
-
-    return results
+    return {
+        "bleu": round(_bleu(predictions, references), 4),
+        "meteor": round(_meteor(predictions, references), 4),
+        "rouge_l": round(_rouge_l(predictions, references), 4),
+    }
 
 
 def compute_metrics_by_strategy(examples: list[dict], predictions: list[str]) -> dict:
     """Compute metrics grouped by sarcasm strategy."""
     from collections import defaultdict
-    import evaluate
 
     by_strategy = defaultdict(lambda: {"preds": [], "refs": []})
     for ex, pred in zip(examples, predictions):
@@ -152,11 +159,10 @@ def compute_metrics_by_strategy(examples: list[dict], predictions: list[str]) ->
         by_strategy[s]["preds"].append(pred)
         by_strategy[s]["refs"].append(ex["target_text"])
 
-    bleu = evaluate.load("bleu")
     results = {}
     for strategy, data in sorted(by_strategy.items()):
-        b = bleu.compute(predictions=data["preds"], references=[[r] for r in data["refs"]])
-        results[strategy] = {"bleu": round(b["bleu"], 4), "count": len(data["preds"])}
+        bleu = _bleu(data["preds"], data["refs"])
+        results[strategy] = {"bleu": round(bleu, 4), "count": len(data["preds"])}
 
     return results
 
@@ -200,6 +206,7 @@ def main():
     else:
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.padding_side = "left"
         model = AutoModelForCausalLM.from_pretrained(str(checkpoint)).to(device)
 
     model.eval()
