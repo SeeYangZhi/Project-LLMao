@@ -80,7 +80,8 @@ def prepare_examples(records: list[dict], direction: str, model_name: str) -> li
             # Input: sarcastic headline → Output: non-sarcastic
             source = r["original_headline"]
             target = r["generated_headline"]
-            if is_seq2seq(model_name):
+            # T5 needs a task prefix (pretrained with prefixes); BART and GPT-2 do not
+            if "t5" in model_name.lower() or "flan" in model_name.lower():
                 input_text = f"desarcasm: {source}"
             else:
                 input_text = source

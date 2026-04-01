@@ -61,7 +61,7 @@ def prepare_examples(records: list[dict], direction: str, model_name: str) -> li
         if direction == "sar-to-non":
             source = r["original_headline"]
             target = r["generated_headline"]
-            if is_seq2seq(model_name):
+            if "t5" in model_name.lower() or "flan" in model_name.lower():
                 input_text = f"desarcasm: {source}"
             else:
                 input_text = source
