@@ -32,7 +32,6 @@ from transformers import (
     AutoModelForCausalLM,
     AutoModelForSeq2SeqLM,
     AutoTokenizer,
-    DataCollatorForLanguageModeling,
     DataCollatorForSeq2Seq,
     EarlyStoppingCallback,
     Seq2SeqTrainer,
@@ -306,7 +305,18 @@ def main():
         train_ds = train_ds.map(tok_fn, batched=True, remove_columns=["input_text", "target_text"])
         val_ds = val_ds.map(tok_fn, batched=True, remove_columns=["input_text", "target_text"])
 
-        data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
+        def causal_data_collator(features):
+            """Pad input_ids, labels, and attention_mask to the same length."""
+            max_len = max(len(f["input_ids"]) for f in features)
+            batch = {"input_ids": [], "labels": [], "attention_mask": []}
+            for f in features:
+                pad_len = max_len - len(f["input_ids"])
+                batch["input_ids"].append(f["input_ids"] + [tokenizer.pad_token_id] * pad_len)
+                batch["labels"].append(f["labels"] + [-100] * pad_len)
+                batch["attention_mask"].append(f["attention_mask"] + [0] * pad_len)
+            return {k: torch.tensor(v) for k, v in batch.items()}
+
+        data_collator = causal_data_collator
 
         training_args = TrainingArguments(
             output_dir=str(output_dir),
