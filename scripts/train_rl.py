@@ -86,43 +86,57 @@ def prepare_examples(records: list[dict], direction: str, model_name: str) -> li
 # Reward computation
 # ---------------------------------------------------------------------------
 class RewardModel:
-    """Wraps a sarcasm classifier to produce reward scores.
+    """Composite reward: style accuracy (classifier) + content preservation (ROUGE-L).
 
-    For de-sarcasm: reward = 1 - P(sarcastic)
-    High reward means the output is classified as non-sarcastic.
+    For de-sarcasm:
+        style_reward  = 1 - P(sarcastic)    — did we remove sarcasm?
+        content_reward = ROUGE-L(output, reference) — did we preserve meaning?
+        reward = α * style_reward + (1-α) * content_reward
+
+    Pure style reward saturates (SFT outputs already score ~1.0 on the classifier).
+    The content component provides signal to push beyond surface paraphrasing.
     """
 
-    def __init__(self, model_name: str, device: str, direction: str = "sar-to-non"):
+    def __init__(self, model_name: str, device: str, direction: str = "sar-to-non",
+                 style_weight: float = 0.5):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForSequenceClassification.from_pretrained(model_name).to(device)
         self.model.eval()
         self.device = device
         self.direction = direction
+        self.style_weight = style_weight
+
+        # ROUGE-L scorer for content preservation
+        from rouge_score import rouge_scorer
+        self.rouge_scorer = rouge_scorer.RougeScorer(["rougeL"], use_stemmer=True)
 
         # Detect which label index is "sarcastic"
-        # Must match exactly — "non_sarcastic" should NOT match
         id2label = self.model.config.id2label
         self.sarcastic_idx = None
         for idx, label in id2label.items():
             label_lower = label.lower().replace(" ", "_")
-            # Match "sarcastic" but NOT "non_sarcastic" or "not_sarcastic"
             if label_lower in ("sarcastic", "sarc", "1") or (
                 "sarcastic" in label_lower and "non" not in label_lower and "not" not in label_lower
             ):
                 self.sarcastic_idx = int(idx)
                 break
         if self.sarcastic_idx is None:
-            # Default: assume label 1 = sarcastic
             self.sarcastic_idx = 1
         print(f"Reward model: sarcastic label index = {self.sarcastic_idx}")
         print(f"Reward model labels: {id2label}")
+        print(f"Reward weights: style={style_weight}, content={1 - style_weight}")
 
     @torch.no_grad()
-    def score(self, texts: list[str]) -> torch.Tensor:
-        """Return reward scores for a batch of generated texts.
+    def score(self, texts: list[str], references: list[str] | None = None) -> torch.Tensor:
+        """Return composite reward scores.
+
+        Args:
+            texts: generated outputs
+            references: target texts for content preservation (optional)
 
         Returns tensor of shape (batch_size,) with values in [0, 1].
         """
+        # Style reward from classifier
         encoded = self.tokenizer(
             texts,
             max_length=128,
@@ -136,12 +150,22 @@ class RewardModel:
         p_sarcastic = probs[:, self.sarcastic_idx]
 
         if self.direction == "sar-to-non":
-            # Reward for being non-sarcastic
-            reward = 1.0 - p_sarcastic
+            style_reward = 1.0 - p_sarcastic
         else:
-            # Reward for being sarcastic
-            reward = p_sarcastic
+            style_reward = p_sarcastic
 
+        if references is None or self.style_weight >= 1.0:
+            return style_reward
+
+        # Content reward from ROUGE-L
+        content_scores = []
+        for text, ref in zip(texts, references):
+            rouge = self.rouge_scorer.score(ref, text)["rougeL"].fmeasure
+            content_scores.append(rouge)
+        content_reward = torch.tensor(content_scores, device=self.device, dtype=style_reward.dtype)
+
+        # Composite reward
+        reward = self.style_weight * style_reward + (1 - self.style_weight) * content_reward
         return reward
 
 
@@ -224,6 +248,7 @@ def train_one_epoch(
     for step, batch in enumerate(dataloader):
         input_ids = batch["input_ids"].to(device)
         attention_mask = batch["attention_mask"].to(device)
+        target_texts = batch["target_text"]  # list of strings
 
         # --- Generate from policy via sampling ---
         with torch.no_grad():
@@ -240,8 +265,8 @@ def train_one_epoch(
         # Decode generated text for reward scoring
         gen_texts = policy_tokenizer.batch_decode(generated, skip_special_tokens=True)
 
-        # --- Compute reward ---
-        rewards = reward_model.score(gen_texts)  # (batch,)
+        # --- Compute composite reward (style + content) ---
+        rewards = reward_model.score(gen_texts, references=target_texts)  # (batch,)
 
         # --- Compute log probs of generated tokens under policy ---
         # For seq2seq: decoder input is the generated sequence
@@ -341,6 +366,7 @@ def evaluate(
     for batch in dataloader:
         input_ids = batch["input_ids"].to(device)
         attention_mask = batch["attention_mask"].to(device)
+        target_texts = batch["target_text"]
 
         generated = policy_model.generate(
             input_ids=input_ids,
@@ -352,7 +378,7 @@ def evaluate(
         gen_texts = policy_tokenizer.batch_decode(generated, skip_special_tokens=True)
         inp_texts = policy_tokenizer.batch_decode(input_ids, skip_special_tokens=True)
 
-        rewards = reward_model.score(gen_texts)
+        rewards = reward_model.score(gen_texts, references=target_texts)
         total_reward += rewards.mean().item()
         num_batches += 1
 
@@ -379,6 +405,8 @@ def parse_args():
     p.add_argument("--lr", type=float, default=1e-5, help="Learning rate (lower than SFT)")
     p.add_argument("--kl_coeff", type=float, default=0.2,
                     help="KL penalty coefficient (higher = more conservative)")
+    p.add_argument("--style_weight", type=float, default=0.5,
+                    help="Weight for style reward vs content reward (0-1, higher = more style)")
     p.add_argument("--max_length", type=int, default=128, help="Max generation length")
     p.add_argument("--output_dir", type=str, default=None)
     p.add_argument("--log_interval", type=int, default=50)
@@ -407,7 +435,7 @@ def main():
 
     # --- Load reward model (sarcasm classifier) ---
     print(f"Loading classifier: {args.classifier_model}")
-    reward_model = RewardModel(args.classifier_model, device, args.direction)
+    reward_model = RewardModel(args.classifier_model, device, args.direction, args.style_weight)
 
     # --- Detect model type for prepare_examples ---
     config_path = Path(args.sft_checkpoint) / "config.json"
@@ -427,21 +455,24 @@ def main():
 
     # Tokenize inputs only (targets generated by policy during RL)
     def tokenize_inputs(examples):
-        return policy_tokenizer(
+        tokenized = policy_tokenizer(
             examples["input_text"],
             max_length=args.max_length,
             truncation=True,
             padding="max_length",
         )
+        # Keep target_text for content reward
+        tokenized["target_text"] = examples["target_text"]
+        return tokenized
 
     train_ds = Dataset.from_list(raw_train)
     val_ds = Dataset.from_list(raw_val)
 
-    train_ds = train_ds.map(tokenize_inputs, batched=True, remove_columns=["input_text", "target_text"])
-    val_ds = val_ds.map(tokenize_inputs, batched=True, remove_columns=["input_text", "target_text"])
+    train_ds = train_ds.map(tokenize_inputs, batched=True, remove_columns=["input_text"])
+    val_ds = val_ds.map(tokenize_inputs, batched=True, remove_columns=["input_text"])
 
-    train_ds.set_format("torch")
-    val_ds.set_format("torch")
+    train_ds.set_format("torch", columns=["input_ids", "attention_mask"], output_all_columns=True)
+    val_ds.set_format("torch", columns=["input_ids", "attention_mask"], output_all_columns=True)
 
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True)
     val_loader = DataLoader(val_ds, batch_size=args.batch_size)
