@@ -100,11 +100,15 @@ class RewardModel:
         self.direction = direction
 
         # Detect which label index is "sarcastic"
-        # Common label mappings: {0: "not_sarcastic", 1: "sarcastic"} or vice versa
+        # Must match exactly — "non_sarcastic" should NOT match
         id2label = self.model.config.id2label
         self.sarcastic_idx = None
         for idx, label in id2label.items():
-            if "sarc" in label.lower() or label == "1":
+            label_lower = label.lower().replace(" ", "_")
+            # Match "sarcastic" but NOT "non_sarcastic" or "not_sarcastic"
+            if label_lower in ("sarcastic", "sarc", "1") or (
+                "sarcastic" in label_lower and "non" not in label_lower and "not" not in label_lower
+            ):
                 self.sarcastic_idx = int(idx)
                 break
         if self.sarcastic_idx is None:
@@ -179,6 +183,10 @@ def reinforce_loss(
     advantages = rewards
     if baseline is not None:
         advantages = rewards - baseline
+
+    # Normalize advantages to reduce variance
+    if advantages.numel() > 1 and advantages.std() > 1e-8:
+        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
 
     # Negative because we maximize reward
     return -(advantages.detach() * log_probs).mean()
@@ -369,7 +377,7 @@ def parse_args():
     p.add_argument("--epochs", type=int, default=3, help="Number of RL training epochs")
     p.add_argument("--batch_size", type=int, default=8, help="Batch size (smaller for RL)")
     p.add_argument("--lr", type=float, default=1e-5, help="Learning rate (lower than SFT)")
-    p.add_argument("--kl_coeff", type=float, default=0.1,
+    p.add_argument("--kl_coeff", type=float, default=0.2,
                     help="KL penalty coefficient (higher = more conservative)")
     p.add_argument("--max_length", type=int, default=128, help="Max generation length")
     p.add_argument("--output_dir", type=str, default=None)
