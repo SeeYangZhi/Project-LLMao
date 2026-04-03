@@ -1,0 +1,54 @@
+{
+  "source_file": "data/processed/sarcasm_pairs_sar_to_non_final.jsonl",
+  "pipeline": "cross-validated + body-content filtered",
+  "total_records": 10512,
+  "seed": 42,
+  "split_ratios": {
+    "train": 0.8,
+    "val": 0.1,
+    "test": 0.1
+  },
+  "splits": {
+    "train": {
+      "count": 8407,
+      "strategy_distribution": {
+        "irony": 1847,
+        "overstatement": 1217,
+        "rhetorical_question": 33,
+        "sarcasm": 2488,
+        "satire": 2250,
+        "understatement": 572
+      }
+    },
+    "val": {
+      "count": 1049,
+      "strategy_distribution": {
+        "irony": 230,
+        "overstatement": 152,
+        "rhetorical_question": 4,
+        "sarcasm": 311,
+        "satire": 281,
+        "understatement": 71
+      }
+    },
+    "test": {
+      "count": 1056,
+      "strategy_distribution": {
+        "irony": 232,
+        "overstatement": 153,
+        "rhetorical_question": 5,
+        "sarcasm": 312,
+        "satire": 282,
+        "understatement": 72
+      }
+    }
+  },
+  "strategy_distribution": {
+    "irony": 2309,
+    "overstatement": 1522,
+    "rhetorical_question": 42,
+    "sarcasm": 3111,
+    "satire": 2813,
+    "understatement": 715
+  }
+}
