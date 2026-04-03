@@ -293,7 +293,15 @@ SFT alone can't teach these from 13K examples. RL with a classifier reward provi
 - SFT alone on small models (124M–250M) produces **surface paraphrasing**, not genuine de-sarcasm
 - **RL with classifier reward** (REINFORCE + KL penalty) provides an orthogonal training signal that pushes models toward actual style transfer — connecting our classification model (Macro F1: 0.938) directly to the generation task
 - Sarcasm style transfer is **knowledge-intensive**: world knowledge and pragmatic reasoning remain bottlenecks for small models, but RL narrows the gap without requiring model scale
-- **Future work**: LoRA fine-tuning of larger models (LLaMA 3.2 8B); DPO as an alternative RL objective; human evaluation of style transfer quality
+- **Limitation — domain specificity**: Sarcasm detection is strongly domain-dependent. Cross-domain evaluation shows neither classifier generalises well:
+
+  | Model | NHDSD (news headlines) | iSarcasmEval (tweets) |
+  |-------|----------------------|----------------------|
+  | Ours (DistilBERT, trained on NHDSD) | **0.9730** | 0.4682 |
+  | `cardiffnlp/twitter-roberta-base-irony` (trained on tweets) | 0.4975 | **0.6562** |
+
+  Each model excels only in its training domain. Our classifier's 48% false positive rate on non-sarcastic tweets confirms it learned news-headline-specific patterns rather than general sarcasm. The RL reward signal is therefore calibrated to the news domain — a valid setup for Onion headlines, but not transferable to other domains without retraining the reward model
+- **Future work**: LoRA fine-tuning of larger models (LLaMA 3.2 8B); DPO as an alternative RL objective; human evaluation of style transfer quality; domain-general sarcasm classifier for broader reward signal
 
 ---
 
