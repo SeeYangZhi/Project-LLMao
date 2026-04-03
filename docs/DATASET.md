@@ -60,10 +60,10 @@
 
 | File | Description | Count |
 |------|-------------|-------|
-| `data/processed/nhdsd_cleaned.json` | Cleaned NHDSD | 28,497 |
-| `data/processed/nhdsd_reclassified.jsonl` | Fresh binary labels | 28,497 |
-| `data/processed/label_disagreements.jsonl` | Original vs StepFun disagreements | 5,644 |
-| `data/processed/cross_validation_secondary.jsonl` | Cross-validation results | 5,644 |
+| `data/processed/intermediate/nhdsd_cleaned.json` | Cleaned NHDSD | 28,497 |
+| `data/processed/intermediate/nhdsd_reclassified.jsonl` | Fresh binary labels | 28,497 |
+| `data/processed/intermediate/label_disagreements.jsonl` | Original vs StepFun disagreements | 5,644 |
+| `data/processed/intermediate/cross_validation_secondary.jsonl` | Cross-validation results | 5,644 |
 
 ### Step 2: Sarcasm Pair Generation
 
@@ -76,7 +76,7 @@ Generate opposite-style headlines using stepfun/step-3.5-flash:free (via OpenRou
 
 | File | Description | Count |
 |------|-------------|-------|
-| `data/processed/sarcasm_pairs_step35_clean.jsonl` | All generated pairs | 28,573 |
+| `data/processed/intermediate/sarcasm_pairs_step35_clean.jsonl` | All generated pairs | 28,573 |
 | `data/processed/sarcasm_pairs_non_to_sarcastic.jsonl` | Non→Sarcastic pairs | 14,948 |
 | `data/processed/sarcasm_pairs_sarcastic_to_non.jsonl` | Sarcastic→Non pairs | 13,588 |
 
@@ -165,14 +165,14 @@ Six strategy categories from the iSarcasm dataset, used as control codes:
 
 | Script | Purpose |
 |--------|---------|
-| `scripts/reclassify_nhdsd_binary.py` | Binary reclassification of NHDSD |
-| `scripts/cross_validate_disagreements.py` | Cross-validate label disagreements |
-| `scripts/augment_strategy_variants.py` | Generate 5 strategy variants per source |
-| `scripts/augment_incomplete_sources.py` | Patch missing strategies for incomplete sources |
-| `scripts/merge_augmented_variants.py` | Merge original + augmented into complete dataset |
-| `scripts/fix_augmented_variants.py` | Deduplicate augmented variants |
-| `scripts/split_pairs_by_type.py` | Split pairs by direction type |
-| `scripts/create_train_val_test_splits.py` | Create stratified train/val/test splits |
+| `scripts/data_prep/reclassify_nhdsd_binary.py` | Binary reclassification of NHDSD |
+| `scripts/data_prep/cross_validate_disagreements.py` | Cross-validate label disagreements |
+| `scripts/data_prep/augment_strategy_variants.py` | Generate 5 strategy variants per source |
+| `scripts/data_prep/augment_incomplete_sources.py` | Patch missing strategies for incomplete sources |
+| `scripts/data_prep/merge_augmented_variants.py` | Merge original + augmented into complete dataset |
+| `scripts/data_prep/fix_augmented_variants.py` | Deduplicate augmented variants |
+| `scripts/data_prep/split_pairs_by_type.py` | Split pairs by direction type |
+| `scripts/data_prep/create_train_val_test_splits.py` | Create stratified train/val/test splits |
 
 ## Data Versioning
 

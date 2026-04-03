@@ -7,4 +7,16 @@ requires-python = ">=3.11"
 dependencies = [
     "openai>=2.24.0",
     "python-dotenv>=1.2.2",
+    "torch>=2.0.0",
+    "transformers>=4.40.0",
+    "datasets>=2.18.0",
+    "evaluate>=0.4.0",
+    "accelerate>=0.30.0",
+    "nltk>=3.8.0",
+    "rouge-score>=0.1.2",
+    "sentencepiece>=0.2.0",
+    "scikit-learn>=1.8.0",
 ]
+
+[project.optional-dependencies]
+tracking = ["wandb>=0.16.0"]

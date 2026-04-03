@@ -1,0 +1,73 @@
+{
+  "source_file": "data/processed/sarcasm_pairs_sar_to_non_context_enhanced.jsonl",
+  "pipeline": "context-enhanced (LLM had article body for generation)",
+  "total_records": 10330,
+  "seed": 42,
+  "split_ratios": {
+    "train": 0.8,
+    "val": 0.1,
+    "test": 0.1
+  },
+  "splits": {
+    "train": {
+      "count": 8258,
+      "strategy_distribution": {
+        "humor": 1,
+        "hyperbole": 3,
+        "irony": 327,
+        "overstatement": 339,
+        "personification": 8,
+        "pun": 4,
+        "rhetorical_question": 8,
+        "sarcasm": 1788,
+        "satire": 5716,
+        "understatement": 64
+      }
+    },
+    "val": {
+      "count": 1029,
+      "strategy_distribution": {
+        "irony": 40,
+        "overstatement": 42,
+        "personification": 1,
+        "rhetorical_question": 1,
+        "sarcasm": 223,
+        "satire": 714,
+        "understatement": 8
+      }
+    },
+    "test": {
+      "count": 1043,
+      "strategy_distribution": {
+        "anthropomorphism": 1,
+        "anthropomorphism and hyperbole": 1,
+        "humor": 1,
+        "hyperbole": 1,
+        "irony": 42,
+        "overstatement": 43,
+        "personification": 2,
+        "pun": 2,
+        "rhetorical_question": 1,
+        "sarcasm": 224,
+        "sarcastic": 1,
+        "satire": 716,
+        "understatement": 8
+      }
+    }
+  },
+  "strategy_distribution": {
+    "anthropomorphism": 1,
+    "anthropomorphism and hyperbole": 1,
+    "humor": 2,
+    "hyperbole": 4,
+    "irony": 409,
+    "overstatement": 424,
+    "personification": 11,
+    "pun": 6,
+    "rhetorical_question": 10,
+    "sarcasm": 2235,
+    "sarcastic": 1,
+    "satire": 7146,
+    "understatement": 80
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "source_file": "data/processed/sarcasm_pairs_sarcastic_to_non.jsonl",
+  "total_records": 13588,
+  "seed": 42,
+  "split_ratios": {
+    "train": 0.8,
+    "val": 0.1,
+    "test": 0.1
+  },
+  "splits": {
+    "train": {
+      "count": 10868,
+      "strategy_distribution": {
+        "irony": 2521,
+        "overstatement": 1472,
+        "rhetorical_question": 51,
+        "sarcasm": 3197,
+        "satire": 2623,
+        "understatement": 1004
+      }
+    },
+    "val": {
+      "count": 1356,
+      "strategy_distribution": {
+        "irony": 315,
+        "overstatement": 184,
+        "rhetorical_question": 6,
+        "sarcasm": 399,
+        "satire": 327,
+        "understatement": 125
+      }
+    },
+    "test": {
+      "count": 1364,
+      "strategy_distribution": {
+        "irony": 316,
+        "overstatement": 185,
+        "rhetorical_question": 7,
+        "sarcasm": 401,
+        "satire": 329,
+        "understatement": 126
+      }
+    }
+  },
+  "strategy_distribution": {
+    "irony": 3152,
+    "overstatement": 1841,
+    "rhetorical_question": 64,
+    "sarcasm": 3997,
+    "satire": 3279,
+    "understatement": 1255
+  }
+}
