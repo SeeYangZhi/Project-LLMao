@@ -238,6 +238,8 @@ def parse_args():
     p.add_argument("--direction", type=str, default="sar-to-non",
                     choices=["sar-to-non", "non-to-sar"],
                     help="Transfer direction")
+    p.add_argument("--data_dir", type=str, default=None,
+                    help="Custom splits directory (overrides default for --direction)")
     p.add_argument("--augment_reversed", action="store_true",
                     help="For sar-to-non: also include reversed non-to-sar pairs (1 per source)")
     p.add_argument("--lr", type=float, default=3e-4, help="Learning rate")
@@ -249,6 +251,8 @@ def parse_args():
     p.add_argument("--output_dir", type=str, default=None,
                     help="Output directory (default: outputs/{model}/{direction})")
     p.add_argument("--wandb", action="store_true", help="Enable Weights & Biases logging")
+    p.add_argument("--no_mixed_precision", action="store_true",
+                    help="Disable bf16/fp16, use fp32 instead")
     p.add_argument("--seed", type=int, default=42)
     return p.parse_args()
 
@@ -273,7 +277,15 @@ def main():
     print()
 
     # Load data
-    data_paths = get_data_paths(args.direction)
+    if args.data_dir:
+        data_base = Path(args.data_dir)
+        data_paths = {
+            "train": data_base / "train.jsonl",
+            "val": data_base / "val.jsonl",
+            "test": data_base / "test.jsonl",
+        }
+    else:
+        data_paths = get_data_paths(args.direction)
     train_records = load_jsonl(data_paths["train"])
     val_records = load_jsonl(data_paths["val"])
 
@@ -324,7 +336,7 @@ def main():
             logging_steps=100,
             report_to=report_to,
             seed=args.seed,
-            fp16=torch.cuda.is_available(),
+            bf16=torch.cuda.is_available() and not args.no_mixed_precision,
             save_total_limit=2,
         )
 
@@ -381,7 +393,7 @@ def main():
             logging_steps=100,
             report_to=report_to,
             seed=args.seed,
-            fp16=torch.cuda.is_available(),
+            bf16=torch.cuda.is_available() and not args.no_mixed_precision,
             save_total_limit=2,
         )
 

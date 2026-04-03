@@ -408,6 +408,8 @@ def parse_args():
     p.add_argument("--style_weight", type=float, default=0.5,
                     help="Weight for style reward vs content reward (0-1, higher = more style)")
     p.add_argument("--max_length", type=int, default=128, help="Max generation length")
+    p.add_argument("--data_dir", type=str, default=None,
+                    help="Custom splits directory (overrides default for --direction)")
     p.add_argument("--output_dir", type=str, default=None)
     p.add_argument("--log_interval", type=int, default=50)
     p.add_argument("--seed", type=int, default=42)
@@ -444,7 +446,15 @@ def main():
     model_type = config.get("_name_or_path", config.get("model_type", ""))
 
     # --- Load data ---
-    data_paths = get_data_paths(args.direction)
+    if args.data_dir:
+        data_base = Path(args.data_dir)
+        data_paths = {
+            "train": data_base / "train.jsonl",
+            "val": data_base / "val.jsonl",
+            "test": data_base / "test.jsonl",
+        }
+    else:
+        data_paths = get_data_paths(args.direction)
     train_records = load_jsonl(data_paths["train"])
     val_records = load_jsonl(data_paths["val"])
 
