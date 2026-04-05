@@ -87,8 +87,8 @@ def run_classifier(
     texts: list[str],
     device: str,
 ) -> tuple[list[int], list[float]]:
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSequenceClassification.from_pretrained(model_name).to(device)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+    model = AutoModelForSequenceClassification.from_pretrained(model_name, trust_remote_code=True).to(device)
     model.eval()
     sarc_idx = find_sarcastic_idx(model)
 
