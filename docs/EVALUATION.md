@@ -1,95 +1,153 @@
-# Evaluation (TO BE UPDATED)
+# Evaluation
 
-> Metrics, evaluation protocols for Project LLMao.
+> Metrics, evaluation protocols, and pipeline for Project LLMao.
+
+## Evaluation Pipeline
+
+The main evaluation pipeline (`scripts/eval_pipeline.py`) computes 7 automated metrics plus an LLM judge, with human evaluation support.
+
+### Quick Start
+
+```bash
+# Dry run with synthetic data
+python scripts/dry_run_eval.py
+python scripts/eval_pipeline.py --input dry_run_input.csv --output dry_run_results.csv --skip_judge
+# With real iSarcasmEval data
+python scripts/convert_isarcasm.py
+python scripts/eval_pipeline.py --input isarcasm_test.csv --output isarcasm_results.csv --skip_judge
+# With LLM judge (requires Gemini API key)
+python scripts/eval_pipeline.py --input data.csv --output results.csv --gemini_key AIza...
+# Full options
+python scripts/eval_pipeline.py \
+    --input data.csv \
+    --output results.csv \
+    --gemini_key AIza... \
+    --judge_sample 50 \
+    --human_eval_n 30 \
+    --references gold_references.csv
+```
+
+### Input Format
+
+CSV with columns: `[id, input, output, subtype]`
+
+- `id`: Sample identifier
+- `input`: Original sarcastic text
+- `output`: Model-generated non-sarcastic rewrite
+- `subtype`: Sarcasm strategy (sarcasm, irony, satire, understatement, overstatement, rhetorical_question)
 
 ## Automatic Metrics
 
-### BLEU Score
+### Metric 1: Sarcasm Flip Rate
 
-```python
-from nltk.translate.bleu_score import sentence_bleu
+Uses `cardiffnlp/twitter-roberta-base-irony` classifier.
 
-reference = ["The update has caused multiple issues"]
-candidate = model.generate(input_text)
+- **Hard Flip Rate**: % of samples where input classified sarcastic AND output classified non-sarcastic
+- **Mean Flip Delta**: mean(input_irony_score - output_irony_score); positive = tone shifted toward non-sarcastic
+  **Target**: Higher flip rate and positive flip delta = better sarcasm removal.
 
-score = sentence_bleu(reference, candidate)
-```
+### Metric 2: Semantic Similarity
 
-**Target**: Higher is better
-**Typical range**: 0.1 - 0.5 for generation tasks
+Uses `all-MiniLM-L6-v2` sentence-transformers with cosine similarity.
 
-### Perplexity
+- Measures whether the rewrite preserves the original meaning
+- **Target**: > 0.6 (same topic/meaning preserved)
 
-```python
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
+### Metric 3: Fluency (Perplexity)
 
-model = GPT2LMHeadModel.from_pretrained('gpt2')
-tokens = tokenizer.encode(text)
-loss = model(tokens, labels=tokens).loss
-perplexity = math.exp(loss)
-```
+Uses GPT-2 language model perplexity.
 
-**Target**: Lower is better
-**Typical range**: 10 - 100 for news-style text
+- **Target**: Lower is better (more fluent)
+- Typical range: 10-100 for news-style text
 
-### METEOR
+### Metric 4: BLEU Score
 
-```python
-from nltk.translate.meteor_score import meteor_score
+Uses NLTK sentence BLEU with smoothing.
 
-score = meteor_score(reference, candidate)
-```
+- **vs input mode** (default): Measures how much the output differs from the input. Lower = more rewriting done (desirable).
+- **vs reference mode**: Standard BLEU against gold rewrites. Higher = closer to gold.
 
-**Target**: Higher is better
-**Note**: More flexible than BLEU
+### Metric 5: LLM-as-Judge (Gemini)
 
-### Classifier-Based Evaluation
+Batch evaluation using Gemini 2.5 Flash. Rates each pair on:
+| Dimension | Scale | Description |
+| ------------------ | ----- | ------------------------------------ |
+| sarcasm_removed | 1-5 | Was sarcasm successfully removed? |
+| meaning_preserved | 1-5 | Does output keep same topic/meaning? |
+| fluency | 1-5 | Is output natural English? |
+**Cohen's Kappa**: Compares judge binary (sarcasm_removed >= 4 → 1) vs classifier hard_flipped. Two independent raters on same samples. > 0.6 = trustworthy agreement.
 
-Feed generated outputs to a sarcasm classifier:
+### Metric 6: Edit Distance (Word-Level)
 
-```python
-detector = load_sarcasm_detector()
-original_sarcastic = detector.predict(original_sarcastic_text)
-generated_sarcastic = detector.predict(generated_text)
+Word-level Levenshtein distance between input and output tokens.
 
-detection_rate = sum(generated_sarcastic) / len(generated_sarcastic)
-```
+- **Raw**: Absolute number of word insertions/deletions/substitutions
+- **Normalized**: Raw / max(len(input), len(output)), range 0-1
+- **Target**: Higher normalized distance = more substantial rewriting
+- Complements BLEU (order-sensitive) with order-independent word change measurement
 
-**Hypothesis**: If generation worked, outputs should be detected at similar rate to originals
+### Metric 7: Paraphrase Score
 
-## Evaluation Metrics Summary
+Combined score: `semantic_similarity × BLEU_vs_input`
 
-| Metric         | What It Measures  | Target | Required? |
-| -------------- | ----------------- | ------ | --------- |
-| BLEU           | Word overlap      | Higher | Yes       |
-| Perplexity     | Fluency           | Lower  | Yes       |
-| METEOR         | Flexible overlap  | Higher | Optional  |
-| Detection Rate | Sarcasm preserved | Higher | Yes       |
+- **High score** = output has similar meaning AND similar words → paraphrasing (bad)
+- **Low score** = genuine rewriting with different words → actual sarcasm removal (good)
+- Directly quantifies the paraphrasing failure mode observed in fine-tuned models
 
-## CS4248 Report Requirements
+## Human Evaluation
 
-For the final report:
+### Automated Flagging
 
-1. **Present all metrics**: Both automated and human
-2. **Show error analysis**: Categorize failures
-3. **Discuss limitations**: What can't current metrics capture?
-4. **Ablation studies**: Test component contributions
+The pipeline auto-exports the top N most "suspicious" samples for manual review:
 
-### Example Results Table
+- **Suspicion score** = paraphrase_score + (1 - |flip_delta|)
+- Flags: `high_paraphrase`, `low_flip_delta`, `very_similar_wording`
+- Output: `{results}_human_eval.csv` with empty annotator columns
 
-```
-                    BLEU    PPL    Detection
-T5-base (ours)     0.23    45.2   0.78
-GPT-2 (baseline)   0.19    52.1   0.71
-BART (baseline)    0.21    48.3   0.74
-```
+### Protocol
 
-## Reproducibility in Evaluation
+1. 2-3 team members independently label each flagged sample:
+   - `sarcasm_removed`: yes/no
+   - `meaning_preserved`: yes/no
+2. Compute inter-annotator Cohen's kappa between human raters
+3. Compare human labels against LLM judge to validate automated evaluation
+   This addresses the instructor feedback: "otherwise you have no incentive to study the individual outputs yourselves as humans."
+
+## Metrics Summary
+
+| Metric              | What It Measures         | Target | Script        |
+| ------------------- | ------------------------ | ------ | ------------- |
+| Flip Rate           | Sarcasm removal          | Higher | eval_pipeline |
+| Semantic Similarity | Meaning preservation     | > 0.6  | eval_pipeline |
+| Perplexity          | Fluency                  | Lower  | eval_pipeline |
+| BLEU (vs input)     | Rewriting degree         | Lower  | eval_pipeline |
+| BLEU (vs reference) | Gold similarity          | Higher | eval_pipeline |
+| Edit Distance       | Word-level changes       | Higher | eval_pipeline |
+| Paraphrase Score    | Paraphrasing detection   | Lower  | eval_pipeline |
+| LLM Judge           | Multi-dimensional rating | Higher | eval_pipeline |
+| METEOR              | Flexible overlap         | Higher | eval          |
+
+## iSarcasmEval Baseline Numbers (Gold Human Rephrases)
+
+These serve as reference points — model outputs should be compared against these:
+| Metric | Gold Baseline |
+| ---------------------- | ------------- |
+| Hard Flip Rate | 46.14% |
+| Mean Flip Delta | +0.0089 |
+| Semantic Similarity | 0.5625 |
+| BLEU (vs input) | 0.1018 |
+| Perplexity (GPT-2) | 230.85 |
+| Edit Distance (norm) | 0.8187 |
+| Paraphrase Score | 0.0757 |
+**Key insight**: If fine-tuned models show paraphrase score >> 0.0757 or edit distance << 0.82, they are paraphrasing more than humans do.
+
+## Reproducibility
 
 - Use fixed random seed for sampling
 - Report number of samples evaluated
 - Include sample outputs in appendix
+- Log Gemini model version used for LLM judge
 
 ---
 
-_Last updated: 2026-03-02_
+_Last updated: 2026-04-05_
