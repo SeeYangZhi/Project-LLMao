@@ -106,6 +106,12 @@ The LLM serves as a **synthetic data annotator** — creating paired training da
 - Loss masked on input tokens (only train on target generation)
 - Custom data collator for variable-length padding
 
+**Llama-3.2-1B-Instruct** (1.24B params, causal LM, LoRA)
+- Input: Instruct chat template with system prompt + sarcastic headline
+- Output: non-sarcastic equivalent (loss masked on prompt tokens)
+- LoRA (r=16, α=32) on all attention + MLP projections — 11.3M trainable params (0.9% of total)
+- Trained on context-enhanced data (headline + article body where available)
+
 ### Training Configuration
 
 | Hyperparameter | Value |
@@ -119,6 +125,22 @@ The LLM serves as a **synthetic data annotator** — creating paired training da
 | Early stopping patience | 2 |
 | Metric (seq2seq) | BLEU |
 | Metric (causal) | eval_loss |
+
+**Llama-3.2-1B-Instruct LoRA Configuration:**
+
+| Hyperparameter | Value |
+|----------------|-------|
+| Learning rate | 2e-4 |
+| Batch size (effective) | 16 (8 × 2 grad accum) |
+| Max epochs | 3 (best at epoch 1) |
+| Max sequence length | 256 |
+| LoRA rank (r) | 16 |
+| LoRA alpha (α) | 32 |
+| LoRA dropout | 0.05 |
+| LR scheduler | cosine |
+| Warmup | 5% of steps |
+| Gradient checkpointing | enabled |
+| Precision | bfloat16 |
 
 ### Stage 2: Reinforcement Learning (BART-base)
 
@@ -176,17 +198,22 @@ SFT alone produces surface paraphrasing. Following ViSP (2025), we apply **REINF
 
 ### 3.2 Sample Outputs — Onion Headlines (SFT vs RL)
 
-| Input (sarcastic) | BART (SFT) | BART (SFT + RL) |
-|--------------------|------------|------------------|
-| "Panicked Dodgers Owner Has No Idea How He's Going To Come Up With $414 Million Payroll" | dodgers owner unsure how to raise $414 million | The panicked Dodgers owner is unsure how he will come up with $414 million payroll. |
-| "Hospital Decides Cancer-Sniffing Leopard More Trouble Than It's Worth" | hospital warns cancer-sniffing leopard may cause more trouble than it's worth | Hospital believes a cancer-sniffing leopard is causing more trouble. |
-| "Jake Paul Hoping To Gain Respect Of Boxing Community With Fight Against World's Tallest Man" | jake paul hopes to gain respect of the boxing community with fight against world's tallest man | Jake Paul hopes to gain respect of the Boxing Community with a fight against the world's tallest man. |
-| "Nation Likes When Bib Has Picture Of Food They Eating" | the nation loves when a bib has a picture of food they eat | People love when Bib has a picture of food they eat. |
-| "Mail Carrier Hurt To Learn Residents On His Route Have Been Receiving Electronic Mail" | Mail carrier hurt to learn residents on his route have been receiving electronic mail | Mail carrier was hurt to learn that residents on his Route have been receiving electronic mail. |
+| Input (sarcastic) | BART (SFT) | BART (SFT + RL) | Llama 3.2 1B (SFT LoRA) |
+|--------------------|------------|------------------|--------------------------|
+| "Panicked Dodgers Owner Has No Idea How He's Going To Come Up With $414 Million Payroll" | dodgers owner unsure how to raise $414 million | The panicked Dodgers owner is unsure how he will come up with $414 million payroll. | Dodgers Owner Aims To Sign Top Free Agent To $414 Million Contract |
+| "Hospital Decides Cancer-Sniffing Leopard More Trouble Than It's Worth" | hospital warns cancer-sniffing leopard may cause more trouble than it's worth | Hospital believes a cancer-sniffing leopard is causing more trouble. | Leopard Found in Hospital Waiting Room |
+| "Jake Paul Hoping To Gain Respect Of Boxing Community With Fight Against World's Tallest Man" | jake paul hopes to gain respect of the boxing community with fight against world's tallest man | Jake Paul hopes to gain respect of the Boxing Community with a fight against the world's tallest man. | Jake Paul Prepares For Upcoming Boxing Match Against World's Tallest Man |
+| "Nation Likes When Bib Has Picture Of Food They Eating" | the nation loves when a bib has a picture of food they eat | People love when Bib has a picture of food they eat. | Biblically-Inspired Food-Themed Bibs Gain Popularity |
+| "Mail Carrier Hurt To Learn Residents On His Route Have Been Receiving Electronic Mail" | Mail carrier hurt to learn residents on his route have been receiving electronic mail | Mail carrier was hurt to learn that residents on his Route have been receiving electronic mail. | Mail Carrier Reports Residents On His Route Have Been Receiving Electronic Mail |
 
 **Failure modes (RL):**
 - Empty outputs for very short/vulgar inputs (e.g., "Fucker Has Nerve To Be 22 Years Old" → empty string) — reward hacking via trivially non-sarcastic empty text
 - Verbatim copy for ultra-short inputs (e.g., "Norris God" → "norris god")
+
+**Failure modes (Llama SFT):**
+- **Hallucination**: Model invents plausible but incorrect facts (e.g., "Fucker Has Nerve To Be 22 Years Old" → "Local Man Arrested for Sexual Assault at 22" — fabricated crime)
+- **Meta-descriptions**: Describes the article instead of rewriting the headline (e.g., "Norris God" → "Satirical Article Features Fictional God Named Norris")
+- **Meaning drift**: Rewrites lose the core meaning while producing a valid headline (e.g., "Nation Likes When Bib Has Picture Of Food They Eating" → "Biblically-Inspired Food-Themed Bibs Gain Popularity")
 
 ### 3.3 Strategy Breakdown (BLEU)
 
@@ -236,6 +263,7 @@ Unlike SFT alone, RL with classifier reward directly optimizes for the target st
 | BART-base (no fine-tuning) | 0.1% | 0.9926 | 98.7% |
 | BART-base SFT (context-enhanced) | 23.9% | 0.7608 | 10.2% |
 | BART-base SFT (original) | 45.3% | 0.5446 | 14.5% |
+| Llama-3.2-1B SFT (CE, LoRA) | 62.7% | 0.3768 | 3.7% |
 | BART-base SFT (CE) + RL | 78.9% | 0.2116 | 0.8% |
 | **BART-base SFT (original) + RL** | **91.3%** | **0.0879** | **2.2%** |
 
@@ -260,9 +288,27 @@ Training on context-enhanced targets (where the LLM had article bodies to produc
 | BART-base (SFT) | 139M | Surface paraphrasing |
 | T5-base (SFT) | 220M | Surface paraphrasing |
 | BART-base (SFT + RL) | 139M | 91.3% classifier-fooling; surface rewrites but high style accuracy |
+| **Llama-3.2-1B (SFT LoRA)** | **1.24B** | **62.7% de-sarcasm; genuine rewrites with hallucination risk** |
 | LLaMA 3.2 (zero-shot) | 8B | Meaningful rewrites |
 
 De-sarcasm requires world knowledge and pragmatic reasoning. RL narrows the gap by providing a direct style signal, but fundamental comprehension still benefits from model scale.
+
+### Finding 6: Scale Enables Genuine Rewriting but Introduces Hallucination
+
+Llama-3.2-1B-Instruct with LoRA (SFT only, no RL) achieves 62.7% de-sarcasm rate — higher than BART SFT (45.3%) — while producing qualitatively different outputs. Where BART rewrites are surface-level (capitalization, article insertion), LLaMA outputs are genuine headline rewrites:
+
+```
+Input:  "Inconsiderate Wife Leaves Bathroom A Total Mess After Home Birth"
+BART:   "inconsiderate wife leaves bathroom a total mess after home birth"
+LLaMA:  "Mother of Two Gives Birth at Home"
+```
+
+However, the model's willingness to rewrite aggressively introduces new failure modes:
+- **Hallucination** (fabricating facts): "Fucker Has Nerve To Be 22 Years Old" → "Local Man Arrested for Sexual Assault at 22"
+- **Meta-description** (describing rather than rewriting): "Norris God" → "Satirical Article Features Fictional God Named Norris"
+- **Meaning drift**: Output is a valid headline but loses the original topic
+
+This reveals a **quality vs. faithfulness trade-off**: BART+RL achieves higher classifier scores (91.3%) via safe, surface-level edits, while LLaMA achieves genuine comprehension but at the cost of factual reliability. A future direction is applying RL on top of LLaMA SFT to combine deep rewriting with classifier guidance.
 
 ### The Knowledge Gap
 
@@ -277,6 +323,8 @@ SFT alone can't teach these from 13K examples. RL with a classifier reward provi
 
 ## 5. Error Taxonomy
 
+**BART (SFT) error patterns:**
+
 | Error Type | Example | Frequency |
 |------------|---------|-----------|
 | **Capitalization-only** | "area man" → "Area Man" | High |
@@ -285,6 +333,16 @@ SFT alone can't teach these from 13K examples. RL with a classifier reward provi
 | **Minor word substitution** | "passionate" → "devoted" | Low |
 | **Actual de-sarcasm** | Meaningful rewrite | Rare |
 
+**Llama-3.2-1B (SFT LoRA) error patterns:**
+
+| Error Type | Example | Frequency |
+|------------|---------|-----------|
+| **Hallucination** | "Fucker Has Nerve To Be 22 Years Old" → "Local Man Arrested for Sexual Assault at 22" | Medium |
+| **Meta-description** | "Norris God" → "Satirical Article Features Fictional God Named Norris" | Medium |
+| **Meaning drift** | Headline loses original topic while remaining non-sarcastic | Low |
+| **Classifier false negative** | Output reads as non-sarcastic but classifier disagrees | Low |
+| **Genuine de-sarcasm** | "Inconsiderate Wife Leaves Bathroom A Total Mess After Home Birth" → "Mother of Two Gives Birth at Home" | High |
+
 ---
 
 ## 6. Conclusion
@@ -292,7 +350,8 @@ SFT alone can't teach these from 13K examples. RL with a classifier reward provi
 - We construct a **89,688-record strategy-annotated parallel corpus** for sarcasm style transfer — a reusable resource for future work
 - SFT alone on small models (124M–250M) produces **surface paraphrasing**, not genuine de-sarcasm
 - **RL with classifier reward** (REINFORCE + KL penalty) provides an orthogonal training signal that pushes models toward actual style transfer — connecting our classification model (Macro F1: 0.938) directly to the generation task
-- Sarcasm style transfer is **knowledge-intensive**: world knowledge and pragmatic reasoning remain bottlenecks for small models, but RL narrows the gap without requiring model scale
+- **LoRA fine-tuning of Llama-3.2-1B** (11.3M trainable params) produces genuine headline rewrites at 62.7% de-sarcasm rate — qualitatively superior to BART surface paraphrasing but with hallucination risk
+- Sarcasm style transfer is **knowledge-intensive**: world knowledge and pragmatic reasoning remain bottlenecks for small models, but both RL and model scale help narrow the gap
 - **Limitation — domain specificity**: Sarcasm detection is strongly domain-dependent. Cross-domain evaluation shows neither classifier generalises well:
 
   | Model | NHDSD (news headlines) | iSarcasmEval (tweets) |
@@ -301,7 +360,7 @@ SFT alone can't teach these from 13K examples. RL with a classifier reward provi
   | `cardiffnlp/twitter-roberta-base-irony` (trained on tweets) | 0.4975 | **0.6562** |
 
   Each model excels only in its training domain. Our classifier's 48% false positive rate on non-sarcastic tweets confirms it learned news-headline-specific patterns rather than general sarcasm. The RL reward signal is therefore calibrated to the news domain — a valid setup for Onion headlines, but not transferable to other domains without retraining the reward model
-- **Future work**: LoRA fine-tuning of larger models (LLaMA 3.2 8B); DPO as an alternative RL objective; human evaluation of style transfer quality; domain-general sarcasm classifier for broader reward signal
+- **Future work**: RL on top of LLaMA SFT to combine genuine rewriting with classifier guidance; DPO as an alternative RL objective; human evaluation of style transfer quality; domain-general sarcasm classifier for broader reward signal; hallucination mitigation for larger models
 
 ---
 

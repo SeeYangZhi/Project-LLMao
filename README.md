@@ -36,12 +36,13 @@ The LLM serves strictly as a **synthetic data annotator** — it creates the tra
 
 Primary focus: **sarcastic → non-sarcastic** (de-sarcasm), with secondary experiments on non-sarcastic → sarcastic using strategy control codes.
 
-Fine-tune small pretrained models on the synthetic parallel pairs:
-- **T5-base** (seq2seq): `<strategy> source_headline` → `target_headline`
-- **GPT-2** (causal LM): `<strategy> source_headline → target_headline`
-- **BART** (denoising seq2seq): same framing as T5
+Fine-tune pretrained models on the synthetic parallel pairs:
+- **T5-base** (220M, seq2seq): `<strategy> source_headline` → `target_headline`
+- **GPT-2** (124M, causal LM): `<strategy> source_headline → target_headline`
+- **BART-base** (139M, denoising seq2seq): same framing as T5, plus RL refinement (REINFORCE + KL penalty)
+- **Llama-3.2-1B-Instruct** (1.24B, causal LM): LoRA fine-tuning (r=16, α=32) with instruct chat template; trained on context-enhanced data with article bodies
 
-All models are small enough to fine-tune on a single GPU with modest compute.
+Small models (T5/BART/GPT-2) are fine-tuned on a single GPU. LLaMA uses LoRA (11.3M trainable params, 0.9% of total) on H200 GPU.
 
 ## Proposed Evaluation
 
@@ -52,6 +53,7 @@ All models are small enough to fine-tune on a single GPU with modest compute.
 ```
 Project LLMao/
 ├── notebooks/                  # Jupyter notebooks (classification pipeline)
+├── scripts/                    # Training, eval, and SLURM scripts
 ├── scripts/data_prep/          # Completed data processing pipeline
 ├── data/
 │   ├── raw/                    # Original NHDSD dataset (28,619 headlines)
