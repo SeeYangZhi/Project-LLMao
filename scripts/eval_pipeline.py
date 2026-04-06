@@ -373,6 +373,7 @@ def main():
     print(f"  Columns: {list(df.columns)}")
     if "subtype" in df.columns:
         print(f"  Subtypes: {df['subtype'].value_counts().to_dict()}")
+    df["output"] = df["output"].fillna(df["input"])
     inputs = df["input"].tolist()
     outputs = df["output"].tolist()
     # Load references if provided
