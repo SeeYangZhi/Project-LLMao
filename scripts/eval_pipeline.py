@@ -52,6 +52,7 @@ def compute_flip_rate(inputs, outputs, classifier):
         "mean_flip_delta": mean_flip_delta,
         "per_sample":      results,
     }
+
 def compute_semantic_similarity(inputs, outputs, sim_model):
     """
     METRIC 2: Semantic Similarity using sentence-transformers and cosine similarity.
@@ -72,6 +73,7 @@ def compute_semantic_similarity(inputs, outputs, sim_model):
         "mean_similarity": mean_similarity,
         "per_sample": per_sample,
     }
+
 def compute_perplexity(outputs, lm_model, lm_tokenizer, device):
     """
     METRIC 3: Perplexity using GPT-2.
@@ -98,6 +100,7 @@ def compute_perplexity(outputs, lm_model, lm_tokenizer, device):
         "mean_perplexity": mean_perplexity,
         "per_sample": per_sample,
     }
+
 def compute_bleu(inputs, outputs, references=None):
     """
     METRIC 4: BLEU score using nltk.
@@ -127,6 +130,7 @@ def compute_bleu(inputs, outputs, references=None):
         "mode": mode,
         "per_sample": per_sample,
     }
+
 def compute_llm_judge(inputs, outputs, gemini_key, sample_size=50, flip_per_sample=None):
     """
     METRIC 5: LLM-as-Judge using Gemini 2.5 Flash.
@@ -232,6 +236,7 @@ Respond ONLY with a valid JSON array, no explanation, no markdown:
         "per_sample":             results,
         "judged_indices":         indices,
     }
+
 def word_levenshtein(s1, s2):
     """Word-level Levenshtein distance using dynamic programming."""
     w1 = s1.split()
@@ -254,6 +259,7 @@ def word_levenshtein(s1, s2):
                     dp[i - 1][j - 1],  # substitution
                 )
     return dp[n][m]
+
 def compute_edit_distance(inputs, outputs):
     """
     METRIC 6: Word-level edit distance.
@@ -275,6 +281,7 @@ def compute_edit_distance(inputs, outputs):
         "per_sample_raw": per_sample_raw,
         "per_sample_norm": per_sample_norm,
     }
+
 def compute_paraphrase_score(sim_per_sample, bleu_per_sample):
     """
     METRIC 7: Paraphrase score.

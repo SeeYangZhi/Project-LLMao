@@ -1,0 +1,141 @@
+id,input,output,subtype,A,C,meaning_change,subtype_is_correct
+1,NASA Plays Incredible April Fools' Joke Of Once Again Pretending To Go To The Moon,strategy: sarcasm rewrite: nasa plays 'April Fools' joke again',satire,1,1,1,0
+2,"Pope Leo Explains God Does Not Listen To People Who Wage War So Long As You Don’t Count Moses, David, Joshua, Elijah, Saul, Gideon, Samson, Or Anyone Else In Bible",strategy: sarcasm rewrite: pope leo explains that God does not listen to people who wage war,satire,1,1,,0
+3,Black Half Of Tiger Woods Tased By Cops After Asian Half Crashes Car,strategy: sarcasm rewrite: black half of tiger woods tased by cops after Asian half crashes car,satire,0,0,,0
+4,Report: The Reason TV Shows Take So Long To Make Now Is Because They Film In The Dark,strategy: irony rewrite: report: the reason tv shows take so long to make,irony,1,1,,1
+5,"BREAKING: United Nations praises Singapore for having numerous political scandals:  ""They're behaving normally now""",strategy: sarcasm rewrite: u.n. praises singapore for having numerous political scandals,satire,1,1,,0
+6,CAMPUS BEAT: NUS enters Top 10 in ranking of world's universities who base their identity on their rankings,strategy: satire rewrite: nus enters top 10 in ranking of world's universities,satire,1,1,1,1
+7,"Opinion: An open letter to Donald Trump, bird enthusiast",strategy: satire rewrite: opinion: an open letter to donald donald trump,irony,1,1,,0
+8,Karoline Leavitt said Americans were smart enough not to accept the word of a constantly lying regime and the jokes really did write themselves,strategy: irony rewrite: karolina leavitt: americans are smart enough not to accept the word of a constantly lying regime,sarcasm,1,1,,0
+9,Surprise! Big Tech has been a bit rubbish at enforcing Australia’s kids social media ban,strategy: sarcasm rewrite: big tech is failing to enforce australia’s kids social media ban,irony,1,1,,0
+10,Microsoft startup credits are the gift that keeps on billing unsuspecting users,strategy: sarcasm rewrite: microsoft startup credits are the gift that keeps on billing unsuspecting users,sarcasm,0,0,,1
+11,Smart mirror shows dumb Windows in elevator,strategy: irony rewrite: smart mirror shows dumb windows in elevator,irony,0,0,,1
+12,"AIOps is so powerful, vendors are building tools to clean up after agents break your infrastructure","strategy: sarcasm rewrite: aiops is so powerful, vendors are building tools to clean up after agents break your infrastructure",sarcasm,0,0,,1
+13,Google presses play on 30-second Gemini musical slop generator,strategy: satire rewrite: google presses play on 30-second Gemini musical slop generator,overstatement,0,0,,0
+14,Microsoft's Valentine's gift to admins: 6 exploited zero-day fixes,strategy: satire rewrite: microsoft's valentine's day gift to admins: 6 exploited zero-day fixes,sarcasm,0,0,,0
+15,"Microsoft actually does something useful, adds Sysmon to Windows",strategy: sarcasm rewrite: microsoft adds sysmon to windows 10,sarcasm,1,1,,1
+16,"For once, Supermicro has dodged drama and just delivered datacenters",strategy: sarcasm rewrite: supermicro has delivered datacenters for the first time,sarcasm,1,1,1,1
+17,"Firefox makes AI optional, like it probably should have been all along",strategy: sarcasm rewrite: fbi makes AI optional for users,sarcasm,1,1,1,1
+18,Microsoft's 'atypical' emergency Windows patches are becoming awfully typical,strategy: sarcasm rewrite: microsoft's 'atypical' emergency windows patches are becoming increasingly common,sarcasm,1,1,,1
+19,Experiment suggests AI chatbot would save insurance agents a whopping 3 minutes a day,strategy: satire rewrite: experiment suggests AI chatbot could save insurance agents 3 minutes a day,overstatement,1,1,,0
+20,The Rule Of Law Joins America’s Dead Pets On The Rainbow Bridge,strategy: satire rewrite: the rule of law joins america’s dead pets on the rainbow bridge,overstatement,0,0,,0
+21,ABA Politely Tells President He Can’t Insult Judges Because He Lost Bigly,strategy: sarcasm rewrite: alabama tells president he can't insult judges because he lost bigly,understatement,0,0,,0
+22,ICE Can Bust Into Houses Without Warrants Based On Memo So Cool And Legal They Keep It Hidden,strategy: sarcasm rewrite: ice can bust into houses without warrants,sarcasm,1,1,,1
+23,Trump Wants To Regulate AI On A National Basis — Because What Could Go Wrong There?,strategy: sarcasm rewrite: donald trump wants to regulate AI on a national basis,rhetorical_question,1,1,,0
+24,Maybe That Whole ‘Vetting’ Thing Is Actually A Pretty Big Deal,strategy: rhetorical_question rewrite: maybe that whole ‘vetting’ thing is actually a pretty big deal,sarcasm,0,0,,0
+25,Trump Defends Sacred Right To Starve Kids For Separation Of Powers,strategy: sarcasm rewrite: donald trump defends sacred right to starve children for separation of powers,satire,0,0,,0
+26,The 4th TikTok Delay Is The Charm!,strategy: satire rewrite: the 4th tiktok delay,sarcasm,1,1,,0
+27,Kash Patel Makes FBI Great Again By Getting It Sued,strategy: sarcasm rewrite: kash patel makes the fbi great again,sarcasm,1,1,1,1
+28,"Surprise, Surprise, The TikTok Ban Is Delayed A Third Time","strategy: sarcasm rewrite: surprise, surprise, the tikktok ban has been delayed three times",sarcasm,0,0,,1
+29,"ICE Arrests Newark Mayor For … Ummm, Body Slam?",strategy: sarcasm rewrite: ice arrests newark mayor for body slam,irony,1,1,,0
+30,Trump Dumps Ed Martin In Favor Of ‘Shit Sandwich Senate Will Eat’,strategy: satire rewrite: donald trump dumps ed martin in favor of 'shit sandwich senators will eat',sarcasm,0,0,,0
+31,Even Alan Dershowitz Thinks Trump’s Latest Idea Is Unconstitutional,strategy: sarcasm rewrite: even alan dershowitz thinks donald trump’s latest idea is unconstitutional,irony,0,0,,0
+32,"Perhaps The Greatest Stock Market Correction Ever, Truly Terrific, Remember To Thank Your FAVORITE PRESIDENT!",strategy: satire rewrite: perhaps the greatest stock market correction ever,sarcasm,1,1,,0
+33,Pam Bondi’s Brother And Ed Martin’s Assistant Running To Lead D.C. Bar… No Way This Is A Bad Idea!,strategy: sarcasm rewrite: pamela bondi's brother and ed martin's assistant running to lead d.c. bar,sarcasm,1,1,,1
+34,God squad' waives animal protections to expand oil drilling in Gulf of Mexico,strategy: satire rewrite: god squad waives animal protections to expand oil drilling in the Gulf of Mexico,satire,0,0,,1
+35,Fewer heat-related deaths in 2025; warmest summer ever packing less heat?,strategy: irony rewrite: less heat-related deaths in 2025,rhetorical_question,1,1,,0
+36,Comedians tell ministers lack of funding is no laughing matter,strategy: sarcasm rewrite: comedians tell ministers that lack of funding is no laughing matter,irony,0,0,,0
+37,"Meta knowingly harmed children's mental health, US jury finally decides in landmark ruling","strategy: sarcasm rewrite: meta knowingly harms children's mental health, u.s. jury decides",sarcasm,1,1,,1
+38,"Trump’s FBI Pick Has Some, Erm, Interesting Entries On His Resume",strategy: sarcasm rewrite: donald trump's fbi pick has some interesting entries on his resume,irony,1,1,,0
+39,Alina Habba Did What She Does Best (Lie),strategy: satire rewrite: alina habba did what she does best,sarcasm,1,1,1,0
+40,"New year, new bug – rivalry between devs led to a deep-code disaster","strategy: irony rewrite: new year, new bug",understatement,0,0,,0
+41,Microsoft puts the 'why?' in Wi-Fi with latest Windows patch,strategy: rhetorical_question rewrite: microsoft puts the 'why?' in wi-fi with latest windows update,sarcasm,0,0,,0
+42,End of Windows 10 support is the perfect time for the Windows 11 installer to fail,strategy: irony rewrite: the end of windows 10 support is the perfect time for the windows 11 installer to fail,sarcasm,0,0,,0
+43,PLACEHOLDER ONLY Someone please write witty headline here,strategy: sarcasm rewrite: PLACEHOLDER ONLY Someone write a witty headline here,irony,0,0,,0
+44,"Caffeine pouch craze: A teenage trend, unsurprisingly, troubling some experts",strategy: satire rewrite: the caffeine pouch craze is a teenage trend,sarcasm,1,1,,0
+45,Union and government to restart talks on ending doctor dispute (again),strategy: irony rewrite: union and government to restart talks on ending doctor dispute,irony,1,1,,1
+46,"Nasa's mega Moon rocket arrives at launch pad for Artemis II mission, hopefully to launch",strategy: irony rewrite: nasa's mega moon rocket arrives at launch pad for artemis II mission,irony,1,1,,1
+47,Can plastic-eating fungi help clean up nappy waste? We sure hope so.,strategy: rhetorical_question rewrite: can plastic-eating fungi help clean up nappy waste?,understatement,1,1,,0
+48,"COP30: Trump and many leaders are skipping it, so does it matter?",strategy: rhetorical_question rewrite: COP30: trump and many leaders are skipping it,rhetorical_question,1,1,,1
+49,Labour wants to shake up the police – because that always works perfectly,strategy: sarcasm rewrite: labour wants to shake up the police,sarcasm,1,1,,1
+50,Nasa announces change to its Moon landing plans - again,strategy: irony rewrite: nasa announces changes to lunar landing plans,irony,1,1,,1
+51,Is fuel support really going to the right places for once?,strategy: rhetorical_question rewrite: is fuel support going to the right places?,sarcasm,1,1,,0
+52,"Finally, the clitoris is getting the attention it deserves",strategy: satire rewrite: clitoris gets the attention it deserves,irony,1,1,,0
+53,Why is gaming becoming so expensive? The answer is found in AI... again,strategy: rhetorical_question rewrite: why gaming is becoming so expensive,sarcasm,1,1,,0
+54,Milan Protesters Rally Against an Environmentally and Economically “Totally Sustainable” Winter Olympics,strategy: sarcasm rewrite: milan protesters rally against environmentally and economically sustainable winter games,sarcasm,0,0,1,1
+55,Just a Reminder: Racism is not rivalry. It is a crime,strategy: irony rewrite: just a reminder: racism is not rivalry,sarcasm,0,0,,0
+56,"In a Shocking Twist, an Italian Court Says Netflix Can’t Just Raise Prices However It Wants—and Orders Refunds",strategy: sarcasm rewrite: italian court orders Netflix to raise prices if it wants to.,sarcasm,1,1,1,1
+57,"SpaceX delays next Starship test launch by a month, because of course it does, Musk says","strategy: sarcasm rewrite: spacex delays next starship test launch by a month, Musk says",sarcasm,1,1,,1
+58,How to survive relatives when they ask personal questions you don't want to answer,strategy: satire rewrite: how to survive relatives asking personal questions you don't want to answer,overstatement,0,0,,0
+59,"Rising fuel costs drives changes in driving lessons, surprising none",strategy: irony rewrite: rising fuel costs drive changes in driving lessons,sarcasm,1,1,,0
+60,"Faced with new energy shock, Europe finally asks if reviving nuclear is the answer","strategy: rhetorical_question rewrite: confronted with new energy shock, europe finally asks if reviving nuclear is the answer",sarcasm,0,0,,0
+61,"Claude Code users hitting usage limits 'way faster than expected', expectedly",strategy: irony rewrite: Claude Code users hitting usage limits faster than expected,sarcasm,1,1,,0
+62,Thousands lose their jobs in unseen deep cuts at tech giant Oracle,strategy: sarcasm rewrite: thousands lose jobs at tech giant oracle amid deep cuts,irony,1,1,,0
+63,What could six fictional voters teach us about how social media really works? Subscrible to find out,strategy: rhetorical_question rewrite: what could six fictional voters teach us about social media?,sarcasm,1,1,,0
+64,"First stop, the Moon. Next stop, Mars? Why Nasa's mission (probably) matters","strategy: rhetorical_question rewrite: first stop, the moon. next stop, mars.",sarcasm,1,1,,0
+65,Who knew Lord Sugar is a table tennis fan? Not us,strategy: rhetorical_question rewrite: who knew lord sugar is a table tennis fan?,sarcasm,1,1,,0
+66,Your Daily Reminder: 'Women's health must be taken more seriously',strategy: irony rewrite: your daily reminder: women's health needs to be taken more seriously,sarcasm,0,0,,0
+67,Lab-grown food pipe offers (non-pipe) dream for young patients... hopefully,strategy: satire rewrite: lab-grown food pipe is a dream for young patients,sarcasm,1,1,,0
+68,"Another 58 babies lost to poor NHS care, BBC finds","strategy: irony rewrite: another 58 babies lost due to poor NHS care, bbc reports",sarcasm,0,0,,0
+69,Surprise! Sleep has effects that extend far beyond the private sphere',strategy: overstatement rewrite: sleep effects extend beyond the private sphere,sarcasm,1,1,,0
+70,Racist backlash against newly elected French officials... again,strategy: irony rewrite: racist backlash against newly elected french officials continues,sarcasm,1,1,,0
+71,Tax reassessments finally target wealthy French who pay no income tax,strategy: sarcasm rewrite: tax reassessments target wealthy french who pay no income tax,sarcasm,1,1,,1
+72,"In one month of war, oil production has plunged, to no one's surprise","strategy: irony rewrite: in one month of war, oil production has plunged",sarcasm,1,1,,0
+73,"Why We All Keep Nostalgically Yearning for 2016, for Some Mysterious Reason",strategy: rhetorical_question rewrite: why we all keep nostalgically yearning for 2016,sarcasm,1,1,,0
+74,"Transmission network already threatened by climate hazards, data shows, of course","strategy: sarcasm rewrite: transmission network already threatened by climate hazards, data shows",sarcasm,1,1,,1
+75,How to Tell Whether Your Beach Is Actually Safe to Swim In (Without Learning the Hard Way),strategy: irony rewrite: how to tell if your beach is safe to swim in,sarcasm,1,1,,0
+76,Forestry industry still unsure if it's included in national fuel plan,strategy: sarcasm rewrite: forest industry still uncertain if it will be included in national fuel plan,irony,0,0,,0
+77,"Marine carbon dioxide removal is a big idea - and with big hurdles, of course",strategy: irony rewrite: marine carbon dioxide removal is a big idea,sarcasm,1,1,1,0
+78,"Anxious, desensitised: How else do teens learn about news now?","strategy: rhetorical_question rewrite: anxious, desensitised: how teens learn about news",rhetorical_question,1,1,,1
+79,Analysts say (again) social media giants need to feel global pressure,strategy: sarcasm rewrite: analyst: social media giants need to feel global pressure,sarcasm,1,1,,1
+80,Can scientists really resurrect the dodo? Inside another company that says it can,strategy: rhetorical_question rewrite: can scientists really resurrect the dodo?,sarcasm,1,1,1,0
+81,Somaliland called for extradition of Ilhan Omar: Another minor false report,strategy: irony rewrite: somaliland calls for extradition of ilhan omar,understatement,1,1,1,0
+82,"Including online games in social media bans is definitely workable, necessary and would benefit young people",strategy: sarcasm rewrite: how to include online games in social media bans,satire,1,1,1,0
+83,Vibe coded applications full of non-vibey security blunders because of course it is.,strategy: sarcasm rewrite: vibe coded applications are full of non-vibey security blunders,irony,1,0,,0
+84,America’s Finest Minds Rally Around Trump’s War—Guess It’s On the Rest of Us to Provide the Shame,strategy: sarcasm rewrite: america’s Finest Minds rally around donald trump’s war,sarcasm,0,0,,1
+85,Donald Trump delivers his daily scheduled ‘sleazebag’ comment about Leonard Leo,strategy: satire rewrite: donald trump delivers 'sleazebag' comment about leonard leo,sarcasm,1,1,,0
+86,Trump Sues IRS For $10B Over Leak Of His Glorious Tax Returns,strategy: sarcasm rewrite: donald trump sues irs for $10 billion over leaked tax returns,sarcasm,1,1,,1
+87,"Come on kids, let's go play in the abandoned nuclear power station","strategy: satire rewrite: come on kids, let's play in the abandoned nuclear power station",understatement,0,0,,0
+88,"Error' causes Alexa to endorse Kamala Harris, refuse to discuss Trump",strategy: irony rewrite: 'error' causes alexa to endorse kamala harris and refuse to discuss donald trump,sarcasm,0,0,,0
+89,Mobile ad world drama: AppLovin not lovin' short seller assault claiming fraud,strategy: satire rewrite: mobile ad world drama: applovin' not lovin' short seller assault claims fraud,sarcasm,0,0,,0
+90,"God didn't have a plan for Gelsinger at Intel. Maybe there is one for his new gig, Gloo",strategy: irony rewrite: god didn't have a plan for gelsinger at intel,sarcasm,0,0,,0
+91,"Please sir, may we have some Moore? Doesn't look that way","strategy: rhetorical_question rewrite: please sir, may we have some moore?",irony,1,0,1,0
+92,Teens maintained a mainframe and it went about as well as you'd imagine,strategy: understatement rewrite: teenagers maintain a mainframe and it ran smoothly,sarcasm,1,1,1,0
+93,"World’s Deadliest Sharks Only One-Third As Deadly To Minnesotans In 2026 As ICE, Trump’s Stupid War",strategy: sarcasm rewrite: world’s deadliest sharks only one-third as dead to minnesotans in 2026 as ICE,sarcasm,1,1,1,1
+94,"A male doctor at a women’s health conference says heat exhaustion affects women no differently, what could possibly go wrong?",strategy: rhetorical_question rewrite: male doctor at women's health conference says heat exhaustion affects women no differently,rhetorical_question,1,1,,1
+95,Hate To Say I Told You So Again: Your Chats Ain’t Private,strategy: irony rewrite: hate to say i told you so again,sarcasm,0,0,1,0
+96,"$400m White House Ballroom Project is absolutely critical to nation security and halting it will severly risk national security, Trump Officials say","strategy: sarcasm rewrite: $400 million white house ballroom project is critical to national security, trump officials say",overstatement,0,1,,0
+97,Disciples Wondering What Jesus Could Have Possibly Meant By 'They Will Kill Me And In Three Days I Will Rise From The Dead',strategy: rhetorical_question rewrite: disciples wonder what jesus could have meant by 'they will kill me and in three days i will rise from the dead',irony,1,1,,0
+98,Oops. VMware admits it over-specced storage servers for years,strategy: sarcasm rewrite: vmware admits it has over-specced storage servers for years,irony,1,1,,0
+99,Is it wrong for a Waitrose employee to stop a shoplifter from stealing Easter eggs? plot twist he got fired,strategy: rhetorical_question rewrite: is it wrong for a waitrose employee to stop a shoplifter from stealing Easter eggs?,rhetorical_question,1,1,,1
+100,Grok told to cover up as UK weighs action over AI 'undressing',strategy: sarcasm rewrite: grok told to cover up as uk weighs action over 'undressing' AI,irony,0,0,,0
+101,"Sorry Dave, I’m afraid I can’t do that! PCs refuse to shut down after Microsoft patch","strategy: sarcasm rewrite: sorry Dave, i can't do that!",sarcasm,1,0,1,1
+102,"Another week, another emergency patch as Cisco plugs Unified Comms zero-day","strategy: irony rewrite: another week, another emergency patch as cisco plugs unified communications zero-day",sarcasm,0,0,,0
+103,"AI security startup CEO posts a job. Deepfake candidate applies, inner turmoil ensues",strategy: sarcasm rewrite: ai security startup CEO posts job. deepfake candidate applies.,irony,1,1,,0
+104,"Anthropic’s Legal Plug In: Hate to Say We Told You So, But We Told You So",strategy: satire rewrite: anthropic’s legal plug in,sarcasm,1,1,,0
+105,How Many Security Issues Is ‘Too Many’? OpenClaw Users About to Find Out as They Brace For Another High Severity CVE,strategy: rhetorical_question rewrite: how many security issues is ‘too many?’ OpenClaw users will find out as they prepare for another high severity CVE,rhetorical_question,0,0,,1
+106,Weaponization Czar Ed Martin Sidelined For Weaponizing His Position - Sounds about right.,strategy: sarcasm rewrite: weaponization czar ed martin sidelined for weaponizing his position,irony,0,1,,0
+107,"""My cat isn't cute,"" says 100% of respondents; complaints erupt, yet smartphones are filled with photos.","strategy: irony rewrite: ""my cat isn't cute,"" says 100% of respondents",irony,0,1,1,1
+108,Trump’s Cook Case Looks Cooked,strategy: sarcasm rewrite: donald trump's cook case looks cooked up,sarcasm,1,0,1,1
+109,"CBP facility codes sure seem to have leaked, now conveniently available as flashcards for all to memorise","strategy: satire rewrite: cbp facility codes may have leaked, but they are now available as flashcards",sarcasm,1,1,1,0
+110,"No recession but inflation hike and increased cost-of-living pressure on the way, Jim Chalmers says, which is totally not concerning","strategy: sarcasm rewrite: no recession but inflation hike and increased cost-of-living pressure on the way, jim chalmers says",understatement,1,1,,0
+111,Torts Professor Who Botched COVID Prediction Suddenly Expert On Birthright Citizenship,strategy: satire rewrite: Torts professor who botched COVID prediction becomes expert on birthright citizenship,sarcasm,0,0,,0
+112,"Trump proposes drastic NASA cuts as Astronauts head for the moon, well it is not like they need it right?",strategy: sarcasm rewrite: donald trump proposes drastic NASA cuts as astronauts head for the moon,rhetorical_question,1,1,,0
+113,"Trump Continues To Use Pop Culture Memes Without Permission, This Time With A 3rd Term Easter Egg - It May As Well Be Terminal","strategy: satire rewrite: donald trump continues to use pop culture memes without permission, this time with a 3rd term Easter egg",overstatement,1,1,,0
+114,"Lick around and find out, Teen realised there may be consequences to his actions as he is being led away by the police for allegedly licking iJooz straw and putting it back in vending machine","strategy: satire rewrite: lick around and find out, teen realised there may be consequences to his actions as he is being led away by the police for allegedly licking ijooz straw and putting it back in vending machine",understatement,0,0,,0
+115,Man consult woman's cat on permission on the very simple and insignificant act of marrying her,strategy: irony rewrite: man consults woman's cat on permission to marry her,irony,1,1,,1
+116,Ho ho oh no no no! Law Firm Sent Out Fake Christmas Vouchers. Staff Want To Ram Coal Up Leadership’s Chimneys.,strategy: satire rewrite: ho ho ho oh no no no! law firm sent out fake christmas vouchers,sarcasm,0,0,,0
+117,Want digital sovereignty? That'll be 1% of your GDP into AI infrastructure please,"strategy: sarcasm rewrite: if you want digital sovereignty, you'll need to invest 1% of your GDP into it",sarcasm,1,1,,1
+118,Artemis astronauts to study the Moon’s surface using mainly their eyes,strategy: satire rewrite: artemis astronauts will study moon's surface using their eyes,understatement,0,0,,0
+119,"Polymarket apologizes for allowing wagers on fate of U.S. pilots downed in Iran, say it may have been a tad insensitive",strategy: irony rewrite: polymarket apologizes for allowing wagers on the fate of u.s. pilots downed in iran,understatement,1,1,,0
+120,Ubisoft Stepping Away from Video Games to Focus On Laying Employees Off,strategy: satire rewrite: ubisoft stepping away from video games to focus on layoffs,irony,0,0,,0
+121,Trump Calls for Boycotting Every Springsteen Song Except the One That Goes “Hey Little Girl Is Your Daddy Home?”,"strategy: satire rewrite: donald trump calls for boycotting every Springsteen song except the one that goes ""hey little girl is your father home""",satire,0,0,,1
+122,Traffic disruption in Chinese city amdist a mass robotaxi malfunction is a only a mild inconvenice for introverts compared to risks of a talkative driver,strategy: irony rewrite: traffic disruption in chinese city anddist a mass robotaxi malfunction,understatement,1,1,,0
+123,To BSOD or not to BSOD? Only Microsoft knows the answer,strategy: rhetorical_question rewrite: to BSOD or not to BSOD?,sarcasm,1,0,1,0
+124,Is a Cambodia's new statue enough to honour the rats that died clearing mines for the country?,strategy: rhetorical_question rewrite: is Cambodia's new statue enough to honour the rats that died clearing mines for the country?,rhetorical_question,0,0,,1
+125,Even Microsoft knows Copilot shouldn't be trusted with anything important,strategy: sarcasm rewrite: even microsoft knows copilot shouldn't be trusted with anything important,sarcasm,0,0,,1
+126,"Are injectable peptides really the fountain of youth they are touted to be, given the lack of scientific evidence so far?",strategy: rhetorical_question rewrite: are injectable peptides really the fountain of youth they are touted to be?,rhetorical_question,1,0,,1
+127,Is a recycling centre really the best place you can find for a 5-year-old B.C. boy's birthday?,strategy: rhetorical_question rewrite: is a recycling centre the best place to find for a 5-year-old boy's birthday?,rhetorical_question,0,0,,1
+128,"Supreme Court Hacked, Proving Its Cybersecurity Is As Robust As Its Ethical Code","strategy: sarcasm rewrite: supreme court hacked, proving its cybersecurity is as robust as its ethical code",sarcasm,0,0,,1
+129,Judge With Overinflated View Of His Intelligence Blasts Judges For ‘Overinflated View Of Their Intelligence’,strategy: sarcasm rewrite: judge with overinflated view of his intelligence blasts judges for 'overinflated view of their intelligence',irony,0,0,,0
+130,Does burying burnt wood after wildfires really help the climate?,strategy: rhetorical_question rewrite: does burying burnt wood after wildfires help the climate?,rhetorical_question,0,1,,1
+131,You are telling me fish really make such a big return just because a historical hydro dam was removed in N.B.?,strategy: sarcasm rewrite: i don't think fish can make a big return just because a hydro dam was removed in n.b.,rhetorical_question,1,0,,0
+132,Yukon man grows pineapple at home — and it only took 9 years,strategy: irony rewrite: yukon man grows pineapple at home,understatement,1,1,1,0
+133,Abortion Pill Ban Aborted In Wyoming,strategy: irony rewrite: abortion pill ban aborted in wyoming,irony,0,0,,1
+134,"Houston, we've got a plumbing problem: Artemis II toilet is still on the fritz","strategy: irony rewrite: houston, we've got a plumbing problem",irony,1,1,,1
+135,Another National Security Concern!,strategy: sarcasm rewrite: another national security concern,sarcasm,0,0,,1
+136,Google Built Its Empire Scraping The Web. Now It’s Suing To Stop Others From Scraping Google.,strategy: satire rewrite: Google Built Its Empire Scraping The Web. Now It’s Suing To Stop Others From Scraping Google.,irony,0,0,,0
+137,Decade-old rule lake operators are definitely aware of comes back to bite them as it resurfaces,strategy: sarcasm rewrite: a decade-old rule lake operators are aware of resurfacing as it resurfaces,sarcasm,0,0,1,0
+138,"When women are driven from public life, that’s great for democracy, right?","strategy: irony rewrite: when women are driven from public life, that’s great for democracy",rhetorical_question,0,0,,0
+139,Trump AI Regulation Order Hallucinates More Fake Law Than Any AI,strategy: sarcasm rewrite: donald trump's AI regulation order hallucinates more fake law than any other,irony,0,0,,0
+140,Techie fooled a panicked daemon and manipulated time itself to get servers in sync,strategy: satire rewrite: techie fooled a panicked daemon and manipulated time to get servers in sync,overstatement,0,0,,0

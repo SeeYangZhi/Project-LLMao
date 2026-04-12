@@ -1,0 +1,145 @@
+
+============================================================
+ANALYZING: t5_base_joint
+============================================================
+Golden samples: 140
+Results samples: 140
+
+Inter-annotator agreement: 92.1%
+Inter-annotator Cohen's κ: 0.839
+
+Classifier flip rate: 24.3%
+Human flip rate (strict): 54.3%
+Human flip rate (lenient): 62.1%
+Classifier-Human agreement: 44.3%
+Classifier-Human Cohen's κ: -0.067
+
+Meaning change rate: 16.4%
+Strict success rate: 43.6%
+
+Automated Metrics:
+  Similarity: 0.915
+  BLEU vs input: 0.236
+  Edit distance: 0.628
+  Paraphrase score: 0.2255
+
+Disagreement Examples (classifier ≠ human):
+
+  FALSE POSITIVE (classifier wrong):
+    Input:  Google presses play on 30-second Gemini musical slop generator...
+    Output: google presses play on 30-second Gemini musical slop generator...
+
+  FALSE NEGATIVE (classifier missed):
+    Input:  NASA Plays Incredible April Fools' Joke Of Once Again Pretending To Go...
+    Output: nasa plays 'April Fools' joke again'...
+
+Saved merged data to: results\golden\t5_base_joint_merged.csv
+
+============================================================
+ANALYZING: t5_base_control
+============================================================
+Golden samples: 140
+Results samples: 140
+
+Inter-annotator agreement: 94.3%
+Inter-annotator Cohen's κ: 0.883
+
+Classifier flip rate: 21.4%
+Human flip rate (strict): 54.3%
+Human flip rate (lenient): 60.0%
+Classifier-Human agreement: 40.0%
+Classifier-Human Cohen's κ: -0.144
+
+Meaning change rate: 25.0%
+Strict success rate: 39.3%
+
+Automated Metrics:
+  Similarity: 0.881
+  BLEU vs input: 0.187
+  Edit distance: 0.680
+  Paraphrase score: 0.1747
+
+Disagreement Examples (classifier ≠ human):
+
+  FALSE POSITIVE (classifier wrong):
+    Input:  Opinion: An open letter to Donald Trump, bird enthusiast...
+    Output: opinion: open letter to donald trump, bird enthusiast...
+
+  FALSE NEGATIVE (classifier missed):
+    Input:  Pope Leo Explains God Does Not Listen To People Who Wage War So Long A...
+    Output: pope leo explains why god doesn't listen to people who wage war...
+
+Saved merged data to: results\golden\t5_base_control_merged.csv
+
+============================================================
+ANALYZING: bart_base_rl
+============================================================
+Golden samples: 140
+Results samples: 140
+
+Inter-annotator agreement: 94.3%
+Inter-annotator Cohen's κ: 0.884
+
+Classifier flip rate: 18.6%
+Human flip rate (strict): 52.9%
+Human flip rate (lenient): 58.6%
+Classifier-Human agreement: 38.6%
+Classifier-Human Cohen's κ: -0.186
+
+Meaning change rate: 40.7%
+Strict success rate: 34.3%
+
+Automated Metrics:
+  Similarity: 0.864
+  BLEU vs input: 0.241
+  Edit distance: 0.623
+  Paraphrase score: 0.2284
+
+Disagreement Examples (classifier ≠ human):
+
+  FALSE POSITIVE (classifier wrong):
+    Input:  Black Half Of Tiger Woods Tased By Cops After Asian Half Crashes Car...
+    Output: Black half of tiger Woods was tased by cops after Asian half Crashes a...
+
+  FALSE NEGATIVE (classifier missed):
+    Input:  Pope Leo Explains God Does Not Listen To People Who Wage War So Long A...
+    Output: pope leo explains that God does not listen to people who wage war...
+
+Saved merged data to: results\golden\bart_base_rl_merged.csv
+
+======================================================================
+SUMMARY COMPARISON
+======================================================================
+
+          model  n_samples  inter_annotator_kappa  classifier_flip_rate  human_flip_rate_strict  human_flip_rate_lenient  classifier_human_kappa  meaning_change_rate  strict_success_rate  mean_similarity  mean_edit_dist  mean_paraphrase
+  t5_base_joint        140               0.838574              0.242857                0.542857                 0.621429               -0.067240             0.164286             0.435714         0.914952        0.628051         0.225531
+t5_base_control        140               0.883430              0.214286                0.542857                 0.600000               -0.143969             0.250000             0.392857         0.880782        0.680270         0.174689
+   bart_base_rl        140               0.884298              0.185714                0.528571                 0.585714               -0.185973             0.407143             0.342857         0.863897        0.623112         0.228392
+
+Saved summary to: results/golden/summary.csv
+
+======================================================================
+KEY FINDINGS FOR POSTER
+======================================================================
+
+1. INTER-ANNOTATOR AGREEMENT
+   Joint:   κ = 0.839
+   Control: κ = 0.883
+   BART-RL: κ = 0.884
+   → Excellent agreement, human eval is reliable
+
+2. CLASSIFIER vs HUMAN (THE GAP)
+   Classifier flip rate: ~24.3% for all models
+   Human flip rate:      ~54.3% for all models
+   Classifier-Human κ:   -0.067 (poor agreement!)
+   → Classifier can't distinguish real sarcasm removal
+
+3. JOINT vs CONTROL (KEY FINDING)
+   Meaning Change:  Joint 16.4% vs Control 25.0%
+   Strict Success:  Joint 43.6% vs Control 39.3%
+   → Joint preserves meaning better!
+
+4. WHY?
+   Joint learns to decompose: identify sarcasm mechanism BEFORE rewriting
+   Control learns blind input→output mapping
+   Strategy label acts as scaffold for what to preserve
