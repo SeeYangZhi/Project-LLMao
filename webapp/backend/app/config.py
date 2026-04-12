@@ -6,6 +6,7 @@ MODEL_OUTPUTS_DIR = PROJECT_ROOT / "model_outputs_clean"
 DATA_DIR = PROJECT_ROOT / "data"
 HELDOUT_FILE = DATA_DIR / "sarcasm_heldout_manual_annotated.jsonl"
 HUMAN_EVAL_CSV = DATA_DIR / "human_eval.csv"
+CROSS_VAL_FILE = DATA_DIR / "processed" / "intermediate" / "cross_validation_secondary.jsonl"
 
 LMSTUDIO_BASE_URL = "http://localhost:1234/v1"
 

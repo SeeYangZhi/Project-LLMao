@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import human_eval, inference, metrics, samples
+from app.routers import human_eval, inference, metrics, mislabels, samples
 from app.services.data_loader import data_store
 
 
@@ -32,6 +32,7 @@ app.include_router(metrics.router)
 app.include_router(samples.router)
 app.include_router(inference.router)
 app.include_router(human_eval.router)
+app.include_router(mislabels.router)
 
 
 @app.get("/api/health")

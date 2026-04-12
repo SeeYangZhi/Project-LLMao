@@ -5,10 +5,12 @@ import { usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
   { href: "/", label: "Overview", icon: "01" },
-  { href: "/dashboard", label: "Dashboard", icon: "02" },
-  { href: "/explorer", label: "Explorer", icon: "03" },
-  { href: "/playground", label: "Playground", icon: "04" },
-  { href: "/human-eval", label: "Human Eval", icon: "05" },
+  { href: "/pipeline", label: "Data Pipeline", icon: "02" },
+  { href: "/mislabels", label: "Mislabels", icon: "03" },
+  { href: "/dashboard", label: "Dashboard", icon: "04" },
+  { href: "/explorer", label: "Explorer", icon: "05" },
+  { href: "/playground", label: "Playground", icon: "06" },
+  { href: "/human-eval", label: "Human Eval", icon: "07" },
 ];
 
 export function Sidebar() {

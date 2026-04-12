@@ -286,9 +286,15 @@ export default function DashboardPage() {
             <h3 className="text-[20px] tracking-[-0.2px] text-foreground">
               Strategy Breakdown
             </h3>
+            <span className="text-[12px] text-muted">
+              {METRIC_INFO[activeMetric]?.label}
+            </span>
           </div>
           <p className="text-[13px] text-muted mb-4">
-            Performance by sarcasm subtype
+            {METRIC_INFO[activeMetric]?.label} by sarcasm subtype —{" "}
+            {METRIC_INFO[activeMetric]?.higher_better
+              ? "higher is better"
+              : "lower is better"}
           </p>
           <select
             value={selectedModel}
@@ -319,23 +325,34 @@ export default function DashboardPage() {
                     border: "1px solid #f2f2f2",
                     fontSize: 13,
                   }}
+                  formatter={(value: unknown) => [
+                    formatMetric(
+                      Number(value),
+                      METRIC_INFO[activeMetric]?.format || "decimal"
+                    ),
+                    METRIC_INFO[activeMetric]?.label,
+                  ]}
                 />
                 <Bar
-                  dataKey="hard_flip_rate"
-                  name="Flip Rate %"
-                  fill="#1863dc"
+                  dataKey={activeMetric}
+                  name={METRIC_INFO[activeMetric]?.label}
+                  fill={MODEL_COLORS[selectedModel] || "#1863dc"}
                   radius={[4, 4, 0, 0]}
+                  isAnimationActive={true}
                 />
-                <Bar
-                  dataKey="similarity"
-                  name="Similarity"
-                  fill="#9b60aa"
-                  radius={[4, 4, 0, 0]}
-                />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
               </BarChart>
             </ResponsiveContainer>
           </div>
+          {summary.baselines[activeMetric] !== undefined && (
+            <div className="mt-3 flex items-center gap-2 text-[12px] text-muted">
+              <span className="w-4 h-px bg-accent-purple inline-block" />
+              Gold human baseline:{" "}
+              {formatMetric(
+                summary.baselines[activeMetric],
+                METRIC_INFO[activeMetric]?.format || "decimal"
+              )}
+            </div>
+          )}
         </div>
       </div>
 

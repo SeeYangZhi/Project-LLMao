@@ -19,7 +19,7 @@ def _get_client() -> OpenAI:
 async def generate(text: str) -> str:
     client = _get_client()
     response = client.chat.completions.create(
-        model="llama-3.2-1b-instruct",  # LMStudio model identifier
+        model="llama-3.2-1b-sarcasm-rewriter",  # LMStudio model identifier
         messages=[
             {"role": "system", "content": LLAMA_SYSTEM_PROMPT},
             {

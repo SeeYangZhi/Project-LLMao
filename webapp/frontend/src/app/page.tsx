@@ -2,26 +2,32 @@ import Link from "next/link";
 
 const CARDS = [
   {
-    href: "/dashboard",
+    href: "/pipeline",
     num: "01",
+    title: "Data Pipeline",
+    desc: "How 28,619 NHDSD headlines became 89,688 strategy-annotated training pairs through LLM generation and cross-validation.",
+  },
+  {
+    href: "/dashboard",
+    num: "02",
     title: "Dashboard",
     desc: "Compare 14 models across 7 evaluation metrics with interactive charts and strategy breakdowns.",
   },
   {
     href: "/explorer",
-    num: "02",
+    num: "03",
     title: "Sample Explorer",
     desc: "Browse 2,857 test samples with filtering, search, and side-by-side model comparison.",
   },
   {
     href: "/playground",
-    num: "03",
+    num: "04",
     title: "Playground",
     desc: "Type a sarcastic headline and watch our models rewrite it in real-time via LMStudio.",
   },
   {
     href: "/human-eval",
-    num: "04",
+    num: "05",
     title: "Human Evaluation",
     desc: "Gold standard annotations, flagged samples, and inter-annotator agreement analysis.",
   },
@@ -128,23 +134,42 @@ export default function HomePage() {
               {
                 title: "Data Pipeline",
                 body: "89,688 training pairs generated from NHDSD headlines using 6 sarcasm strategies, augmented via LLM pairing with cross-validation.",
+                href: "/pipeline",
               },
               {
                 title: "Model Training",
                 body: "BART with context enhancement and REINFORCE + KL penalty. LLaMA 3.2 1B with LoRA fine-tuning. T5 baselines and ablation studies.",
+                href: null,
               },
               {
                 title: "Evaluation",
                 body: "7 automatic metrics including sarcasm flip rate, semantic similarity, perplexity, and paraphrase detection. Gemini LLM-as-judge + human annotation.",
+                href: "/dashboard",
               },
             ].map((item) => (
               <div key={item.title}>
+                {item.href ? (
+                  <Link
+                    href={item.href}
+                    className="block group"
+                  >
+                    <h4 className="text-[20px] tracking-[-0.2px] text-foreground mb-3 group-hover:text-accent-blue transition-colors">
+                      {item.title} →
+                    </h4>
+                    <p className="text-[15px] leading-[1.6] text-muted">
+                      {item.body}
+                    </p>
+                  </Link>
+                ) : (
+                  <>
                 <h4 className="text-[20px] tracking-[-0.2px] text-foreground mb-3">
                   {item.title}
                 </h4>
                 <p className="text-[15px] leading-[1.6] text-muted">
                   {item.body}
                 </p>
+                  </>
+                )}
               </div>
             ))}
           </div>

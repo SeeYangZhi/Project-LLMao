@@ -111,6 +111,50 @@ export async function getHumanEvalSummary() {
   >("/api/human-eval/summary");
 }
 
+export type Mislabel = {
+  id: number;
+  headline: string;
+  article_link: string;
+  original_label: number;
+  stepfun_label: number;
+  nemotron_label: number;
+  stepfun_confidence: string | null;
+  nemotron_confidence: string | null;
+  direction: "over" | "under";
+  source: "theonion" | "huffpost";
+};
+
+export async function getMislabelSummary() {
+  return fetchAPI<{
+    total: number;
+    over_labeled: number;
+    under_labeled: number;
+    theonion: number;
+    huffpost: number;
+    both_models_high_confidence: number;
+  }>("/api/mislabels/summary");
+}
+
+export async function getMislabels(params: {
+  direction?: string;
+  source?: string;
+  confidence?: string;
+  search?: string;
+  page?: number;
+  page_size?: number;
+}) {
+  const q = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== "") q.set(k, String(v));
+  });
+  return fetchAPI<{
+    items: Mislabel[];
+    total: number;
+    page: number;
+    page_size: number;
+  }>(`/api/mislabels?${q}`);
+}
+
 export async function getHeldout(params?: {
   strategy?: string;
   page?: number;

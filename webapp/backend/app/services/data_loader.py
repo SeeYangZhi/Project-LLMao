@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Optional
 
 import pandas as pd
 
 from app.config import (
+    CROSS_VAL_FILE,
     DATA_DIR,
     HELDOUT_FILE,
     HUMAN_EVAL_CSV,
@@ -25,12 +27,25 @@ def _to_native(d: dict) -> dict:
     return {k: float(v) if isinstance(v, (np.floating, np.integer)) else v for k, v in d.items()}
 
 
+_THEONION_HOST_RE = re.compile(r"^https?://[a-z0-9-]+\.theonion\.com", re.IGNORECASE)
+
+
+def _normalize_url(url: Optional[str]) -> Optional[str]:
+    """Collapse every TheOnion subdomain (www., local., politics., etc.) to
+    the canonical `theonion.com` host. Non-TheOnion URLs pass through
+    unchanged."""
+    if not url:
+        return url
+    return _THEONION_HOST_RE.sub("https://theonion.com", url)
+
+
 class DataStore:
     def __init__(self):
         self.results: dict[str, pd.DataFrame] = {}
         self.human_eval: dict[str, pd.DataFrame] = {}
         self.gold_eval: Optional[pd.DataFrame] = None
         self.heldout: list[dict] = []
+        self.mislabels: list[dict] = []
         self.summary: dict[str, dict[str, float]] = {}
         self.strategy_summary: dict[str, dict[str, dict[str, float]]] = {}
 
@@ -39,6 +54,7 @@ class DataStore:
         self._load_human_eval()
         self._load_gold_eval()
         self._load_heldout()
+        self._load_mislabels()
         self._compute_summary()
         self._compute_strategy_summary()
 
@@ -62,6 +78,40 @@ class DataStore:
         if HELDOUT_FILE.exists():
             with open(HELDOUT_FILE) as f:
                 self.heldout = [json.loads(line) for line in f]
+
+    def _load_mislabels(self):
+        """Load cross-validation records and keep only confirmed mislabels
+        (original NHDSD disagrees, StepFun and Nemotron both agree)."""
+        if not CROSS_VAL_FILE.exists():
+            return
+        with open(CROSS_VAL_FILE) as f:
+            rows = [json.loads(line) for line in f]
+        mislabels = []
+        for idx, r in enumerate(rows):
+            original = r.get("original_label")
+            stepfun = r.get("stepfun_label")
+            nemotron = r.get("is_sarcastic")  # field name from script
+            if original is None or stepfun is None or nemotron is None:
+                continue
+            if original != stepfun and stepfun == nemotron:
+                raw_link = r.get("article_link") or ""
+                is_onion = "theonion.com" in raw_link
+                article_link = _normalize_url(raw_link) if is_onion else raw_link
+                mislabels.append({
+                    "id": idx,
+                    "headline": r.get("headline"),
+                    "article_link": article_link,
+                    "original_label": original,
+                    "stepfun_label": stepfun,
+                    "nemotron_label": nemotron,
+                    "stepfun_confidence": r.get("stepfun_confidence"),
+                    "nemotron_confidence": r.get("confidence"),
+                    # Direction: "over" = NHDSD said sarcastic but it isn't;
+                    # "under" = NHDSD said non-sarcastic but it is
+                    "direction": "over" if original == 1 else "under",
+                    "source": "theonion" if is_onion else "huffpost",
+                })
+        self.mislabels = mislabels
 
     def _compute_summary(self):
         for model_name, df in self.results.items():
