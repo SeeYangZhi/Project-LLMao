@@ -26,20 +26,25 @@ VARIANTS = [
             "headline pairs. No context enhancement, no RL."
         ),
         "training_note": "Standard cross-entropy on (sarcastic, non-sarcastic) pairs derived from NHDSD.",
+        "dataset_size": "10,868",
+        "data_split": "sar_to_non (original)",
     },
     {
         "name": "BART-Base-CE-Sarcasm-Rewriter",
         "folder": PROJECT_ROOT / "outputs" / "bart-base-ce" / "sar-to-non" / "final",
         "title": "BART-Base-CE (Context Enhanced)",
         "description": (
-            "BART-base fine-tuned with **Context Enhancement**: during training, "
-            "the article body is prepended to the sarcastic headline so the model "
-            "can ground its rewrite in factual context."
+            "BART-base fine-tuned with **Context Enhancement**: the non-sarcastic "
+            "targets were re-generated with the full article body as additional "
+            "context for the LLM annotator, producing deeper rewrites."
         ),
         "training_note": (
-            "Input format: `rewrite to non-sarcastic: <article_body> [SEP] <sarcastic_headline>`. "
-            "The context provides disambiguation for headlines whose sarcasm relies on world knowledge."
+            "Standard cross-entropy on (sarcastic_headline, non_sarcastic_target) pairs "
+            "where the targets were authored by an LLM with access to the article body. "
+            "The model itself takes only the sarcastic headline as input at inference time."
         ),
+        "dataset_size": "8,258",
+        "data_split": "sar_to_non_context_enhanced",
     },
     {
         "name": "BART-Base-RL-Sarcasm-Rewriter",
@@ -48,12 +53,15 @@ VARIANTS = [
         "description": (
             "BART-base further trained with **REINFORCE + KL penalty** on top of "
             "the supervised baseline. The reward encourages high semantic similarity "
-            "combined with a low irony-classifier score on the output."
+            "combined with a low sarcasm-classifier score on the output."
         ),
         "training_note": (
-            "REINFORCE policy-gradient fine-tuning with KL divergence against the SFT model "
-            "to prevent drift. Reward = similarity * (1 - sarcasm_prob)."
+            "Stage 1: SFT on the original sar-to-non pairs (10,868 train examples). "
+            "Stage 2: REINFORCE policy-gradient fine-tuning with KL divergence against "
+            "the SFT model to prevent drift. Reward = 0.5 * (1 - P(sarcastic)) + 0.5 * ROUGE-L."
         ),
+        "dataset_size": "10,868",
+        "data_split": "sar_to_non (original)",
     },
     {
         "name": "BART-Base-CE-RL-Sarcasm-Rewriter",
@@ -65,9 +73,12 @@ VARIANTS = [
             "Project LLMao webapp playground."
         ),
         "training_note": (
-            "Stage 1: SFT with article context (`BART-Base-CE`). Stage 2: REINFORCE with "
-            "KL penalty against the SFT model. Reward = similarity * (1 - sarcasm_prob)."
+            "Stage 1: SFT on context-enhanced targets (`BART-Base-CE`, 8,258 train examples). "
+            "Stage 2: REINFORCE with KL penalty against the SFT model. "
+            "Reward = 0.5 * (1 - P(sarcastic)) + 0.5 * ROUGE-L."
         ),
+        "dataset_size": "8,258",
+        "data_split": "sar_to_non_context_enhanced",
     },
 ]
 
@@ -108,10 +119,11 @@ Example:
 
 - **Base model**: [`facebook/bart-base`](https://huggingface.co/facebook/bart-base) (139M params)
 - **Method**: {variant['training_note']}
-- **Dataset**: 71,730 sarcastic / non-sarcastic headline pairs derived from NHDSD
-  (News Headlines Dataset for Sarcasm Detection), augmented with 6 sarcasm strategy
-  variants (sarcasm, irony, satire, overstatement, understatement, rhetorical question).
-- **Input prefix**: `rewrite to non-sarcastic: ` is prepended to every input at inference time.
+- **Dataset**: {variant['dataset_size']} sarcastic->non-sarcastic headline pairs derived from NHDSD
+  (News Headlines Dataset for Sarcasm Detection). Non-sarcastic targets were generated
+  by an LLM annotator (StepFun Step-3.5 Flash) with cross-validation by Nemotron.
+  Split: `{variant['data_split']}`.
+- **Input format**: Raw sarcastic headline (no task prefix — BART is not pretrained with prefixes).
 - **Generation**: beam search with `num_beams=4`, `max_length=128`.
 
 ## Usage
@@ -124,9 +136,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_id)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_id)
 
 headline = "Area Man Passionate Defender Of What He Imagines Constitution To Be"
-prompt = "rewrite to non-sarcastic: " + headline
-
-inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=128)
+inputs = tokenizer(headline, return_tensors="pt", truncation=True, max_length=128)
 outputs = model.generate(**inputs, max_length=128, num_beams=4)
 print(tokenizer.decode(outputs[0], skip_special_tokens=True))
 ```
