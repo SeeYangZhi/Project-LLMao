@@ -1,0 +1,79 @@
+export const MODEL_COLORS: Record<string, string> = {
+  bart_base: "#1a1a2e",
+  bart_base_ce: "#16213e",
+  bart_base_rl: "#0f3460",
+  bart_base_ce_rl: "#1863dc",
+  llama_3_2_1b: "#9b60aa",
+  t5_control: "#6b7280",
+  t5_base_joint: "#9ca3af",
+  joint: "#4b5563",
+  ablation_without_sarcasm: "#f59e0b",
+  ablation_without_irony: "#f97316",
+  ablation_without_satire: "#ef4444",
+  ablation_without_overstatement: "#ec4899",
+  ablation_without_understatement: "#8b5cf6",
+  ablation_without_rhetorical_question: "#06b6d4",
+};
+
+export const METRIC_INFO: Record<
+  string,
+  { label: string; description: string; higher_better: boolean; format: string }
+> = {
+  hard_flip_rate: {
+    label: "Flip Rate",
+    description: "% of samples where sarcasm was successfully removed",
+    higher_better: true,
+    format: "percent",
+  },
+  flip_delta: {
+    label: "Flip Delta",
+    description: "Average change in irony score (higher = better removal)",
+    higher_better: true,
+    format: "decimal",
+  },
+  similarity: {
+    label: "Similarity",
+    description: "Semantic similarity between input and output (meaning preservation)",
+    higher_better: true,
+    format: "decimal",
+  },
+  bleu: {
+    label: "BLEU",
+    description: "BLEU score vs input (lower = more rewriting, which is better)",
+    higher_better: false,
+    format: "decimal",
+  },
+  perplexity: {
+    label: "Perplexity",
+    description: "GPT-2 perplexity (lower = more fluent)",
+    higher_better: false,
+    format: "decimal",
+  },
+  edit_dist_norm: {
+    label: "Edit Distance",
+    description: "Normalized word-level edit distance (higher = more rewriting)",
+    higher_better: true,
+    format: "decimal",
+  },
+  paraphrase_score: {
+    label: "Paraphrase Score",
+    description: "Paraphrase detection (lower = genuine rewriting)",
+    higher_better: false,
+    format: "decimal",
+  },
+};
+
+export const STRATEGIES = [
+  { key: "sarcasm", label: "Sarcasm", color: "#1863dc" },
+  { key: "irony", label: "Irony", color: "#9b60aa" },
+  { key: "satire", label: "Satire", color: "#0f3460" },
+  { key: "overstatement", label: "Overstatement", color: "#f59e0b" },
+  { key: "understatement", label: "Understatement", color: "#06b6d4" },
+  { key: "rhetorical_question", label: "Rhetorical Q", color: "#ef4444" },
+];
+
+export function formatMetric(value: number, format: string): string {
+  if (format === "percent") return `${value.toFixed(1)}%`;
+  if (value > 100) return value.toFixed(0);
+  return value.toFixed(4);
+}
