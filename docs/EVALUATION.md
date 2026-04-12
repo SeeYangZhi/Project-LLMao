@@ -1,436 +1,402 @@
 # Evaluation Pipeline Documentation
 
-**Project:** CS4248 Team 14 "Project LLMao"
-**Last Updated:** 2026-04-12
+## Project LLMao — CS4248 Team 14
+
+**Task:** Sarcasm Style Transfer (convert sarcastic headlines to non-sarcastic while preserving meaning)
 
 ---
 
-## 1. Evaluation Goals
+## Table of Contents
 
-We evaluate sarcasm-to-neutral rewriting on **three core properties**:
-
-| Property | Question | Why It Matters |
-|----------|----------|----------------|
-| **Sarcasm Removal** | Did the sarcasm go away? | Primary task objective |
-| **Meaning Preservation** | Is the core message intact? | Useless if meaning is lost |
-| **Fluency** | Is the output grammatical? | Must be readable |
-
-**The Challenge:** No single metric captures all three. A model can:
-- Remove sarcasm by deleting everything (high flip rate, zero meaning)
-- Preserve meaning by copying input (high similarity, no sarcasm removal)
-- Generate fluent nonsense (low perplexity, wrong content)
-
-Our pipeline uses **7 complementary metrics** to detect these failure modes.
+1. [Overview](#overview)
+2. [The 7-Metric Pipeline](#the-7-metric-pipeline)
+3. [Human Evaluation Protocol](#human-evaluation-protocol)
+4. [Classifier Comparison Study](#classifier-comparison-study)
+5. [Key Findings](#key-findings)
+6. [Conclusions](#conclusions)
 
 ---
 
-## 2. Metrics Overview
+## Overview
 
-| # | Metric | Measures | Range | Good Score |
-|---|--------|----------|-------|------------|
-| 1 | **Flip Rate** | Sarcasm removal | 0-1 | Higher = more sarcasm removed |
-| 2 | **Flip Delta** | Confidence shift | -1 to +1 | Higher = stronger tone change |
-| 3 | **Semantic Similarity** | Meaning preservation | 0-1 | Higher = meaning kept |
-| 4 | **Perplexity** | Fluency | 0-∞ | Lower = more fluent |
-| 5 | **BLEU vs Input** | Surface-level copying | 0-1 | Context-dependent |
-| 6 | **Edit Distance** | Amount of rewriting | 0-1 | Context-dependent |
-| 7 | **LLM-as-Judge** | Holistic human-like rating | 1-5 | Higher = better |
+### The Challenge
 
----
+Evaluating sarcasm style transfer is fundamentally difficult because:
 
-## 3. Metric Details
+1. **No ground truth** — there's no single "correct" non-sarcastic version of a sarcastic headline
+2. **Dual objectives** — must remove sarcasm AND preserve meaning
+3. **Metrics are gameable** — models can fool classifiers without genuinely removing sarcasm
 
-### 3.1 Sarcasm Flip Rate
+### Our Solution
 
-**Model:** `cardiffnlp/twitter-roberta-base-irony`
+We developed a **multi-faceted evaluation approach**:
 
-**What it computes:**
-- `input_prob`: P(sarcastic | input)
-- `output_prob`: P(sarcastic | output)
-- `hard_flipped`: 1 if input was sarcastic AND output is non-sarcastic
-- `flip_delta`: input_prob - output_prob (how much the tone shifted)
-
-**Why we need it:**  
-Primary metric for task success. If the classifier still detects sarcasm, the model failed.
-
-**Limitation discovered:**  
-The classifier detects **surface features** (lowercase, punctuation, length) rather than semantic sarcasm. This causes:
-- False positives: "GREAT news!" → "great news" (just lowercased, classifier says flipped)
-- False negatives: Actual sarcasm removal missed because output still has "suspicious" words
-
-**Evidence from our data:**
-
-| Metric | Value |
-|--------|-------|
-| Classifier-Human Cohen's κ | -0.07 to -0.19 (ANTI-CORRELATED) |
-| Classifier flip rate | ~19-24% across all models |
-| Human flip rate | ~53-54% across all models |
-
-**Conclusion:** Flip rate is necessary but not sufficient. Must validate with human evaluation.
+- **7 automated metrics** covering different aspects of quality
+- **Human evaluation** on 140 golden samples with 2 annotators per model
+- **Classifier comparison study** testing 3 different sarcasm detectors
 
 ---
 
-### 3.2 Semantic Similarity
+## The 7-Metric Pipeline
 
-**Model:** `sentence-transformers/all-MiniLM-L6-v2`
+### 1. Flip Rate (Sarcasm Classifier)
 
-**What it computes:**  
-Cosine similarity between input and output sentence embeddings.
+**Tool:** `cardiffnlp/twitter-roberta-base-irony`
 
-**Why we need it:**  
-Ensures the model didn't change the topic or lose the core message.
+**What it measures:** Does the classifier think sarcasm was removed?
+
+**How it works:**
+- Runs classifier on input and output
+- `hard_flipped = 1` if input was ironic AND output is non-ironic
+- `flip_delta` = P(ironic|input) - P(ironic|output)
+
+**Why we use it:** Standard metric for style transfer success
+
+**Limitations:** 
+- Trained on Twitter, not news headlines (domain mismatch)
+- Detects surface markers, not semantic sarcasm
+- **Anti-correlated with human judgment (κ = -0.07 to -0.19)**
+
+---
+
+### 2. Semantic Similarity
+
+**Tool:** `sentence-transformers/all-MiniLM-L6-v2`
+
+**What it measures:** Is the core meaning preserved?
+
+**How it works:**
+- Embeds input and output as 384-dim vectors
+- Computes cosine similarity
+
+**Why we use it:** Captures semantic preservation beyond word overlap
 
 **Interpretation:**
+- 0.95+ = Nearly identical meaning (possibly just paraphrased)
+- 0.85-0.95 = Good meaning preservation
+- < 0.70 = Significant meaning drift
 
-| Score | Meaning |
-|-------|---------|
-| > 0.9 | Very similar (possibly just paraphrased) |
-| 0.7-0.9 | Good meaning preservation |
-| 0.5-0.7 | Significant rewording |
-| < 0.5 | Topic drift or hallucination |
-
-**Limitation:**  
-High similarity doesn't mean the OUTPUT is correct — it just means input and output are about the same topic. A model could keep the sarcasm and still have high similarity.
+**Limitations:** May not capture subtle meaning changes that humans notice
 
 ---
 
-### 3.3 Perplexity (Fluency)
+### 3. Perplexity
 
-**Model:** `gpt2`
+**Tool:** GPT-2
 
-**What it computes:**  
-Cross-entropy loss of the output under GPT-2's language model. Lower = more probable = more fluent.
+**What it measures:** Is the output fluent, natural English?
 
-**Why we need it:**  
-Detects broken, repetitive, or ungrammatical outputs.
+**How it works:**
+- Computes cross-entropy loss on output text
+- Lower = more natural language
+
+**Why we use it:** Catches degenerate outputs (repetitions, truncations, nonsense)
 
 **Interpretation:**
-
-| Score | Meaning |
-|-------|---------|
-| < 100 | Very fluent (common phrases) |
-| 100-500 | Normal fluency |
-| 500-1000 | Slightly awkward |
-| > 1000 | Likely broken (filtered from averages) |
-
-**Note:** We filter samples with perplexity > 10000 as outliers (usually empty or corrupted outputs).
+- < 100 = Very fluent
+- 100-500 = Normal
+- 500-1000 = Somewhat disfluent
+- > 1000 = Problematic (we filter > 10000)
 
 ---
 
-### 3.4 BLEU vs Input
+### 4. BLEU vs Input
 
-**Library:** `nltk.translate.bleu_score`
+**Tool:** `sacrebleu`
 
-**What it computes:**  
-N-gram overlap between OUTPUT and INPUT (not reference).
+**What it measures:** N-gram overlap between output and INPUT (not reference)
 
-**Why vs INPUT, not reference?**  
-We don't have gold-standard reference outputs. Instead, we use BLEU to detect **copying behavior**:
-- High BLEU vs input = model kept most of the same words
-- Low BLEU vs input = model genuinely rewrote the text
-
-**Why we need it:**  
-Combined with similarity, it distinguishes:
-- **Paraphrasing** (high similarity + high BLEU): Same meaning, same words → model just copied
-- **Genuine rewriting** (high similarity + low BLEU): Same meaning, different words → good!
-
----
-
-### 3.5 Edit Distance (Normalized)
-
-**Algorithm:** Word-level Levenshtein distance, normalized by max length.
-
-**What it computes:**  
-Proportion of words that were added, deleted, or changed.
+**Why this matters:** Unlike standard BLEU (vs reference), this detects COPYING.
 
 **Interpretation:**
-
-| Score | Meaning |
-|-------|---------|
-| 0.0 | Identical (no edits) |
-| 0.3-0.5 | Moderate editing |
-| 0.5-0.7 | Substantial rewriting |
-| > 0.8 | Almost completely rewritten |
-
-**Why we need it:**  
-Edit distance is model-agnostic and well-established. Unlike BLEU, it counts insertions/deletions explicitly.
-
-**Our findings:**
-
-| Model | Edit Distance | Behavior |
-|-------|---------------|----------|
-| T5 models | 0.57-0.68 | Conservative editing |
-| BART-CE/RL | 0.62-0.93 | Variable rewriting |
-| LLaMA | 0.95 | Complete rewrite |
+- High BLEU (> 0.3) + High Similarity = Paraphrasing (just minor edits)
+- Low BLEU (< 0.1) + High Similarity = Genuine rewriting (good!)
+- Low BLEU + Low Similarity = Meaning lost (bad!)
 
 ---
 
-### 3.6 LLM-as-Judge
+### 5. Edit Distance
 
-**Model:** Gemini 2.5 Flash (via API)
+**Tool:** Word-level Levenshtein distance, normalized to [0, 1]
 
-**What it computes:**  
-For a batch of 50 samples, the LLM rates each (input, output) pair on:
-- `sarcasm_removed`: 1-5 (5 = completely non-sarcastic)
-- `meaning_preserved`: 1-5 (5 = identical meaning)
-- `fluency`: 1-5 (5 = perfectly fluent)
+**What it measures:** How many word operations (insert/delete/replace) to transform input → output?
 
-**Why we need it:**  
-Provides holistic human-like judgment that considers context, world knowledge, and pragmatics — things rule-based metrics miss.
+**Why we use it:** Complements BLEU by capturing structural changes
 
-**Validation:**  
-We compute Cohen's κ between LLM judge and classifier to check agreement. In our experiments, κ ranged from -0.09 to 0.32, indicating the LLM and classifier see different things.
+**Interpretation:**
+- 0.0 = Identical
+- 0.1-0.3 = Minor edits (punctuation, casing)
+- 0.5-0.7 = Moderate rewriting
+- 0.9+ = Complete rewrite
 
-**Limitation:**
-- Only run on 50 samples per model (cost/time constraint)
-- LLM may have its own biases
-- Not a replacement for human evaluation
+**Model patterns:**
+- T5: 0.57-0.68 (conservative, minimal edits)
+- BART-CE/LLaMA: 0.92-0.95 (aggressive rewriting)
 
 ---
 
-### 3.7 Paraphrase Score (Exploratory)
+### 6. LLM-as-Judge
 
-**Formula:** `paraphrase_score = similarity × BLEU_vs_input`
+**Tool:** Gemini 2.5 Flash
 
-**What it detects:**  
-When BOTH similarity AND BLEU are high, the model likely just paraphrased (copied with minor edits) rather than genuinely rewrote.
+**What it measures:** Holistic quality assessment on 3 dimensions:
+- `sarcasm_removed` (1-5): Is the output non-sarcastic?
+- `meaning_preserved` (1-5): Is the core meaning intact?
+- `fluency` (1-5): Is it natural English?
 
-**Why multiply?**
+**Why we use it:** Captures nuances that rule-based metrics miss
 
-| Similarity | BLEU | Product | Interpretation |
-|------------|------|---------|----------------|
-| High | High | **High** | Paraphrasing (bad) — same words, same meaning |
-| High | Low | Low | Genuine rewrite (good) — different words, same meaning |
-| Low | High | Low | Rare case |
-| Low | Low | Low | Topic drift or heavy editing |
-
-**Concrete Examples from Our Data:**
-
-**Example 1: PARAPHRASING (High Score = Bad)**
-
-| Field | Value |
-|-------|-------|
-| Input | "Black Half Of Tiger Woods Tased By Cops After Asian Half Crashes Car" |
-| Output | "black half of tiger woods tased by cops after Asian half crashes car" |
-| Similarity | 1.00 |
-| BLEU | 1.00 |
-| Paraphrase Score | 1.00 |
-| Human judgment | NOT FLIPPED (still sarcastic, just lowercased) |
-
-**Example 2: GENUINE REWRITE (Low Score = Good)**
-
-| Field | Value |
-|-------|-------|
-| Input | "Surprise! Big Tech has been a bit rubbish at enforcing Australia's kids social media ban" |
-| Output | "big tech is failing to enforce Australia's children social media ban" |
-| Similarity | 0.66 |
-| BLEU | 0.04 |
-| Paraphrase Score | 0.026 |
-| Human judgment | FLIPPED, meaning preserved ✓ |
-
-**Status:** This metric is exploratory. We report it but do not claim it as a contribution. The key insight is that similarity alone or BLEU alone can miss paraphrasing — the combination helps.
+**Limitations:**
+- Expensive, slow
+- Potential biases in LLM judgment
+- Black box — hard to interpret
 
 ---
 
-## 4. Human Evaluation (Ground Truth)
+### 7. Paraphrase Score (Exploratory)
 
-Because automated metrics have limitations, we conducted human evaluation on 140 samples.
+**Formula:** `similarity × (1 - BLEU_vs_input)`
 
-### 4.1 Protocol
+**What it measures:** Did the model genuinely rewrite (high similarity, low copying)?
 
-- **Annotators:** 2 per model (Angel+Camille for T5, Nguyen+Andrew for BART-RL)
-- **Questions:**
-  - Is the output non-sarcastic? (Yes=1, No=0)
-  - Did the meaning change? (Yes=1, No=0)
-- **Consensus:** Strict (both agree) and Lenient (either agrees)
+**Interpretation:**
+- High score (> 0.5) = Good semantic preservation with actual rewriting
+- Low score (< 0.1) = Either meaning lost OR just copied input
 
-### 4.2 Inter-Annotator Agreement
+**Note:** This is exploratory — helps identify models that "game" metrics by surface edits
 
-| Model | Agreement % | Cohen's κ | Interpretation |
-|-------|-------------|-----------|----------------|
+---
+
+## Human Evaluation Protocol
+
+### Setup
+
+- **140 samples** per model (stratified by sarcasm subtype)
+- **3 models evaluated:** T5-Joint, T5-Control, BART-RL
+- **2 independent annotators** per model
+- **Labels collected:**
+  - `sarcasm_removed`: Binary (Y/N) — is the output non-sarcastic?
+  - `meaning_change`: Binary (Y/N) — did the meaning change significantly?
+
+### Annotators
+
+| Model | Annotators |
+|-------|------------|
+| T5-Joint | Angel + Camille |
+| T5-Control | Angel + Camille |
+| BART-RL | Nguyen + Andrew |
+
+### Inter-Annotator Agreement
+
+| Model | Raw Agreement | Cohen's κ | Interpretation |
+|-------|---------------|-----------|----------------|
 | T5-Joint | 92.1% | 0.839 | Excellent |
 | T5-Control | 94.3% | 0.883 | Excellent |
 | BART-RL | 94.3% | 0.884 | Excellent |
 
-κ > 0.8 indicates excellent agreement. Human evaluation is reliable ground truth.
+**All κ > 0.8 = Excellent agreement** → Human labels are reliable ground truth
 
-### 4.3 Cohen's Kappa Interpretation
+### Derived Metrics
 
-| κ Value | Interpretation |
-|---------|----------------|
-| 1.0 | Perfect agreement |
-| 0.8 - 1.0 | Almost perfect (excellent) |
-| 0.6 - 0.8 | Substantial (good) |
-| 0.4 - 0.6 | Moderate |
-| 0.2 - 0.4 | Fair |
-| 0.0 | No better than random |
-| < 0 | Worse than random (anti-correlated) |
-
-### 4.4 Key Finding: Classifier vs Human Gap
-
-| Model | Classifier Flip | Human Flip (Strict) | Human Flip (Lenient) | Classifier-Human κ |
-|-------|-----------------|---------------------|----------------------|--------------------|
-| T5-Joint | 24.3% | 54.3% | 62.1% | -0.067 |
-| T5-Control | 21.4% | 54.3% | 60.0% | -0.144 |
-| BART-RL | 18.6% | 52.9% | 58.6% | -0.186 |
-
-**Negative κ means the classifier is anti-correlated with human judgment.** The classifier is systematically fooled by surface edits (lowercase, punctuation removal) while missing actual sarcasm removal.
+- `human_flipped_strict`: Both annotators agree sarcasm was removed
+- `human_flipped_lenient`: At least one annotator says sarcasm was removed
+- `human_strict_success`: Flipped AND meaning preserved
 
 ---
 
-## 5. Model Comparison Summary
+## Classifier Comparison Study
 
-### 5.1 Large-Scale Evaluation (2857 samples)
+### Motivation
 
-| Model | Flip Rate | Similarity | Edit Dist | Perplexity | Behavior |
-|-------|-----------|------------|-----------|------------|----------|
-| T5-Joint | 21.4% | 0.87 | 0.60 | 635 | Conservative, preserves meaning |
-| T5-Control | 21.0% | 0.88 | 0.59 | 614 | Conservative |
-| T5 Ablations (6) | 20.5-21.3% | 0.88 | 0.57 | 590-607 | No significant difference |
-| BART-base | 20.8% | 0.85 | 0.66 | 518 | Moderate rewriting |
-| BART-CE | 21.5% | 0.64 | 0.92 | 364 | Aggressive, loses meaning |
-| BART-CE-RL | 21.1% | 0.61 | 0.93 | 457 | Most aggressive |
-| BART-RL | 21.2% | 0.85 | 0.61 | 726 | Moderate |
-| LLaMA 1B | 21.9% | 0.66 | 0.95 | 378 | Complete rewrite |
+Our initial classifier (RoBERTa-Twitter-Irony) showed **negative κ** with human judgment. We asked: Is this a problem with one classifier, or a fundamental limitation of automated sarcasm detection?
 
-**Observation:** All models get ~21% classifier flip rate despite vastly different behaviors (edit distance 0.57 to 0.95). This confirms the classifier limitation — it cannot distinguish conservative editing from aggressive rewriting.
+### Classifiers Tested
 
-### 5.2 Golden Data Evaluation (140 samples, human-annotated)
+| Classifier | Architecture | Training Data |
+|------------|--------------|---------------|
+| RoBERTa-Twitter-Irony | RoBERTa | Twitter |
+| DistilBERT-Reddit | DistilBERT | Reddit |
+| BERT-Sarcasm-News | RoBERTa | News Headlines |
 
-| Model | Human Flip (Strict) | Human Flip (Lenient) | Meaning Change | Strict Success |
-|-------|---------------------|----------------------|----------------|----------------|
-| **T5-Joint** | 54.3% | 62.1% | **16.4%** | **43.6%** |
-| T5-Control | 54.3% | 60.0% | 25.0% | 39.3% |
-| BART-RL | 52.9% | 58.6% | 40.7% | 34.3% |
+### Results
 
-**Key Finding:** Joint model has significantly lower meaning change than Control (16.4% vs 25.0%), leading to higher strict success (43.6% vs 39.3%). This difference is invisible to the automated classifier but revealed by human evaluation.
+#### By Classifier (averaged across models)
 
-**Why Joint beats Control:**  
-The strategy prefix forces the model to decompose the task:
-1. First IDENTIFY what type of sarcasm (irony, satire, rhetorical question, etc.)
-2. Then DECIDE what to preserve vs remove
+| Classifier | Flip Rate | Accuracy | Precision | Recall | κ |
+|------------|-----------|----------|-----------|--------|---|
+| BERT-Sarcasm-News | 33.3% | 55.2% | 63.9% | 39.4% | **+0.128** 🟡 |
+| DistilBERT-Reddit | 86.2% | 54.8% | 55.0% | 88.1% | +0.043 🟡 |
+| RoBERTa-Twitter-Irony | 21.4% | 41.0% | 36.9% | 15.0% | **-0.132** 🔴 |
 
-Control learns blind input→output mapping without understanding the sarcasm structure.
+#### Full Comparison Table
 
----
+| Model | Classifier | Clf Flip | Human Flip | Accuracy | κ |
+|-------|------------|----------|------------|----------|---|
+| T5-Joint | RoBERTa-Twitter | 24.3% | 54.3% | 44.3% | -0.067 🔴 |
+| T5-Joint | DistilBERT-Reddit | 83.6% | 54.3% | 50.7% | -0.046 🔴 |
+| T5-Joint | BERT-News | 30.7% | 54.3% | 59.3% | **+0.212** 🟢 |
+| T5-Control | RoBERTa-Twitter | 21.4% | 54.3% | 40.0% | -0.144 🔴 |
+| T5-Control | DistilBERT-Reddit | 83.6% | 54.3% | 56.4% | +0.075 🟡 |
+| T5-Control | BERT-News | 31.4% | 54.3% | 51.4% | +0.059 🟡 |
+| BART-RL | RoBERTa-Twitter | 18.6% | 52.9% | 38.6% | -0.186 🔴 |
+| BART-RL | DistilBERT-Reddit | 91.4% | 52.9% | 57.1% | +0.100 🟡 |
+| BART-RL | BERT-News | 37.9% | 52.9% | 55.0% | +0.112 🟡 |
 
-## 6. Subtype Analysis
+### Key Observations
 
-### 6.1 Classifier Flip Rate by Subtype (Golden Data, 140 samples)
+1. **Training domain matters:**
+   - News-trained classifier (κ = +0.128) outperforms Twitter-trained (κ = -0.132)
+   - Domain match helps, but is still insufficient
 
-| Subtype | Count | T5-Joint | T5-Control | BART-RL |
-|---------|-------|----------|------------|---------|
-| rhetorical_question | 14 | 50.0% | 21.4% | 21.4% |
-| understatement | 11 | 36.4% | 27.3% | 9.1% |
-| overstatement | 7 | 28.6% | 28.6% | 28.6% |
-| irony | 30 | 23.3% | 20.0% | 16.7% |
-| sarcasm | 69 | 20.3% | 21.7% | 20.3% |
-| satire | 9 | 0.0% | 11.1% | 11.1% |
+2. **Even the best classifier fails:**
+   - Best κ = 0.212 (T5-Joint with BERT-News) = "fair agreement"
+   - Average κ across all = +0.013 ≈ random chance
 
-**Why rhetorical questions are easiest:**  
-They have explicit structural markers ("What could go wrong?", "Isn't that great?") that models can learn to remove.
+3. **4 out of 9 classifier-model pairs show negative κ**
+   - Anti-correlation = classifier is systematically wrong
 
-**Why satire is hardest:**  
-Satire requires world knowledge and cultural context that small models don't have.
-
----
-
-## 7. Running the Pipeline
-
-### 7.1 Command
-
-```bash
-python scripts/eval_pipeline.py \
-    --input model_outputs_clean/t5_base_joint.csv \
-    --output results/t5_base_joint_results.csv \
-    --gemini_key $GEMINI_API_KEY
-```
-
-### 7.2 Options
-
-| Flag | Description |
-|------|-------------|
-| `--input` | Path to input CSV |
-| `--output` | Path to output results CSV |
-| `--skip_judge` | Skip LLM-as-Judge (faster, no API cost) |
-| `--gemini_key` | API key for Gemini (required for LLM judge) |
-
-### 7.3 Input Format
-
-CSV with columns: `id, input, output, subtype`
-
-### 7.4 Output Format
-
-CSV with all computed metrics per sample:
-- `id, input, output, subtype`
-- `input_sarc_prob, output_sarc_prob, hard_flipped, flip_delta`
-- `similarity`
-- `perplexity`
-- `bleu`
-- `edit_dist_raw, edit_dist_norm`
-- `paraphrase_score`
-- `llm_sarcasm_removed, llm_meaning_preserved, llm_fluency` (if judge enabled)
+4. **Different failure modes:**
+   - RoBERTa-Twitter: Low flip rate (21%), misses real flips
+   - DistilBERT-Reddit: High flip rate (86%), many false positives
 
 ---
 
-## 8. File Structure
+## Key Findings
+
+### Finding 1: Classifier is Anti-Correlated with Human Judgment
+
+**Evidence (RoBERTa-Twitter-Irony):**
+
+| Model | Classifier Flip | Human Flip | κ |
+|-------|-----------------|------------|---|
+| T5-Joint | 24.3% | 54.3% | -0.067 |
+| T5-Control | 21.4% | 54.3% | -0.144 |
+| BART-RL | 18.6% | 52.9% | -0.186 |
+
+**Confusion Matrix (T5-Joint):**
 
 ```
-Project-LLMao/
-├── data/
-│   ├── golden/
-│   │   ├── raw/                    # Human-annotated CSVs from Google Sheets
-│   │   └── cleaned/                # Standardized format for pipeline
-│   └── splits/                     # Train/val/test splits
-├── model_outputs_clean/            # Model outputs (14 models)
-├── results/
-│   ├── golden/                     # Golden data evaluation results
-│   │   ├── t5_base_joint_results.csv
-│   │   ├── t5_base_control_results.csv
-│   │   ├── bart_base_rl_results.csv
-│   │   ├── *_merged.csv            # Human + automated merged
-│   │   └── summary.csv             # Comparison table
-│   └── *.csv                       # Full dataset results (2857 samples)
-├── scripts/
-│   ├── eval_pipeline.py            # Main evaluation script
-│   ├── clean_golden_data.py        # Standardize human eval CSVs
-│   └── analyze_golden_results.py   # Merge and analyze results
-└── docs/
-    └── EVALUATION.md               # This file
+                      HUMAN
+                Flipped   Not Flipped
+            ┌──────────┬─────────────┐
+CLASSIFIER  │          │             │
+  Flipped   │    16    │     18      │ ← 18 False Positives
+            ├──────────┼─────────────┤
+  Not Flip  │    60    │     46      │ ← 60 False Negatives
+            └──────────┴─────────────┘
+```
+
+**Why:** Classifier detects surface markers (lowercase, punctuation), not semantic sarcasm. Models learn to "game" it with surface edits.
+
+---
+
+### Finding 2: Surface Edits Fool the Classifier
+
+**10% of outputs are just lowercase/punctuation changes:**
+
+| Input | Output | Classifier | Human |
+|-------|--------|------------|-------|
+| "Google presses play on 30-second Gemini musical slop generator" | "google presses play on 30-second Gemini musical slop generator" | FLIPPED ✗ | NOT FLIPPED ✓ |
+
+The classifier thinks lowercase = sarcasm removed!
+
+---
+
+### Finding 3: Joint Beats Control (Invisible to Classifier)
+
+| Metric | T5-Joint | T5-Control | Δ |
+|--------|----------|------------|---|
+| Meaning Change | **16.4%** | 25.0% | -8.6 pp |
+| Strict Success | **43.6%** | 39.3% | +4.3 pp |
+| Classifier Accuracy | 44.3% | 40.0% | ~Same |
+
+**Why Joint wins:** Strategy prefix forces model to decompose the task — identify the sarcasm mechanism BEFORE rewriting, so it knows what to preserve.
+
+**Critical insight:** Classifier CANNOT see this difference. Only human evaluation reveals Joint is better.
+
+---
+
+### Finding 4: BART-RL Destroys Meaning
+
+| Model | Human Flip | Meaning Change | Strict Success |
+|-------|------------|----------------|----------------|
+| T5-Joint | 54.3% | 16.4% | 43.6% |
+| T5-Control | 54.3% | 25.0% | 39.3% |
+| BART-RL | 52.9% | **40.7%** | 34.3% |
+
+**Why:** RL reward function incentivizes deletion. Removing words reduces P(sarcastic) while maintaining ROUGE-L overlap. The model learned: deletion is rewarded.
+
+---
+
+### Finding 5: Subtype Difficulty Varies
+
+| Subtype | Classifier Error Rate | Why? |
+|---------|----------------------|------|
+| rhetorical_question | 85.7% | Explicit markers but classifier still fails |
+| understatement | 81.8% | Subtle, requires world knowledge |
+| irony | 73.3% | Semantic contradiction, no surface markers |
+| satire | 55.6% | Requires cultural context |
+| sarcasm | 53.6% | Most common, classifier somewhat learned |
+
+---
+
+## Conclusions
+
+### For Researchers
+
+1. **Automated sarcasm classifiers cannot reliably evaluate style transfer outputs.**
+   - Average κ across 3 classifiers = +0.013 (random chance)
+   - Even the best classifier (news-trained) only achieves κ = 0.128 ("slight agreement")
+
+2. **Human evaluation is necessary** for this task.
+   - Inter-annotator κ > 0.8 = reliable ground truth
+   - Reveals quality differences invisible to automated metrics
+
+3. **Domain match helps but isn't enough.**
+   - News-trained classifier better than Twitter-trained
+   - But still fails to capture semantic sarcasm removal
+
+### For Practitioners
+
+1. **Use multiple metrics** — no single metric captures everything
+2. **Validate with human evaluation** — at least a sample
+3. **Be skeptical of automated flip rates** — they can be gamed
+
+### Takeaway
+
+> "Automated metrics are necessary but not sufficient. Models learn to game classifiers with surface edits. Human evaluation reveals what classifiers cannot see."
+
+---
+
+## Files
+
+```
+scripts/
+├── eval_pipeline.py          # Main 7-metric pipeline
+├── clean_golden_data.py      # Standardize human annotations
+├── analyze_golden_results.py # Classifier vs human analysis
+└── compare_classifiers.py    # Multi-classifier comparison
+
+data/golden/
+├── raw/                      # Original human annotations
+└── cleaned/                  # Standardized format
+
+results/golden/
+├── *_results.csv             # Automated metrics
+├── *_merged.csv              # Human + automated merged
+├── *_subtype_analysis.csv    # Per-subtype breakdown
+├── classifier_comparison.csv # Multi-classifier results
+└── summary.csv               # Overall comparison
 ```
 
 ---
 
-## 9. Conclusion
+## Citation
 
-### What Each Metric Captures and Misses
+If you use this evaluation framework, please cite:
 
-| Metric | Captures | Misses |
-|--------|----------|--------|
-| Flip Rate | Binary sarcasm detection | Surface edits fool it |
-| Similarity | Meaning preservation | Doesn't verify correctness |
-| Perplexity | Fluency | Fluent nonsense passes |
-| BLEU vs Input | Copying behavior | Doesn't measure quality |
-| Edit Distance | Amount of change | Doesn't measure direction |
-| LLM Judge | Holistic quality | Only 50 samples, may have bias |
-| Human Eval | Ground truth | Expensive, limited scale |
-
-### Key Takeaways
-
-1. **Automated classifier is unreliable** — negative correlation with human judgment (κ = -0.07 to -0.19)
-2. **Joint model beats Control** — 16.4% vs 25.0% meaning change, invisible to classifier
-3. **Multiple metrics needed** — no single metric captures sarcasm removal + meaning preservation + fluency
-4. **Human evaluation is essential** — the gap between machine and human evaluation is itself a finding
-
-### The Evaluation Story
-
-> "Automated metrics are necessary but not sufficient. The gap between machine and human evaluation reveals fundamental limitations in how we evaluate style transfer systems. Our 7-metric pipeline provides complementary views, but human judgment remains the gold standard for sarcasm rewriting evaluation."
-
----
-
-## 10. References
-
-- Cardiff NLP Twitter RoBERTa Irony: https://huggingface.co/cardiffnlp/twitter-roberta-base-irony
-- Sentence Transformers: https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2
-- Cohen's Kappa: Cohen, J. (1960). A coefficient of agreement for nominal scales.
-- BLEU Score: Papineni et al. (2002). BLEU: a Method for Automatic Evaluation of Machine Translation.
+```
+Project LLMao: Sarcasm Style Transfer Evaluation
+CS4248 Team 14, NUS
+April 2026
+```

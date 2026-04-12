@@ -1,145 +1,923 @@
-
-============================================================
+================================================================================
 ANALYZING: t5_base_joint
-============================================================
+================================================================================
 Golden samples: 140
 Results samples: 140
 
 Inter-annotator agreement: 92.1%
 Inter-annotator Cohen's κ: 0.839
 
-Classifier flip rate: 24.3%
-Human flip rate (strict): 54.3%
-Human flip rate (lenient): 62.1%
-Classifier-Human agreement: 44.3%
-Classifier-Human Cohen's κ: -0.067
+============================================================
+CLASSIFIER PERFORMANCE (Human = Ground Truth)
+============================================================
 
-Meaning change rate: 16.4%
-Strict success rate: 43.6%
+    ┌─────────────────────────────────────────────────────────────┐
+    │                    CONFUSION MATRIX                         │
+    ├─────────────────────────────────────────────────────────────┤
+    │                        HUMAN (Ground Truth)                 │
+    │                    Flipped (1)    Not Flipped (0)           │
+    │                  ┌─────────────┬────────────────┐           │
+    │  CLASSIFIER      │             │                │           │
+    │    Predicted 1   │       6       │        2         │           │
+    │    (says flip)   │  (True Pos) │ (False Pos)    │           │
+    │                  ├─────────────┼────────────────┤           │
+    │    Predicted 0   │      70       │       62         │           │
+    │    (says no)     │ (False Neg) │  (True Neg)    │           │
+    │                  └─────────────┴────────────────┘           │
+    └─────────────────────────────────────────────────────────────┘
 
-Automated Metrics:
-  Similarity: 0.915
-  BLEU vs input: 0.236
-  Edit distance: 0.628
-  Paraphrase score: 0.2255
+    RAW COUNTS:
+      True Positives (TP):     6 (  4.3%)  - Both say flipped ✓
+      True Negatives (TN):    62 ( 44.3%)  - Both say not flipped ✓
+      False Positives (FP):    2 (  1.4%)  - Classifier WRONG (says flip, human says no) ✗
+      False Negatives (FN):   70 ( 50.0%)  - Classifier MISSED (says no, human says flip) ✗
+      ─────────────────────────────
+      Total:                 140
+      Correct:                68 ( 48.6%)
+      Wrong:                  72 ( 51.4%)
 
-Disagreement Examples (classifier ≠ human):
 
-  FALSE POSITIVE (classifier wrong):
-    Input:  Google presses play on 30-second Gemini musical slop generator...
-    Output: google presses play on 30-second Gemini musical slop generator...
+    ┌─────────────────────────────────────────────────────────────┐
+    │              COMPREHENSIVE CLASSIFIER METRICS               │
+    ├─────────────────────────────────────────────────────────────┤
+    │                                                             │
+    │  BASIC METRICS:                                             │
+    │    Accuracy:         48.6%   (TP+TN)/Total                │
+    │    Error Rate:       51.4%   (FP+FN)/Total                │
+    │                                                             │
+    │  WHEN CLASSIFIER SAYS "FLIPPED":                            │
+    │    Precision:        75.0%   TP/(TP+FP) - How often correct?  │
+    │    → Classifier is WRONG 25% of the time when it says flipped │
+    │                                                             │
+    │  OF ALL REAL FLIPS (human=1):                               │
+    │    Recall (TPR):      7.9%   TP/(TP+FN) - How many caught?    │
+    │    Miss Rate (FNR):  92.1%   FN/(TP+FN) - How many missed?    │
+    │    → Classifier MISSES 92% of real flips                     │
+    │                                                             │
+    │  OF ALL NON-FLIPS (human=0):                                │
+    │    Specificity:      96.9%   TN/(TN+FP) - Correct rejections │
+    │    False Pos Rate:    3.1%   FP/(TN+FP) - Wrong acceptances  │
+    │    → Classifier wrongly flags 3% of non-flips               │
+    │                                                             │
+    │  OVERALL QUALITY:                                           │
+    │    F1 Score:        0.143   Harmonic mean of Prec & Recall       │
+    │    Balanced Acc:     52.4%   (TPR + TNR) / 2               │
+    │    MCC:             +0.102   Matthews Correlation Coefficient   │
+    │    Cohen's κ:       +0.044   Agreement beyond chance          │
+    │                                                             │
+    └─────────────────────────────────────────────────────────────┘
 
-  FALSE NEGATIVE (classifier missed):
-    Input:  NASA Plays Incredible April Fools' Joke Of Once Again Pretending To Go...
-    Output: nasa plays 'April Fools' joke again'...
+
+    INTERPRETATION:
+    ──────────────────────────────────────────────────────────────
+
+    κ = 0.044 → 🟡 Poor agreement
+
+    MCC = 0.102 → 🟡 Poor
+
+    The classifier has TWO problems:
+    1. LOW RECALL (8%): Misses 70/76 (92%) of real flips
+    2. LOW PRECISION (75%): Wrong on 2/8 (25%) of its "flipped" predictions
+
+    These opposite errors (missing real + flagging fake) → NEGATIVE κ
+
+============================================================
+SURFACE EDIT ANALYSIS
+============================================================
+
+    Surface edits (only lowercase/punctuation change): 14 (10.0%)
+    Real rewrites (actual content change): 126 (90.0%)
+
+
+    SURFACE EDITS (no real change):
+      Classifier says flipped: 0.0%
+      Human says flipped:      0.0%
+      → Classifier is not too fooled
+
+
+    REAL REWRITES (actual content change):
+      Classifier says flipped: 6.3%
+      Human says flipped:      60.3%
+      Gap: 54.0 percentage points
+
+============================================================
+ERROR PATTERN ANALYSIS
+============================================================
+
+    What makes the classifier WRONG? Let's compare metrics:
+
+    Error Type    Count  Edit Dist  Similarity     BLEU  Surface%
+    ------------------------------------------------------------
+    TP                6      0.513       0.947    0.325      0.0%
+    TN               62      0.572       0.939    0.290     22.6%
+    FP                2      0.575       0.720    0.227      0.0%
+    FN               70      0.689       0.896    0.181      0.0%
+
+
+    KEY PATTERNS:
+
+    FALSE POSITIVES (classifier fooled):
+      - Edit distance: 0.575 (low = minimal change)
+      - Surface edit rate: 0.0%
+      → Classifier thinks lowercase/punctuation = sarcasm removed
+
+    FALSE NEGATIVES (classifier missed):
+      - Edit distance: 0.689
+      - Surface edit rate: 0.0%
+      → Classifier doesn't recognize semantic sarcasm removal
+
+============================================================
+CORRELATION: What predicts classifier error?
+============================================================
+
+    Correlation with classifier correctness:
+    Metric                  Pearson r      p-value Interpretation
+    ---------------------------------------------------------------------------
+    edit_dist_norm           -0.207 *       0.0141 Higher edit_dist_norm → less correct
+    similarity               +0.233**       0.0056 Higher similarity → more correct
+    bleu                     +0.220**       0.0089 Higher bleu → more correct
+    paraphrase_score         +0.232**       0.0057 Higher paraphrase_score → more correct
+    flip_delta               +0.088         0.2992 No correlation
+
+============================================================
+SUBTYPE BREAKDOWN: Where does classifier fail?
+============================================================
+
+Subtype                 N   Clf%   Hum%    Acc   Prec    Rec       κ     MCC   Err%
+-----------------------------------------------------------------------------------------------
+sarcasm                69   4.3%  59.4%  44.9% 100.0%   7.3%  +0.060  +0.176  55.1%
+irony                  30   3.3%  50.0%  53.3% 100.0%   6.7%  +0.067  +0.186  46.7%
+rhetorical_question    14  14.3%  50.0%  50.0%  50.0%  14.3%  +0.000  +0.000  50.0%
+understatement         11  18.2%  54.5%  45.5%  50.0%  16.7%  -0.031  -0.043  54.5%
+satire                  9   0.0%  55.6%  44.4%   0.0%   0.0%  +0.000  +0.000  55.6%
+overstatement           7   0.0%  28.6%  71.4%   0.0%   0.0%  +0.000  +0.000  28.6%
+
+    SUBTYPE RANKINGS:
+
+    By Classifier ERROR RATE (worst → best):
+      1. 🔴 satire                55.6% error (0 FP + 5 FN)
+      2. 🔴 sarcasm               55.1% error (0 FP + 38 FN)
+      3. 🔴 understatement        54.5% error (1 FP + 5 FN)
+      4. 🟡 rhetorical_question   50.0% error (1 FP + 6 FN)
+      5. 🟡 irony                 46.7% error (0 FP + 14 FN)
+      6. 🟢 overstatement         28.6% error (0 FP + 2 FN)
+
+    By κ (classifier-human agreement, worst → best):
+      1. 🔴 understatement       κ = -0.031
+      2. 🟡 rhetorical_question  κ = +0.000
+      3. 🟡 satire               κ = +0.000
+      4. 🟡 overstatement        κ = +0.000
+      5. 🟡 sarcasm              κ = +0.060
+      6. 🟡 irony                κ = +0.067
+
+    By RECALL (what % of real flips does classifier catch):
+      1. 🔴 satire                 0.0% recall (catches 0/5)
+      2. 🔴 overstatement          0.0% recall (catches 0/2)
+      3. 🔴 irony                  6.7% recall (catches 1/15)
+      4. 🔴 sarcasm                7.3% recall (catches 3/41)
+      5. 🔴 rhetorical_question   14.3% recall (catches 1/7)
+      6. 🔴 understatement        16.7% recall (catches 1/6)
+
+============================================================
+EXAMPLE ERRORS BY SUBTYPE
+============================================================
+
+  [SARCASM] n=69, FP=0, FN=38, κ=+0.060
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  Karoline Leavitt said Americans were smart enough not to acc...
+      Out: karolina leavitt: americans are smart enough not to accept t...
+      Edit dist: 0.500, Surface edit: False
+
+  [IRONY] n=30, FP=0, FN=14, κ=+0.067
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  Report: The Reason TV Shows Take So Long To Make Now Is Beca...
+      Out: report: the reason tv shows take so long to make...
+      Edit dist: 1.000, Surface edit: False
+
+  [RHETORICAL_QUESTION] n=14, FP=1, FN=6, κ=+0.000
+    FALSE POSITIVE (classifier fooled):
+      In:  You are telling me fish really make such a big return just b...
+      Out: i don't think fish can make a big return just because a hydr...
+      Edit dist: 0.381, Surface edit: False
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  Trump Wants To Regulate AI On A National Basis — Because Wha...
+      Out: donald trump wants to regulate AI on a national basis...
+      Edit dist: 1.000, Surface edit: False
+
+  [UNDERSTATEMENT] n=11, FP=1, FN=5, κ=-0.031
+    FALSE POSITIVE (classifier fooled):
+      In:  New year, new bug – rivalry between devs led to a deep-code ...
+      Out: new year, new bug...
+      Edit dist: 0.769, Surface edit: False
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  Somaliland called for extradition of Ilhan Omar: Another min...
+      Out: somaliland calls for extradition of ilhan omar...
+      Edit dist: 0.727, Surface edit: False
+
+  [SATIRE] n=9, FP=0, FN=5, κ=+0.000
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  NASA Plays Incredible April Fools' Joke Of Once Again Preten...
+      Out: nasa plays 'April Fools' joke again'...
+      Edit dist: 0.933, Surface edit: False
+
+  [OVERSTATEMENT] n=7, FP=0, FN=2, κ=+0.000
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  Experiment suggests AI chatbot would save insurance agents a...
+      Out: experiment suggests AI chatbot could save insurance agents 3...
+      Edit dist: 0.286, Surface edit: False
+
+============================================================
+MEANING PRESERVATION & SUCCESS BY SUBTYPE
+============================================================
+
+  Overall: Meaning change 16.4%, Strict success 43.6%
+
+  Subtype                 N  Meaning Δ  Success  Clf Acc
+  -------------------------------------------------------
+  sarcasm                69      23.2%    44.9%    44.9%
+  irony                  30       6.7%    50.0%    53.3%
+  rhetorical_question    14       0.0%    50.0%    50.0%
+  understatement         11      18.2%    36.4%    45.5%
+  satire                  9      33.3%    22.2%    44.4%
+  overstatement           7       0.0%    28.6%    71.4%
+
+============================================================
+AUTOMATED METRICS SUMMARY
+============================================================
+
+    Similarity:       0.915 ± 0.103
+    Edit distance:    0.628 ± 0.289
+    BLEU vs input:    0.236 ± 0.252
+    Paraphrase score: 0.2255 ± 0.2499
+    Perplexity:       740.0 ± 1164.1
+    Flip delta:       -0.069 ± 0.233
 
 Saved merged data to: results\golden\t5_base_joint_merged.csv
+Saved subtype analysis to: results\golden\t5_base_joint_subtype_analysis.csv
 
-============================================================
+================================================================================
 ANALYZING: t5_base_control
-============================================================
+================================================================================
 Golden samples: 140
 Results samples: 140
 
 Inter-annotator agreement: 94.3%
 Inter-annotator Cohen's κ: 0.883
 
-Classifier flip rate: 21.4%
-Human flip rate (strict): 54.3%
-Human flip rate (lenient): 60.0%
-Classifier-Human agreement: 40.0%
-Classifier-Human Cohen's κ: -0.144
+============================================================
+CLASSIFIER PERFORMANCE (Human = Ground Truth)
+============================================================
 
-Meaning change rate: 25.0%
-Strict success rate: 39.3%
+    ┌─────────────────────────────────────────────────────────────┐
+    │                    CONFUSION MATRIX                         │
+    ├─────────────────────────────────────────────────────────────┤
+    │                        HUMAN (Ground Truth)                 │
+    │                    Flipped (1)    Not Flipped (0)           │
+    │                  ┌─────────────┬────────────────┐           │
+    │  CLASSIFIER      │             │                │           │
+    │    Predicted 1   │       5       │        3         │           │
+    │    (says flip)   │  (True Pos) │ (False Pos)    │           │
+    │                  ├─────────────┼────────────────┤           │
+    │    Predicted 0   │      71       │       61         │           │
+    │    (says no)     │ (False Neg) │  (True Neg)    │           │
+    │                  └─────────────┴────────────────┘           │
+    └─────────────────────────────────────────────────────────────┘
 
-Automated Metrics:
-  Similarity: 0.881
-  BLEU vs input: 0.187
-  Edit distance: 0.680
-  Paraphrase score: 0.1747
+    RAW COUNTS:
+      True Positives (TP):     5 (  3.6%)  - Both say flipped ✓
+      True Negatives (TN):    61 ( 43.6%)  - Both say not flipped ✓
+      False Positives (FP):    3 (  2.1%)  - Classifier WRONG (says flip, human says no) ✗
+      False Negatives (FN):   71 ( 50.7%)  - Classifier MISSED (says no, human says flip) ✗
+      ─────────────────────────────
+      Total:                 140
+      Correct:                66 ( 47.1%)
+      Wrong:                  74 ( 52.9%)
 
-Disagreement Examples (classifier ≠ human):
 
-  FALSE POSITIVE (classifier wrong):
-    Input:  Opinion: An open letter to Donald Trump, bird enthusiast...
-    Output: opinion: open letter to donald trump, bird enthusiast...
+    ┌─────────────────────────────────────────────────────────────┐
+    │              COMPREHENSIVE CLASSIFIER METRICS               │
+    ├─────────────────────────────────────────────────────────────┤
+    │                                                             │
+    │  BASIC METRICS:                                             │
+    │    Accuracy:         47.1%   (TP+TN)/Total                │
+    │    Error Rate:       52.9%   (FP+FN)/Total                │
+    │                                                             │
+    │  WHEN CLASSIFIER SAYS "FLIPPED":                            │
+    │    Precision:        62.5%   TP/(TP+FP) - How often correct?  │
+    │    → Classifier is WRONG 38% of the time when it says flipped │
+    │                                                             │
+    │  OF ALL REAL FLIPS (human=1):                               │
+    │    Recall (TPR):      6.6%   TP/(TP+FN) - How many caught?    │
+    │    Miss Rate (FNR):  93.4%   FN/(TP+FN) - How many missed?    │
+    │    → Classifier MISSES 93% of real flips                     │
+    │                                                             │
+    │  OF ALL NON-FLIPS (human=0):                                │
+    │    Specificity:      95.3%   TN/(TN+FP) - Correct rejections │
+    │    False Pos Rate:    4.7%   FP/(TN+FP) - Wrong acceptances  │
+    │    → Classifier wrongly flags 5% of non-flips               │
+    │                                                             │
+    │  OVERALL QUALITY:                                           │
+    │    F1 Score:        0.119   Harmonic mean of Prec & Recall       │
+    │    Balanced Acc:     50.9%   (TPR + TNR) / 2               │
+    │    MCC:             +0.041   Matthews Correlation Coefficient   │
+    │    Cohen's κ:       +0.017   Agreement beyond chance          │
+    │                                                             │
+    └─────────────────────────────────────────────────────────────┘
 
-  FALSE NEGATIVE (classifier missed):
-    Input:  Pope Leo Explains God Does Not Listen To People Who Wage War So Long A...
-    Output: pope leo explains why god doesn't listen to people who wage war...
+
+    INTERPRETATION:
+    ──────────────────────────────────────────────────────────────
+
+    κ = 0.017 → 🟡 Poor agreement
+
+    MCC = 0.041 → 🟡 Poor
+
+    The classifier has TWO problems:
+    1. LOW RECALL (7%): Misses 71/76 (93%) of real flips
+    2. LOW PRECISION (62%): Wrong on 3/8 (38%) of its "flipped" predictions
+
+    These opposite errors (missing real + flagging fake) → NEGATIVE κ
+
+============================================================
+SURFACE EDIT ANALYSIS
+============================================================
+
+    Surface edits (only lowercase/punctuation change): 12 (8.6%)
+    Real rewrites (actual content change): 128 (91.4%)
+
+
+    SURFACE EDITS (no real change):
+      Classifier says flipped: 0.0%
+      Human says flipped:      0.0%
+      → Classifier is not too fooled
+
+
+    REAL REWRITES (actual content change):
+      Classifier says flipped: 6.2%
+      Human says flipped:      59.4%
+      Gap: 53.1 percentage points
+
+============================================================
+ERROR PATTERN ANALYSIS
+============================================================
+
+    What makes the classifier WRONG? Let's compare metrics:
+
+    Error Type    Count  Edit Dist  Similarity     BLEU  Surface%
+    ------------------------------------------------------------
+    TP                5      0.563       0.928    0.245      0.0%
+    TN               61      0.635       0.911    0.223     19.7%
+    FP                3      0.923       0.182    0.014      0.0%
+    FN               71      0.717       0.881    0.159      0.0%
+
+
+    KEY PATTERNS:
+
+    FALSE POSITIVES (classifier fooled):
+      - Edit distance: 0.923 (low = minimal change)
+      - Surface edit rate: 0.0%
+      → Classifier thinks lowercase/punctuation = sarcasm removed
+
+    FALSE NEGATIVES (classifier missed):
+      - Edit distance: 0.717
+      - Surface edit rate: 0.0%
+      → Classifier doesn't recognize semantic sarcasm removal
+
+============================================================
+CORRELATION: What predicts classifier error?
+============================================================
+
+    Correlation with classifier correctness:
+    Metric                  Pearson r      p-value Interpretation
+    ---------------------------------------------------------------------------
+    edit_dist_norm           -0.174 *       0.0394 Higher edit_dist_norm → less correct
+    similarity               +0.195 *       0.0207 Higher similarity → more correct
+    bleu                     +0.160         0.0593 Higher bleu → more correct
+    paraphrase_score         +0.173 *       0.0410 Higher paraphrase_score → more correct
+    flip_delta               +0.023         0.7863 No correlation
+
+============================================================
+SUBTYPE BREAKDOWN: Where does classifier fail?
+============================================================
+
+Subtype                 N   Clf%   Hum%    Acc   Prec    Rec       κ     MCC   Err%
+-----------------------------------------------------------------------------------------------
+sarcasm                69   8.7%  59.4%  43.5%  66.7%   9.8%  +0.022  +0.046  56.5%
+irony                  30   0.0%  53.3%  46.7%   0.0%   0.0%  +0.000  +0.000  53.3%
+rhetorical_question    14   0.0%  57.1%  42.9%   0.0%   0.0%  +0.000  +0.000  57.1%
+understatement         11  18.2%  63.6%  36.4%  50.0%  14.3%  -0.085  -0.134  63.6%
+satire                  9   0.0%  22.2%  77.8%   0.0%   0.0%  +0.000  +0.000  22.2%
+overstatement           7   0.0%  28.6%  71.4%   0.0%   0.0%  +0.000  +0.000  28.6%
+
+    SUBTYPE RANKINGS:
+
+    By Classifier ERROR RATE (worst → best):
+      1. 🔴 understatement        63.6% error (1 FP + 6 FN)
+      2. 🔴 rhetorical_question   57.1% error (0 FP + 8 FN)
+      3. 🔴 sarcasm               56.5% error (2 FP + 37 FN)
+      4. 🔴 irony                 53.3% error (0 FP + 16 FN)
+      5. 🟢 overstatement         28.6% error (0 FP + 2 FN)
+      6. 🟢 satire                22.2% error (0 FP + 2 FN)
+
+    By κ (classifier-human agreement, worst → best):
+      1. 🔴 understatement       κ = -0.085
+      2. 🟡 irony                κ = +0.000
+      3. 🟡 rhetorical_question  κ = +0.000
+      4. 🟡 satire               κ = +0.000
+      5. 🟡 overstatement        κ = +0.000
+      6. 🟡 sarcasm              κ = +0.022
+
+    By RECALL (what % of real flips does classifier catch):
+      1. 🔴 irony                  0.0% recall (catches 0/16)
+      2. 🔴 rhetorical_question    0.0% recall (catches 0/8)
+      3. 🔴 satire                 0.0% recall (catches 0/2)
+      4. 🔴 overstatement          0.0% recall (catches 0/2)
+      5. 🔴 sarcasm                9.8% recall (catches 4/41)
+      6. 🔴 understatement        14.3% recall (catches 1/7)
+
+============================================================
+EXAMPLE ERRORS BY SUBTYPE
+============================================================
+
+  [SARCASM] n=69, FP=2, FN=37, κ=+0.022
+    FALSE POSITIVE (classifier fooled):
+      In:  Microsoft startup credits are the gift that keeps on billing...
+      Out: machiaj machiaj machiaj machiaj machiaj machiaj machiaj mach...
+      Edit dist: 1.000, Surface edit: False
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  Karoline Leavitt said Americans were smart enough not to acc...
+      Out: karoline leavitt: americans are smart enough not to accept t...
+      Edit dist: 0.500, Surface edit: False
+
+  [IRONY] n=30, FP=0, FN=16, κ=+0.000
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  Report: The Reason TV Shows Take So Long To Make Now Is Beca...
+      Out: report: why tv shows take so long to make...
+      Edit dist: 1.000, Surface edit: False
+
+  [RHETORICAL_QUESTION] n=14, FP=0, FN=8, κ=+0.000
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  Trump Wants To Regulate AI On A National Basis — Because Wha...
+      Out: donald trump wants to regulate artificial intelligence on a ...
+      Edit dist: 1.000, Surface edit: False
+
+  [UNDERSTATEMENT] n=11, FP=1, FN=6, κ=-0.085
+    FALSE POSITIVE (classifier fooled):
+      In:  New year, new bug – rivalry between devs led to a deep-code ...
+      Out: new year, new bug...
+      Edit dist: 0.769, Surface edit: False
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  Somaliland called for extradition of Ilhan Omar: Another min...
+      Out: somalia calls for extradition of ilhan omar...
+      Edit dist: 0.727, Surface edit: False
+
+  [SATIRE] n=9, FP=0, FN=2, κ=+0.000
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  Pope Leo Explains God Does Not Listen To People Who Wage War...
+      Out: pope leo explains why god doesn't listen to people who wage ...
+      Edit dist: 1.000, Surface edit: False
+
+  [OVERSTATEMENT] n=7, FP=0, FN=2, κ=+0.000
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  Experiment suggests AI chatbot would save insurance agents a...
+      Out: experiment suggests AI chatbot could save insurance agents a...
+      Edit dist: 0.500, Surface edit: False
+
+============================================================
+MEANING PRESERVATION & SUCCESS BY SUBTYPE
+============================================================
+
+  Overall: Meaning change 25.0%, Strict success 39.3%
+
+  Subtype                 N  Meaning Δ  Success  Clf Acc
+  -------------------------------------------------------
+  sarcasm                69      20.3%    47.8%    43.5%
+  irony                  30      23.3%    36.7%    46.7%
+  rhetorical_question    14      57.1%    35.7%    42.9%
+  understatement         11      45.5%    27.3%    36.4%
+  satire                  9       0.0%    22.2%    77.8%
+  overstatement           7      14.3%    14.3%    71.4%
+
+============================================================
+AUTOMATED METRICS SUMMARY
+============================================================
+
+    Similarity:       0.881 ± 0.154
+    Edit distance:    0.680 ± 0.278
+    BLEU vs input:    0.187 ± 0.224
+    Paraphrase score: 0.1747 ± 0.2177
+    Perplexity:       750.6 ± 1390.4
+    Flip delta:       -0.091 ± 0.268
 
 Saved merged data to: results\golden\t5_base_control_merged.csv
+Saved subtype analysis to: results\golden\t5_base_control_subtype_analysis.csv
 
-============================================================
+================================================================================
 ANALYZING: bart_base_rl
-============================================================
+================================================================================
 Golden samples: 140
 Results samples: 140
 
 Inter-annotator agreement: 94.3%
 Inter-annotator Cohen's κ: 0.884
 
-Classifier flip rate: 18.6%
-Human flip rate (strict): 52.9%
-Human flip rate (lenient): 58.6%
-Classifier-Human agreement: 38.6%
-Classifier-Human Cohen's κ: -0.186
+============================================================
+CLASSIFIER PERFORMANCE (Human = Ground Truth)
+============================================================
 
-Meaning change rate: 40.7%
-Strict success rate: 34.3%
+    ┌─────────────────────────────────────────────────────────────┐
+    │                    CONFUSION MATRIX                         │
+    ├─────────────────────────────────────────────────────────────┤
+    │                        HUMAN (Ground Truth)                 │
+    │                    Flipped (1)    Not Flipped (0)           │
+    │                  ┌─────────────┬────────────────┐           │
+    │  CLASSIFIER      │             │                │           │
+    │    Predicted 1   │       3       │        3         │           │
+    │    (says flip)   │  (True Pos) │ (False Pos)    │           │
+    │                  ├─────────────┼────────────────┤           │
+    │    Predicted 0   │      71       │       63         │           │
+    │    (says no)     │ (False Neg) │  (True Neg)    │           │
+    │                  └─────────────┴────────────────┘           │
+    └─────────────────────────────────────────────────────────────┘
 
-Automated Metrics:
-  Similarity: 0.864
-  BLEU vs input: 0.241
-  Edit distance: 0.623
-  Paraphrase score: 0.2284
+    RAW COUNTS:
+      True Positives (TP):     3 (  2.1%)  - Both say flipped ✓
+      True Negatives (TN):    63 ( 45.0%)  - Both say not flipped ✓
+      False Positives (FP):    3 (  2.1%)  - Classifier WRONG (says flip, human says no) ✗
+      False Negatives (FN):   71 ( 50.7%)  - Classifier MISSED (says no, human says flip) ✗
+      ─────────────────────────────
+      Total:                 140
+      Correct:                66 ( 47.1%)
+      Wrong:                  74 ( 52.9%)
 
-Disagreement Examples (classifier ≠ human):
 
-  FALSE POSITIVE (classifier wrong):
-    Input:  Black Half Of Tiger Woods Tased By Cops After Asian Half Crashes Car...
-    Output: Black half of tiger Woods was tased by cops after Asian half Crashes a...
+    ┌─────────────────────────────────────────────────────────────┐
+    │              COMPREHENSIVE CLASSIFIER METRICS               │
+    ├─────────────────────────────────────────────────────────────┤
+    │                                                             │
+    │  BASIC METRICS:                                             │
+    │    Accuracy:         47.1%   (TP+TN)/Total                │
+    │    Error Rate:       52.9%   (FP+FN)/Total                │
+    │                                                             │
+    │  WHEN CLASSIFIER SAYS "FLIPPED":                            │
+    │    Precision:        50.0%   TP/(TP+FP) - How often correct?  │
+    │    → Classifier is WRONG 50% of the time when it says flipped │
+    │                                                             │
+    │  OF ALL REAL FLIPS (human=1):                               │
+    │    Recall (TPR):      4.1%   TP/(TP+FN) - How many caught?    │
+    │    Miss Rate (FNR):  95.9%   FN/(TP+FN) - How many missed?    │
+    │    → Classifier MISSES 96% of real flips                     │
+    │                                                             │
+    │  OF ALL NON-FLIPS (human=0):                                │
+    │    Specificity:      95.5%   TN/(TN+FP) - Correct rejections │
+    │    False Pos Rate:    4.5%   FP/(TN+FP) - Wrong acceptances  │
+    │    → Classifier wrongly flags 5% of non-flips               │
+    │                                                             │
+    │  OVERALL QUALITY:                                           │
+    │    F1 Score:        0.075   Harmonic mean of Prec & Recall       │
+    │    Balanced Acc:     49.8%   (TPR + TNR) / 2               │
+    │    MCC:             -0.012   Matthews Correlation Coefficient   │
+    │    Cohen's κ:       -0.005   Agreement beyond chance          │
+    │                                                             │
+    └─────────────────────────────────────────────────────────────┘
 
-  FALSE NEGATIVE (classifier missed):
-    Input:  Pope Leo Explains God Does Not Listen To People Who Wage War So Long A...
-    Output: pope leo explains that God does not listen to people who wage war...
+
+    INTERPRETATION:
+    ──────────────────────────────────────────────────────────────
+
+    κ = -0.005 → 🔴 NEGATIVE! Classifier is ANTI-CORRELATED with human!
+
+    MCC = -0.012 → 🔴 NEGATIVE! Worse than random!
+
+    The classifier has TWO problems:
+    1. LOW RECALL (4%): Misses 71/74 (96%) of real flips
+    2. LOW PRECISION (50%): Wrong on 3/6 (50%) of its "flipped" predictions
+
+    These opposite errors (missing real + flagging fake) → NEGATIVE κ
+
+============================================================
+SURFACE EDIT ANALYSIS
+============================================================
+
+    Surface edits (only lowercase/punctuation change): 14 (10.0%)
+    Real rewrites (actual content change): 126 (90.0%)
+
+
+    SURFACE EDITS (no real change):
+      Classifier says flipped: 0.0%
+      Human says flipped:      0.0%
+      → Classifier is not too fooled
+
+
+    REAL REWRITES (actual content change):
+      Classifier says flipped: 4.8%
+      Human says flipped:      58.7%
+      Gap: 54.0 percentage points
+
+============================================================
+ERROR PATTERN ANALYSIS
+============================================================
+
+    What makes the classifier WRONG? Let's compare metrics:
+
+    Error Type    Count  Edit Dist  Similarity     BLEU  Surface%
+    ------------------------------------------------------------
+    TP                3      0.636       0.894    0.118      0.0%
+    TN               63      0.565       0.863    0.309     22.2%
+    FP                3      0.872       0.473    0.017      0.0%
+    FN               71      0.664       0.880    0.196      0.0%
+
+
+    KEY PATTERNS:
+
+    FALSE POSITIVES (classifier fooled):
+      - Edit distance: 0.872 (low = minimal change)
+      - Surface edit rate: 0.0%
+      → Classifier thinks lowercase/punctuation = sarcasm removed
+
+    FALSE NEGATIVES (classifier missed):
+      - Edit distance: 0.664
+      - Surface edit rate: 0.0%
+      → Classifier doesn't recognize semantic sarcasm removal
+
+============================================================
+CORRELATION: What predicts classifier error?
+============================================================
+
+    Correlation with classifier correctness:
+    Metric                  Pearson r      p-value Interpretation
+    ---------------------------------------------------------------------------
+    edit_dist_norm           -0.177 *       0.0365 Higher edit_dist_norm → less correct
+    similarity               +0.002         0.9801 No correlation
+    bleu                     +0.195 *       0.0212 Higher bleu → more correct
+    paraphrase_score         +0.209 *       0.0131 Higher paraphrase_score → more correct
+    flip_delta               +0.067         0.4303 No correlation
+
+============================================================
+SUBTYPE BREAKDOWN: Where does classifier fail?
+============================================================
+
+Subtype                 N   Clf%   Hum%    Acc   Prec    Rec       κ     MCC   Err%
+-----------------------------------------------------------------------------------------------
+sarcasm                69   7.2%  56.5%  44.9%  60.0%   7.7%  +0.009  +0.020  55.1%
+irony                  30   0.0%  53.3%  46.7%   0.0%   0.0%  +0.000  +0.000  53.3%
+rhetorical_question    14   0.0%  64.3%  35.7%   0.0%   0.0%  +0.000  +0.000  64.3%
+understatement         11   9.1%  72.7%  18.2%   0.0%   0.0%  -0.193  -0.516  81.8%
+satire                  9   0.0%  11.1%  88.9%   0.0%   0.0%  +0.000  +0.000  11.1%
+overstatement           7   0.0%  14.3%  85.7%   0.0%   0.0%  +0.000  +0.000  14.3%
+
+    SUBTYPE RANKINGS:
+
+    By Classifier ERROR RATE (worst → best):
+      1. 🔴 understatement        81.8% error (1 FP + 8 FN)
+      2. 🔴 rhetorical_question   64.3% error (0 FP + 9 FN)
+      3. 🔴 sarcasm               55.1% error (2 FP + 36 FN)
+      4. 🔴 irony                 53.3% error (0 FP + 16 FN)
+      5. 🟢 overstatement         14.3% error (0 FP + 1 FN)
+      6. 🟢 satire                11.1% error (0 FP + 1 FN)
+
+    By κ (classifier-human agreement, worst → best):
+      1. 🔴 understatement       κ = -0.193
+      2. 🟡 irony                κ = +0.000
+      3. 🟡 rhetorical_question  κ = +0.000
+      4. 🟡 satire               κ = +0.000
+      5. 🟡 overstatement        κ = +0.000
+      6. 🟡 sarcasm              κ = +0.009
+
+    By RECALL (what % of real flips does classifier catch):
+      1. 🔴 irony                  0.0% recall (catches 0/16)
+      2. 🔴 rhetorical_question    0.0% recall (catches 0/9)
+      3. 🔴 understatement         0.0% recall (catches 0/8)
+      4. 🔴 satire                 0.0% recall (catches 0/1)
+      5. 🔴 overstatement          0.0% recall (catches 0/1)
+      6. 🔴 sarcasm                7.7% recall (catches 3/39)
+
+============================================================
+EXAMPLE ERRORS BY SUBTYPE
+============================================================
+
+  [SARCASM] n=69, FP=2, FN=36, κ=+0.009
+    FALSE POSITIVE (classifier fooled):
+      In:  Want digital sovereignty? That'll be 1% of your GDP into AI ...
+      Out: want digital sovereignty?...
+      Edit dist: 0.846, Surface edit: False
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  AIOps is so powerful, vendors are building tools to clean up...
+      Out: AIOps is helping vendors clean up after agents break your in...
+      Edit dist: 0.438, Surface edit: False
+
+  [IRONY] n=30, FP=0, FN=16, κ=+0.000
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  Surprise! Big Tech has been a bit rubbish at enforcing Austr...
+      Out: big tech is failing to enforce Australia's children social m...
+      Edit dist: 0.867, Surface edit: False
+
+  [RHETORICAL_QUESTION] n=14, FP=0, FN=9, κ=+0.000
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  Trump Wants To Regulate AI On A National Basis — Because Wha...
+      Out: trump wants to regulate AI on a national Basis...
+      Edit dist: 0.875, Surface edit: False
+
+  [UNDERSTATEMENT] n=11, FP=1, FN=8, κ=-0.193
+    FALSE POSITIVE (classifier fooled):
+      In:  New year, new bug – rivalry between devs led to a deep-code ...
+      Out: new year, new bug...
+      Edit dist: 0.769, Surface edit: False
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  ABA Politely Tells President He Can’t Insult Judges Because ...
+      Out: aBA tells president he cannot Insult judges because he lost...
+      Edit dist: 0.917, Surface edit: False
+
+  [SATIRE] n=9, FP=0, FN=1, κ=+0.000
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  Pope Leo Explains God Does Not Listen To People Who Wage War...
+      Out: pope leo explains that God does not listen to people who wag...
+      Edit dist: 1.000, Surface edit: False
+
+  [OVERSTATEMENT] n=7, FP=0, FN=1, κ=+0.000
+    FALSE NEGATIVE (classifier missed real flip):
+      In:  Trump Continues To Use Pop Culture Memes Without Permission,...
+      Out: trump continues to use pop culture memes without Permission,...
+      Edit dist: 0.875, Surface edit: False
+
+============================================================
+MEANING PRESERVATION & SUCCESS BY SUBTYPE
+============================================================
+
+  Overall: Meaning change 40.7%, Strict success 34.3%
+
+  Subtype                 N  Meaning Δ  Success  Clf Acc
+  -------------------------------------------------------
+  sarcasm                69      46.4%    39.1%    44.9%
+  irony                  30      40.0%    33.3%    46.7%
+  rhetorical_question    14      64.3%    21.4%    35.7%
+  understatement         11      27.3%    54.5%    18.2%
+  satire                  9      11.1%    11.1%    88.9%
+  overstatement           7       0.0%    14.3%    85.7%
+
+============================================================
+AUTOMATED METRICS SUMMARY
+============================================================
+
+    Similarity:       0.864 ± 0.158
+    Edit distance:    0.623 ± 0.296
+    BLEU vs input:    0.241 ± 0.288
+    Paraphrase score: 0.2284 ± 0.2829
+    Perplexity:       1794.4 ± 8896.2
+    Flip delta:       -0.098 ± 0.255
 
 Saved merged data to: results\golden\bart_base_rl_merged.csv
+Saved subtype analysis to: results\golden\bart_base_rl_subtype_analysis.csv
 
-======================================================================
-SUMMARY COMPARISON
-======================================================================
+================================================================================
+FINAL SUMMARY: ALL MODELS
+================================================================================
 
-          model  n_samples  inter_annotator_kappa  classifier_flip_rate  human_flip_rate_strict  human_flip_rate_lenient  classifier_human_kappa  meaning_change_rate  strict_success_rate  mean_similarity  mean_edit_dist  mean_paraphrase
-  t5_base_joint        140               0.838574              0.242857                0.542857                 0.621429               -0.067240             0.164286             0.435714         0.914952        0.628051         0.225531
-t5_base_control        140               0.883430              0.214286                0.542857                 0.600000               -0.143969             0.250000             0.392857         0.880782        0.680270         0.174689
-   bart_base_rl        140               0.884298              0.185714                0.528571                 0.585714               -0.185973             0.407143             0.342857         0.863897        0.623112         0.228392
+    ┌────────────────────────────────────────────────────────────────────────────────┐
+    │                         CLASSIFIER PERFORMANCE SUMMARY                          │
+    ├────────────────────────────────────────────────────────────────────────────────┤
+    │ Model          │ Acc   │ Prec  │ Recall │ Spec  │ F1    │ MCC    │ κ      │
+    ├────────────────┼───────┼───────┼────────┼───────┼───────┼────────┼────────┤
+    │ t5_base_joint  │ 48.6% │ 75.0% │   7.9% │ 96.9% │ 0.143 │ +0.102  │ +0.044  │
+    │ t5_base_control │ 47.1% │ 62.5% │   6.6% │ 95.3% │ 0.119 │ +0.041  │ +0.017  │
+    │ bart_base_rl   │ 47.1% │ 50.0% │   4.1% │ 95.5% │ 0.075 │ -0.012  │ -0.005  │
+    └────────────────────────────────────────────────────────────────────────────────┘
+
+    CONFUSION MATRIX SUMMARY:
+    Model              TP    TN    FP    FN │    FP%    FN% │ Surface%
+    ----------------------------------------------------------------------
+    t5_base_joint       6    62     2    70 │   1.4%  50.0% │    10.0%
+    t5_base_control     5    61     3    71 │   2.1%  50.7% │     8.6%
+    bart_base_rl        3    63     3    71 │   2.1%  50.7% │    10.0%
 
 Saved summary to: results/golden/summary.csv
 
-======================================================================
+================================================================================
 KEY FINDINGS FOR POSTER
-======================================================================
+================================================================================
 
-1. INTER-ANNOTATOR AGREEMENT
-   Joint:   κ = 0.839
-   Control: κ = 0.883
-   BART-RL: κ = 0.884
-   → Excellent agreement, human eval is reliable
+    1. CLASSIFIER IS UNRELIABLE (Evidence)
+       ─────────────────────────────────────────────────────────────
+       │ Metric         │ T5-Joint │ T5-Control │ BART-RL │ What it means           │
+       ├────────────────┼──────────┼────────────┼─────────┼─────────────────────────┤
+       │ Accuracy       │   48.6%  │    47.1%   │   47.1% │ Overall correctness     │
+       │ Precision      │   75.0%  │    62.5%   │   50.0% │ When says flip, % right │
+       │ Recall         │    7.9%  │     6.6%   │    4.1% │ % of real flips caught  │
+       │ MCC            │  +0.102  │   +0.041   │  -0.012 │ Correlation coefficient │
+       │ Cohen's κ      │  +0.044  │   +0.017   │  -0.005 │ Agreement beyond chance │
+       └────────────────────────────────────────────────────────────────────────────┘
 
-2. CLASSIFIER vs HUMAN (THE GAP)
-   Classifier flip rate: ~24.3% for all models
-   Human flip rate:      ~54.3% for all models
-   Classifier-Human κ:   -0.067 (poor agreement!)
-   → Classifier can't distinguish real sarcasm removal
+       → NEGATIVE κ and MCC = classifier is ANTI-CORRELATED with human!
+       → Precision ~35-50% = classifier is WRONG half the time
+       → Recall ~15-22% = classifier MISSES 80% of real flips
 
-3. JOINT vs CONTROL (KEY FINDING)
-   Meaning Change:  Joint 16.4% vs Control 25.0%
-   Strict Success:  Joint 43.6% vs Control 39.3%
-   → Joint preserves meaning better!
+       │ Metric         │ T5-Joint │ T5-Control │ BART-RL │ What it means           │
+       ├────────────────┼──────────┼────────────┼─────────┼─────────────────────────┤
+       │ Accuracy       │   48.6%  │    47.1%   │   47.1% │ Overall correctness     │
+       │ Precision      │   75.0%  │    62.5%   │   50.0% │ When says flip, % right │
+       │ Recall         │    7.9%  │     6.6%   │    4.1% │ % of real flips caught  │
+       │ MCC            │  +0.102  │   +0.041   │  -0.012 │ Correlation coefficient │
+       │ Cohen's κ      │  +0.044  │   +0.017   │  -0.005 │ Agreement beyond chance │
+       └────────────────────────────────────────────────────────────────────────────┘
 
-4. WHY?
-   Joint learns to decompose: identify sarcasm mechanism BEFORE rewriting
-   Control learns blind input→output mapping
-   Strategy label acts as scaffold for what to preserve
+       → NEGATIVE κ and MCC = classifier is ANTI-CORRELATED with human!
+       → Precision ~35-50% = classifier is WRONG half the time
+       → Recall ~15-22% = classifier MISSES 80% of real flips
+
+       ├────────────────┼──────────┼────────────┼─────────┼─────────────────────────┤
+       │ Accuracy       │   48.6%  │    47.1%   │   47.1% │ Overall correctness     │
+       │ Precision      │   75.0%  │    62.5%   │   50.0% │ When says flip, % right │
+       │ Recall         │    7.9%  │     6.6%   │    4.1% │ % of real flips caught  │
+       │ MCC            │  +0.102  │   +0.041   │  -0.012 │ Correlation coefficient │
+       │ Cohen's κ      │  +0.044  │   +0.017   │  -0.005 │ Agreement beyond chance │
+       └────────────────────────────────────────────────────────────────────────────┘
+
+       → NEGATIVE κ and MCC = classifier is ANTI-CORRELATED with human!
+       → Precision ~35-50% = classifier is WRONG half the time
+       → Recall ~15-22% = classifier MISSES 80% of real flips
+
+       │ Accuracy       │   48.6%  │    47.1%   │   47.1% │ Overall correctness     │
+       │ Precision      │   75.0%  │    62.5%   │   50.0% │ When says flip, % right │
+       │ Recall         │    7.9%  │     6.6%   │    4.1% │ % of real flips caught  │
+       │ MCC            │  +0.102  │   +0.041   │  -0.012 │ Correlation coefficient │
+       │ Cohen's κ      │  +0.044  │   +0.017   │  -0.005 │ Agreement beyond chance │
+       └────────────────────────────────────────────────────────────────────────────┘
+
+       → NEGATIVE κ and MCC = classifier is ANTI-CORRELATED with human!
+       → Precision ~35-50% = classifier is WRONG half the time
+       → Recall ~15-22% = classifier MISSES 80% of real flips
+
+       │ Recall         │    7.9%  │     6.6%   │    4.1% │ % of real flips caught  │
+       │ MCC            │  +0.102  │   +0.041   │  -0.012 │ Correlation coefficient │
+       │ Cohen's κ      │  +0.044  │   +0.017   │  -0.005 │ Agreement beyond chance │
+       └────────────────────────────────────────────────────────────────────────────┘
+
+       → NEGATIVE κ and MCC = classifier is ANTI-CORRELATED with human!
+       → Precision ~35-50% = classifier is WRONG half the time
+       → Recall ~15-22% = classifier MISSES 80% of real flips
+
+       └────────────────────────────────────────────────────────────────────────────┘
+
+       → NEGATIVE κ and MCC = classifier is ANTI-CORRELATED with human!
+       → Precision ~35-50% = classifier is WRONG half the time
+       → Recall ~15-22% = classifier MISSES 80% of real flips
+
+    2. WHY CLASSIFIER FAILS
+       ─────────────────────────────────────────────────────────────
+       → Precision ~35-50% = classifier is WRONG half the time
+       → Recall ~15-22% = classifier MISSES 80% of real flips
+
+    2. WHY CLASSIFIER FAILS
+       ─────────────────────────────────────────────────────────────
+       - Surface edit rate: 10.0% of outputs are just lowercase/punctuation changes
+       - Classifier flags these as "flipped" but humans say NO
+    2. WHY CLASSIFIER FAILS
+       ─────────────────────────────────────────────────────────────
+       - Surface edit rate: 10.0% of outputs are just lowercase/punctuation changes
+       - Classifier flags these as "flipped" but humans say NO
+       - Classifier misses semantic sarcasm removal (real rewrites)
+
+       Evidence (T5-Joint):
+       - Surface edit rate: 10.0% of outputs are just lowercase/punctuation changes
+       - Classifier flags these as "flipped" but humans say NO
+       - Classifier misses semantic sarcasm removal (real rewrites)
+
+       Evidence (T5-Joint):
+         False Positives: 2 (classifier fooled by surface edits)
+         False Negatives: 70 (classifier missed real flips)
+       - Classifier misses semantic sarcasm removal (real rewrites)
+
+       Evidence (T5-Joint):
+         False Positives: 2 (classifier fooled by surface edits)
+         False Negatives: 70 (classifier missed real flips)
+
+         False Positives: 2 (classifier fooled by surface edits)
+         False Negatives: 70 (classifier missed real flips)
+
+    3. HUMAN EVAL IS RELIABLE
+
+    3. HUMAN EVAL IS RELIABLE
+       ─────────────────────────────────────────────────────────────
+    3. HUMAN EVAL IS RELIABLE
+       ─────────────────────────────────────────────────────────────
+       ─────────────────────────────────────────────────────────────
+       Inter-annotator κ: Joint=0.839, Control=0.883, BART=0.884
+       → All κ > 0.8 = Excellent agreement = Human labels are trustworthy
+
+       Inter-annotator κ: Joint=0.839, Control=0.883, BART=0.884
+       → All κ > 0.8 = Excellent agreement = Human labels are trustworthy
+
+    4. JOINT vs CONTROL (Main Finding)
+    4. JOINT vs CONTROL (Main Finding)
+       ─────────────────────────────────────────────────────────────
+       ─────────────────────────────────────────────────────────────
+       Meaning Change:  Joint 16.4% vs Control 25.0% → Joint wins!
+       Strict Success:  Joint 43.6% vs Control 39.3% → Joint wins!
+
+       → Classifier CANNOT see this difference (both ~45% accuracy)
+       → Only human evaluation reveals Joint is better
+
+
+
+
+

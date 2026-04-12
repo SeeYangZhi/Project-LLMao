@@ -22,7 +22,7 @@ id,input,output,Strategy(just pasted from other sheet),Nguyen checking Sarcasm r
 21,ABA Politely Tells President He Can’t Insult Judges Because He Lost Bigly,aBA tells president he cannot Insult judges because he lost,understatement,1,1,0,
 22,ICE Can Bust Into Houses Without Warrants Based On Memo So Cool And Legal They Keep It Hidden,ICE can bust into houses without warrants based on memo.,sarcasm,1,1,0,
 23,Trump Wants To Regulate AI On A National Basis — Because What Could Go Wrong There?,trump wants to regulate AI on a national Basis,rhetorical_question,1,1,0,
-24,Maybe That Whole ‘Vetting’ Thing Is Actually A Pretty Big Deal,,sarcasm,1,0,1,
+24,Maybe That Whole ‘Vetting’ Thing Is Actually A Pretty Big Deal,,sarcasm,0,0,1,
 25,Trump Defends Sacred Right To Starve Kids For Separation Of Powers,trump defended the Sacred Right to Starve Kids for Separation of Powers.,satire,0,0,0,
 26,The 4th TikTok Delay Is The Charm!,the 4th tikTok delay,sarcasm,1,1,0,
 27,Kash Patel Makes FBI Great Again By Getting It Sued,kash p Patel makes the fbi great again,sarcasm,0,0,1,
@@ -42,7 +42,7 @@ changed to align with t5 base "
 40,"New year, new bug – rivalry between devs led to a deep-code disaster","new year, new bug",understatement,0,0,1,
 41,Microsoft puts the 'why?' in Wi-Fi with latest Windows patch,microsoft puts the 'why?' in Wi-Fi with the latest Windows patch.,sarcasm,0,0,0,
 42,End of Windows 10 support is the perfect time for the Windows 11 installer to fail,End of Windows 10 support will cause the Windows 11 installer to fail.,sarcasm,1,1,1,Real semantic shift I think
-43,PLACEHOLDER ONLY Someone please write witty headline here,,irony,1,0,1,even failed to output -> meaning changed 
+43,PLACEHOLDER ONLY Someone please write witty headline here,,irony,0,0,1,even failed to output -> meaning changed 
 44,"Caffeine pouch craze: A teenage trend, unsurprisingly, troubling some experts",caffeine pouch craze,sarcasm,1,1,1,
 45,Union and government to restart talks on ending doctor dispute (again),Union and government will restart talks on ending a doctor dispute.,irony,1,1,0,
 46,"Nasa's mega Moon rocket arrives at launch pad for Artemis II mission, hopefully to launch",nasa's mega moon rocket arrived at launch pad for the Artemis II mission.,irony,1,1,0,
@@ -51,7 +51,7 @@ changed to align with t5 base "
 49,Labour wants to shake up the police – because that always works perfectly,Labour wants to shake up the police.,sarcasm,1,1,0,
 50,Nasa announces change to its Moon landing plans - again,nasa announced a change to its Moon landing plans.,irony,1,1,0,
 51,Is fuel support really going to the right places for once?,trump wants fuel support,sarcasm,0,0,1,
-52,"Finally, the clitoris is getting the attention it deserves",the clitoris,irony,1,0,1,
+52,"Finally, the clitoris is getting the attention it deserves",the clitoris,irony,0,0,1,
 53,Why is gaming becoming so expensive? The answer is found in AI... again,why is gaming becoming so expensive?,sarcasm,1,1,1,It removes the answer of the headline then now it’s just a generic question.
 54,Milan Protesters Rally Against an Environmentally and Economically “Totally Sustainable” Winter Olympics,Milan protesters are rallying against an environmentally and Economically “totally sustainable” winter Olympics.,sarcasm,0,0,0,
 55,Just a Reminder: Racism is not rivalry. It is a crime,a reminder that racism is not a rivalry,sarcasm,1,1,1,
@@ -65,10 +65,10 @@ changed to align with t5 base "
 63,What could six fictional voters teach us about how social media really works? Subscrible to find out,6 fictional voters,sarcasm,0,0,1,
 64,"First stop, the Moon. Next stop, Mars? Why Nasa's mission (probably) matters","first stop, the moon. next stop, mars.",sarcasm,1,1,1,
 65,Who knew Lord Sugar is a table tennis fan? Not us,lord sugar is a table tennis fan.,sarcasm,1,1,0,
-66,Your Daily Reminder: 'Women's health must be taken more seriously',your daily reminder,sarcasm,0,1,1,
+66,Your Daily Reminder: 'Women's health must be taken more seriously',your daily reminder,sarcasm,0,0,1,
 67,Lab-grown food pipe offers (non-pipe) dream for young patients... hopefully,Lab-grown food pipe offers a dream for young patients.,sarcasm,1,1,0,
 68,"Another 58 babies lost to poor NHS care, BBC finds","another 58 babies were lost to poor NHS care, BBC found.",sarcasm,0,0,0,
-69,Surprise! Sleep has effects that extend far beyond the private sphere',,sarcasm,1,0,1,
+69,Surprise! Sleep has effects that extend far beyond the private sphere',,sarcasm,0,0,1,
 70,Racist backlash against newly elected French officials... again,Racist backlash against newly elected french officials,sarcasm,1,1,0,
 71,Tax reassessments finally target wealthy French who pay no income tax,Tax reassessments target wealthy French who pay no income tax.,sarcasm,1,1,0,
 72,"In one month of war, oil production has plunged, to no one's surprise","in one month of war, oil production has plunged",sarcasm,1,1,0,
@@ -83,7 +83,7 @@ changed to align with t5 base "
 81,Somaliland called for extradition of Ilhan Omar: Another minor false report,somaliland called for the extradition of Ilhan Omar,understatement,1,1,0,
 82,"Including online games in social media bans is definitely workable, necessary and would benefit young people",cluding online games in social media bans is workable and would benefit young people.,satire,0,0,0,
 83,Vibe coded applications full of non-vibey security blunders because of course it is.,vibe coded applications contain non-vibey security,irony,0,0,1,
-84,America’s Finest Minds Rally Around Trump’s War—Guess It’s On the Rest of Us to Provide the Shame,,sarcasm,1,0,1,
+84,America’s Finest Minds Rally Around Trump’s War—Guess It’s On the Rest of Us to Provide the Shame,,sarcasm,0,0,1,
 85,Donald Trump delivers his daily scheduled ‘sleazebag’ comment about Leonard Leo,donald trump delivered his daily scheduled 'sleazebag’ comment about Leonard Leo.,sarcasm,0,0,0,
 86,Trump Sues IRS For $10B Over Leak Of His Glorious Tax Returns,trump sued IRS for $10B over leak of his tax returns.,sarcasm,1,1,0,
 87,"Come on kids, let's go play in the abandoned nuclear power station","Come on kids, let's go play in the abandoned nuclear power station.",understatement,0,0,0,
@@ -92,14 +92,14 @@ changed to align with t5 base "
 90,"God didn't have a plan for Gelsinger at Intel. Maybe there is one for his new gig, Gloo",God didn't have a plan for gelsinger at Intel.,sarcasm,0,0,1,
 91,"Please sir, may we have some Moore? Doesn't look that way","please sir, may we have Moore",irony,0,0,0,
 92,Teens maintained a mainframe and it went about as well as you'd imagine,Teens maintained a mainframe.,sarcasm,1,1,1,
-93,"World’s Deadliest Sharks Only One-Third As Deadly To Minnesotans In 2026 As ICE, Trump’s Stupid War",The world's deadliest Sharks are one-third as deadly to Minnesotans in 2026 as ICE.,sarcasm,1,0,1,changed to align with t5 base human evaluation
+93,"World’s Deadliest Sharks Only One-Third As Deadly To Minnesotans In 2026 As ICE, Trump’s Stupid War",The world's deadliest Sharks are one-third as deadly to Minnesotans in 2026 as ICE.,sarcasm,1,1,1,changed to align with t5 base human evaluation
 94,"A male doctor at a women’s health conference says heat exhaustion affects women no differently, what could possibly go wrong?",a male doctor at a women’s health conference says heat exhaustion affects women.,rhetorical_question,1,1,1,
 95,Hate To Say I Told You So Again: Your Chats Ain’t Private,hate to say i told you so again,sarcasm,0,0,1,
 96,"$400m White House Ballroom Project is absolutely critical to nation security and halting it will severly risk national security, Trump Officials say",The $400m white house ballroom project is critical to nation security and halting it will risk national security.,overstatement,0,0,0,
 97,Disciples Wondering What Jesus Could Have Possibly Meant By 'They Will Kill Me And In Three Days I Will Rise From The Dead',disciples are wondering what jesus inspired by 'they will kill me and in three days i will rise from the dead'.,irony,0,0,1,
 98,Oops. VMware admits it over-specced storage servers for years,v VMware admitted it over-specced storage servers for years.,irony,1,1,0,
 99,Is it wrong for a Waitrose employee to stop a shoplifter from stealing Easter eggs? plot twist he got fired,waitrose employee tried to stop a shoplifter from stealing Easter eggs.,rhetorical_question,1,1,1,
-100,Grok told to cover up as UK weighs action over AI 'undressing',Grok was told to cover up as the UK weighs action over AI 'undressing'.,irony,0,1,0,Should be 0
+100,Grok told to cover up as UK weighs action over AI 'undressing',Grok was told to cover up as the UK weighs action over AI 'undressing'.,irony,0,0,0,Should be 0
 101,"Sorry Dave, I’m afraid I can’t do that! PCs refuse to shut down after Microsoft patch",dave,sarcasm,0,0,1,
 102,"Another week, another emergency patch as Cisco plugs Unified Comms zero-day","Another week, another emergency patch as Cisco plugs Unified Comms zero-day.",sarcasm,0,0,0,
 103,"AI security startup CEO posts a job. Deepfake candidate applies, inner turmoil ensues",AI security startup CEO posts a job.,irony,1,1,1,
