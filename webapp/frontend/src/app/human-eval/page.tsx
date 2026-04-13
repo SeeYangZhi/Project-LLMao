@@ -293,7 +293,7 @@ export default function HumanEvalPage() {
                           </div>
                         </div>
                       </div>
-                      {item.flag_reason && (
+                      {Boolean(item.flag_reason) && (
                         <div className="mt-2 flex gap-1.5 flex-wrap">
                           {(item.flag_reason as string)
                             .split("; ")
