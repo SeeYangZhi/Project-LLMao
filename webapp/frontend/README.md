@@ -31,8 +31,15 @@ shows a banner explaining that live inference is disabled.
 NEXT_PUBLIC_USE_STATIC=true npm run dev
 ```
 
-To deploy to Vercel, set `NEXT_PUBLIC_USE_STATIC=true` in the project's
-environment variables, then push to the connected git branch.
+To deploy to Vercel:
+
+1. Connect the repo to a Vercel project.
+2. **Settings → General → Root Directory**: set to `webapp/frontend`. This
+   is the only manual UI step — Vercel's Root Directory cannot be set from
+   `vercel.json`.
+3. Push. The committed `vercel.json` provides the `NEXT_PUBLIC_USE_STATIC`
+   build-time env var and the Next.js framework hint, so everything else
+   is reproducible from the repo.
 
 ## Refreshing the static data
 
