@@ -8,6 +8,20 @@ HELDOUT_FILE = DATA_DIR / "sarcasm_heldout_manual_annotated.jsonl"
 HUMAN_EVAL_CSV = DATA_DIR / "human_eval.csv"
 CROSS_VAL_FILE = DATA_DIR / "processed" / "intermediate" / "cross_validation_secondary.jsonl"
 
+# Multi-classifier eval (commit 29dd7a7) — 3 sarcasm classifiers per model
+MULTI_CLF_FILE = RESULTS_DIR / "all_models_multi_classifier.csv"
+GOLDEN_DIR = RESULTS_DIR / "golden"
+GOLDEN_SUMMARY_FILE = GOLDEN_DIR / "summary.csv"
+GOLDEN_CLF_SUMMARY_FILE = GOLDEN_DIR / "summary_all_classifiers.csv"
+
+CLASSIFIERS = ["RoBERTa-Twitter", "DistilBERT-Reddit", "RoBERTa-News"]
+# Golden eval covers exactly these 3 models (140 samples × 2 annotators)
+GOLDEN_MODELS = {
+    "t5_base_joint": "T5 Base Joint",
+    "t5_base_control": "T5 Base Control",
+    "bart_base_rl": "BART RL",
+}
+
 LMSTUDIO_BASE_URL = "http://localhost:1234/v1"
 
 BART_CE_RL_PATH = PROJECT_ROOT / "outputs" / "bart-base-ce-rl" / "sar-to-non" / "best"

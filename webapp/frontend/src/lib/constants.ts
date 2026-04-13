@@ -20,8 +20,20 @@ export const METRIC_INFO: Record<
   { label: string; description: string; higher_better: boolean; format: string }
 > = {
   hard_flip_rate: {
-    label: "Flip Rate",
-    description: "% of samples where sarcasm was successfully removed",
+    label: "Flip Rate (Twitter)",
+    description: "% flagged non-sarcastic by RoBERTa-Twitter — see Human Eval for the other 2 classifiers and human ground truth",
+    higher_better: true,
+    format: "percent",
+  },
+  flip_rate_reddit: {
+    label: "Flip Rate (Reddit)",
+    description: "% flagged non-sarcastic by DistilBERT-Reddit — wildly different from the other classifiers",
+    higher_better: true,
+    format: "percent",
+  },
+  flip_rate_news: {
+    label: "Flip Rate (News)",
+    description: "% flagged non-sarcastic by RoBERTa-News — closest to human judgment but still κ ≈ 0.10",
     higher_better: true,
     format: "percent",
   },
@@ -45,7 +57,7 @@ export const METRIC_INFO: Record<
   },
   perplexity: {
     label: "Perplexity",
-    description: "GPT-2 perplexity (lower = more fluent)",
+    description: "GPT-2 perplexity, mean — sensitive to long-tail outliers",
     higher_better: false,
     format: "decimal",
   },
@@ -57,8 +69,8 @@ export const METRIC_INFO: Record<
   },
   paraphrase_score: {
     label: "Paraphrase Score",
-    description: "Paraphrase detection (lower = genuine rewriting)",
-    higher_better: false,
+    description: "similarity × (1 − BLEU). Higher = genuine rewriting that still preserves meaning.",
+    higher_better: true,
     format: "decimal",
   },
 };

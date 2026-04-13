@@ -29,7 +29,7 @@ const CARDS = [
     href: "/human-eval",
     num: "05",
     title: "Human Evaluation",
-    desc: "Gold standard annotations, flagged samples, and inter-annotator agreement analysis.",
+    desc: "140 samples × 3 models × 2 annotators (κ > 0.8). Three sarcasm classifiers all disagree with humans (κ = −0.11 to +0.18) — receipts inside.",
   },
 ];
 
@@ -71,8 +71,8 @@ export default function HomePage() {
           {[
             { value: "14", label: "Models Tested", sub: "BART, T5, LLaMA" },
             { value: "2,857", label: "Test Samples", sub: "Per model" },
-            { value: "7", label: "Auto Metrics", sub: "Flip rate, BLEU, ..." },
-            { value: "6", label: "Strategies", sub: "Sarcasm subtypes" },
+            { value: "3×7", label: "Classifier×Metrics", sub: "Roberta/DistilBERT/News" },
+            { value: "140", label: "Hand-Labeled", sub: "2 annotators, κ > 0.8" },
           ].map((stat) => (
             <div key={stat.label}>
               <div
@@ -147,8 +147,8 @@ export default function HomePage() {
               },
               {
                 title: "Evaluation",
-                body: "7 automatic metrics including sarcasm flip rate, semantic similarity, perplexity, and paraphrase detection. Gemini LLM-as-judge + human annotation.",
-                href: "/dashboard",
+                body: "7 automatic metrics across 3 sarcasm classifiers (RoBERTa-Twitter, DistilBERT-Reddit, RoBERTa-News) plus 140 hand-labeled samples. The classifiers disagree by up to 33 pp — human eval is essential.",
+                href: "/human-eval",
               },
             ].map((item) => (
               <div key={item.title}>

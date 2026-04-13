@@ -109,6 +109,30 @@ def export_mislabels():
     _write(OUT_DIR / "mislabels.json", items)
 
 
+def export_multi_classifier():
+    print("[multi-classifier]")
+    _write(
+        OUT_DIR / "multi-classifier.json",
+        {
+            "models": data_store.multi_classifier,
+            "classifiers": ["RoBERTa-Twitter", "DistilBERT-Reddit", "RoBERTa-News"],
+        },
+    )
+
+
+def export_golden():
+    print("[golden]")
+    _write(
+        OUT_DIR / "golden-eval.json",
+        {
+            "summary": _clean(data_store.golden_summary),
+            "classifier_breakdown": _clean(data_store.golden_classifier_breakdown),
+            "subtype": {k: _clean(v) for k, v in data_store.golden_subtype.items()},
+            "samples": {k: _clean(v) for k, v in data_store.golden_samples.items()},
+        },
+    )
+
+
 def export_human_eval():
     print("[human-eval]")
     if data_store.gold_eval is not None:
@@ -189,6 +213,8 @@ def main():
     export_metrics()
     export_samples()
     export_mislabels()
+    export_multi_classifier()
+    export_golden()
     export_human_eval()
     export_inference_models()
 

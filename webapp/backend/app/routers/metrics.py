@@ -53,3 +53,23 @@ def get_models():
         }
         for name in available
     ]
+
+
+@router.get("/multi-classifier")
+def get_multi_classifier():
+    """Per-model flip rates from all 3 sarcasm classifiers (commit 29dd7a7)."""
+    return {
+        "models": data_store.multi_classifier,
+        "classifiers": ["RoBERTa-Twitter", "DistilBERT-Reddit", "RoBERTa-News"],
+    }
+
+
+@router.get("/golden")
+def get_golden():
+    """Human-annotated golden eval (3 models × 140 samples × 2 annotators)."""
+    return {
+        "summary": data_store.golden_summary,
+        "classifier_breakdown": data_store.golden_classifier_breakdown,
+        "subtype": data_store.golden_subtype,
+        "samples": data_store.golden_samples,
+    }

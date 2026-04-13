@@ -299,6 +299,94 @@ export async function getHeldout(params?: {
   }>(`/api/human-eval/heldout?${q}`);
 }
 
+// ─── Multi-classifier eval (commit 29dd7a7) ────────────────────────────────
+
+export type ClassifierFlip = {
+  classifier: string;
+  type: string;
+  training: string;
+  flip_rate: number;
+  mean_flip_delta: number;
+};
+
+export async function getMultiClassifier() {
+  if (STATIC_MODE) {
+    return fetchAPI<{
+      models: Record<string, ClassifierFlip[]>;
+      classifiers: string[];
+    }>("/data/multi-classifier.json");
+  }
+  return fetchAPI<{
+    models: Record<string, ClassifierFlip[]>;
+    classifiers: string[];
+  }>("/api/metrics/multi-classifier");
+}
+
+// ─── Golden human eval (3 models × 140 samples × 2 annotators) ─────────────
+
+export type GoldenSummary = {
+  model: string;
+  display: string;
+  n_samples: number;
+  human_flip_rate: number;
+  meaning_change_rate: number;
+  strict_success_rate: number;
+  mean_similarity: number;
+  mean_edit_dist: number;
+  mean_paraphrase: number;
+  inter_annotator_kappa?: number;
+};
+
+export type GoldenClassifierBreakdown = {
+  model: string;
+  classifier: string;
+  classifier_type: string;
+  training_data: string;
+  accuracy: number;
+  precision: number;
+  recall: number;
+  f1: number;
+  mcc: number;
+  kappa: number;
+  clf_flip_rate: number;
+  human_flip_rate: number;
+  tp: number;
+  tn: number;
+  fp: number;
+  fn: number;
+};
+
+export type GoldenSubtypeRow = {
+  subtype: string;
+  n: number;
+  human_flip_rate: number;
+  surface_edit_rate: number;
+  mean_edit_dist: number;
+  twitter_flip_rate: number;
+  twitter_kappa: number;
+  reddit_flip_rate: number;
+  reddit_kappa: number;
+  news_flip_rate: number;
+  news_kappa: number;
+};
+
+export async function getGoldenEval() {
+  if (STATIC_MODE) {
+    return fetchAPI<{
+      summary: GoldenSummary[];
+      classifier_breakdown: GoldenClassifierBreakdown[];
+      subtype: Record<string, GoldenSubtypeRow[]>;
+      samples: Record<string, Record<string, unknown>[]>;
+    }>("/data/golden-eval.json");
+  }
+  return fetchAPI<{
+    summary: GoldenSummary[];
+    classifier_breakdown: GoldenClassifierBreakdown[];
+    subtype: Record<string, GoldenSubtypeRow[]>;
+    samples: Record<string, Record<string, unknown>[]>;
+  }>("/api/metrics/golden");
+}
+
 // ─── Mislabels ─────────────────────────────────────────────────────────────
 
 export type Mislabel = {
