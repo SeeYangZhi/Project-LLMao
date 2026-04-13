@@ -21,3 +21,7 @@ wheels/
 # Outputs & logs
 outputs/
 logs/
+checkpoints/
+
+# Third-party tooling (cloned into project for GGUF conversion)
+llama.cpp/

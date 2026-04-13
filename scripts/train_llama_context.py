@@ -151,7 +151,7 @@ def parse_args():
     p.add_argument("--batch_size", type=int, default=8)
     p.add_argument("--grad_accum", type=int, default=2)
     p.add_argument("--epochs", type=int, default=3)
-    p.add_argument("--max_length", type=int, default=512)
+    p.add_argument("--max_length", type=int, default=1024)
     p.add_argument("--max_steps", type=int, default=-1)
     p.add_argument("--lora_r", type=int, default=16)
     p.add_argument("--lora_alpha", type=int, default=32)
@@ -166,9 +166,7 @@ def parse_args():
 # ---------------------------------------------------------------------------
 
 def main():
-    global MAX_BODY_CHARS
     args = parse_args()
-    MAX_BODY_CHARS = args.max_body_chars
 
     model_short = args.model.split("/")[-1]
     if args.output_dir is None:
@@ -182,7 +180,6 @@ def main():
     print(f"Data:           {args.data_dir}")
     print(f"Article cache:  {args.article_cache}")
     print(f"Output:         {output_dir}")
-    print(f"Max body chars: {args.max_body_chars}")
     print(f"Max seq length: {args.max_length}")
     print(f"LoRA:           r={args.lora_r}, alpha={args.lora_alpha}, dropout={args.lora_dropout}")
     print(f"LR: {args.lr}  Batch: {args.batch_size}  Grad accum: {args.grad_accum}  Epochs: {args.epochs}")

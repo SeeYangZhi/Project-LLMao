@@ -22,8 +22,7 @@ python scripts/train_llama_context.py \
     --batch_size 4 \
     --grad_accum 4 \
     --epochs 3 \
-    --max_length 512 \
-    --max_body_chars 512 \
+    --max_length 1024 \
     --lora_r 16 \
     --lora_alpha 32 \
     --lora_dropout 0.05 \

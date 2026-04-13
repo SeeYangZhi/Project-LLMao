@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+  --foreground-secondary: #212121;
+  --muted: #93939f;
+  --border: #d9d9dd;
+  --border-light: #e5e7eb;
+  --border-card: #f2f2f2;
+  --surface-snow: #fafafa;
+  --accent-blue: #1863dc;
+  --accent-purple: #9b60aa;
+  --purple-deep: #1a0a2e;
+  --purple-mid: #2d1b4e;
+  --radius-card: 22px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-border-light: var(--border-light);
+  --color-border-card: var(--border-card);
+  --color-surface-snow: var(--surface-snow);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-purple: var(--accent-purple);
+  --color-purple-deep: var(--purple-deep);
+  --color-purple-mid: var(--purple-mid);
+  --font-display: var(--font-dm-serif);
+  --font-body: var(--font-dm-sans);
+  --font-code: var(--font-jetbrains-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* Recharts tooltip override */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  border-radius: 12px !important;
+  border: 1px solid var(--border-card) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06) !important;
+}
