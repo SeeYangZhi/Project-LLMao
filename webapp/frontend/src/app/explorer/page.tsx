@@ -83,15 +83,15 @@ export default function ExplorerPage() {
   return (
     <div className="min-h-screen pb-20">
       {/* Header */}
-      <div className="px-12 pt-12 pb-8">
+      <div className="px-4 md:px-12 pt-8 md:pt-12 pb-6 md:pb-8">
         <span
-          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-4"
+          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-3 md:mb-4"
           style={{ fontFamily: "var(--font-jetbrains-mono)" }}
         >
           Browse Outputs
         </span>
         <h1
-          className="text-[48px] leading-[1.0] tracking-[-0.96px] text-foreground"
+          className="text-[36px] md:text-[48px] leading-[1.0] tracking-[-0.72px] md:tracking-[-0.96px] text-foreground"
           style={{ fontFamily: "var(--font-dm-serif)" }}
         >
           Explorer
@@ -99,7 +99,7 @@ export default function ExplorerPage() {
       </div>
 
       {/* Filters */}
-      <div className="px-12 pb-6 flex items-center gap-4 flex-wrap">
+      <div className="px-4 md:px-12 pb-6 flex items-center gap-3 md:gap-4 flex-wrap">
         <select
           value={model}
           onChange={(e) => setModel(e.target.value)}
@@ -130,20 +130,20 @@ export default function ExplorerPage() {
           placeholder="Search headlines..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="px-4 py-2 border border-border-card rounded-xl text-[13px] w-64 bg-white focus:outline-none focus:border-accent-blue placeholder:text-muted/50"
+          className="px-4 py-2 border border-border-card rounded-xl text-[13px] w-full sm:w-64 bg-white focus:outline-none focus:border-accent-blue placeholder:text-muted/50"
         />
 
         {data && (
-          <span className="text-[13px] text-muted ml-auto">
+          <span className="text-[12px] md:text-[13px] text-muted md:ml-auto">
             {data.total.toLocaleString()} samples
           </span>
         )}
       </div>
 
       {/* Table */}
-      <div className="px-12">
-        <div className="border border-border-card rounded-[22px] overflow-hidden">
-          <table className="w-full text-[13px]">
+      <div className="px-4 md:px-12">
+        <div className="border border-border-card rounded-[22px] overflow-x-auto">
+          <table className="w-full text-[13px] min-w-[800px]">
             <thead>
               <tr className="bg-surface-snow border-b border-border-light">
                 {[

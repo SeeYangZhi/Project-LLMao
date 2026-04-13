@@ -36,9 +36,11 @@ export default function RootLayout({
       lang="en"
       className={`${dmSerif.variable} ${dmSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex">
+      <body className="min-h-full">
         <Sidebar />
-        <main className="flex-1 ml-[240px] min-h-screen">{children}</main>
+        <main className="min-h-screen pt-14 md:pt-0 md:ml-[240px]">
+          {children}
+        </main>
       </body>
     </html>
   );

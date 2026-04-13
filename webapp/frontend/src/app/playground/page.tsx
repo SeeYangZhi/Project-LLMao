@@ -55,17 +55,17 @@ export default function PlaygroundPage() {
   ];
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-16 md:pb-20">
       {/* Header */}
-      <div className="px-12 pt-12 pb-8">
+      <div className="px-4 md:px-12 pt-8 md:pt-12 pb-6 md:pb-8">
         <span
-          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-4"
+          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-3 md:mb-4"
           style={{ fontFamily: "var(--font-jetbrains-mono)" }}
         >
           Interactive
         </span>
         <h1
-          className="text-[48px] leading-[1.0] tracking-[-0.96px] text-foreground"
+          className="text-[36px] md:text-[48px] leading-[1.0] tracking-[-0.72px] md:tracking-[-0.96px] text-foreground"
           style={{ fontFamily: "var(--font-dm-serif)" }}
         >
           Playground
@@ -74,8 +74,8 @@ export default function PlaygroundPage() {
 
       {/* Static-mode banner: shown when no model is available (Vercel deploy) */}
       {models.length > 0 && models.every((m) => !m.available) && (
-        <div className="px-12 pb-6">
-          <div className="border border-accent-purple/30 bg-accent-purple/[0.03] rounded-[22px] p-6 max-w-3xl">
+        <div className="px-4 md:px-12 pb-6">
+          <div className="border border-accent-purple/30 bg-accent-purple/[0.03] rounded-[22px] p-5 md:p-6 max-w-3xl">
             <span
               className="text-[10px] tracking-[0.28px] uppercase text-accent-purple block mb-2"
               style={{ fontFamily: "var(--font-jetbrains-mono)" }}
@@ -103,7 +103,7 @@ export default function PlaygroundPage() {
         </div>
       )}
 
-      <div className="px-12 grid grid-cols-[1fr_360px] gap-8">
+      <div className="px-4 md:px-12 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 lg:gap-8">
         {/* Main panel */}
         <div className="space-y-6">
           {/* Model selector + status */}

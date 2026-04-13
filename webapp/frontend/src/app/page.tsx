@@ -37,21 +37,21 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="px-12 pt-20 pb-16">
+      <section className="px-4 md:px-12 pt-10 md:pt-20 pb-12 md:pb-16">
         <div className="max-w-4xl">
           <span
-            className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-6"
+            className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-4 md:mb-6"
             style={{ fontFamily: "var(--font-jetbrains-mono)" }}
           >
             CS4248 / NUS / Team 14
           </span>
           <h1
-            className="text-[72px] leading-[1.0] tracking-[-1.44px] text-foreground mb-6"
+            className="text-[44px] md:text-[72px] leading-[1.0] tracking-[-0.88px] md:tracking-[-1.44px] text-foreground mb-4 md:mb-6"
             style={{ fontFamily: "var(--font-dm-serif)" }}
           >
             Project LLMao
           </h1>
-          <p className="text-[18px] leading-[1.5] text-foreground-secondary max-w-2xl">
+          <p className="text-[16px] md:text-[18px] leading-[1.5] text-foreground-secondary max-w-2xl">
             Sarcasm style transfer using fine-tuned language models. We train
             BART and LLaMA variants to rewrite sarcastic news headlines as
             neutral, factual equivalents while preserving meaning.
@@ -61,13 +61,13 @@ export default function HomePage() {
 
       {/* Purple band */}
       <section
-        className="w-full py-16 px-12"
+        className="w-full py-12 md:py-16 px-4 md:px-12"
         style={{
           background:
             "linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 40%, #1a0a2e 100%)",
         }}
       >
-        <div className="max-w-6xl grid grid-cols-4 gap-8">
+        <div className="max-w-6xl grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {[
             { value: "14", label: "Models Tested", sub: "BART, T5, LLaMA" },
             { value: "2,857", label: "Test Samples", sub: "Per model" },
@@ -76,32 +76,36 @@ export default function HomePage() {
           ].map((stat) => (
             <div key={stat.label}>
               <div
-                className="text-[48px] leading-[1.0] tracking-[-0.96px] text-white mb-2"
+                className="text-[36px] md:text-[48px] leading-[1.0] tracking-[-0.72px] md:tracking-[-0.96px] text-white mb-2"
                 style={{ fontFamily: "var(--font-dm-serif)" }}
               >
                 {stat.value}
               </div>
-              <div className="text-[16px] text-white/90">{stat.label}</div>
-              <div className="text-[13px] text-white/50 mt-1">{stat.sub}</div>
+              <div className="text-[14px] md:text-[16px] text-white/90">
+                {stat.label}
+              </div>
+              <div className="text-[12px] md:text-[13px] text-white/50 mt-1">
+                {stat.sub}
+              </div>
             </div>
           ))}
         </div>
       </section>
 
       {/* Navigation cards */}
-      <section className="px-12 py-16">
+      <section className="px-4 md:px-12 py-12 md:py-16">
         <span
-          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-8"
+          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-6 md:mb-8"
           style={{ fontFamily: "var(--font-jetbrains-mono)" }}
         >
           Explore
         </span>
-        <div className="grid grid-cols-2 gap-6 max-w-6xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-6xl">
           {CARDS.map((card) => (
             <Link
               key={card.href}
               href={card.href}
-              className="group block border border-border-card rounded-[22px] p-8 transition-all duration-300 hover:border-accent-blue/30"
+              className="group block border border-border-card rounded-[22px] p-6 md:p-8 transition-all duration-300 hover:border-accent-blue/30"
             >
               <span
                 className="text-[11px] tracking-[0.16px] text-muted block mb-3"
@@ -121,15 +125,15 @@ export default function HomePage() {
       </section>
 
       {/* Method overview */}
-      <section className="px-12 pb-20">
-        <div className="max-w-6xl border-t border-border-light pt-12">
+      <section className="px-4 md:px-12 pb-16 md:pb-20">
+        <div className="max-w-6xl border-t border-border-light pt-10 md:pt-12">
           <span
             className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-6"
             style={{ fontFamily: "var(--font-jetbrains-mono)" }}
           >
             Methodology
           </span>
-          <div className="grid grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {[
               {
                 title: "Data Pipeline",

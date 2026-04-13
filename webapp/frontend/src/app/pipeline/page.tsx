@@ -197,20 +197,20 @@ export default function PipelinePage() {
   return (
     <div className="min-h-screen pb-20">
       {/* Header */}
-      <section className="px-12 pt-12 pb-8">
+      <section className="px-4 md:px-12 pt-8 md:pt-12 pb-6 md:pb-8">
         <span
-          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-4"
+          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-3 md:mb-4"
           style={{ fontFamily: "var(--font-jetbrains-mono)" }}
         >
           Methodology / Data
         </span>
         <h1
-          className="text-[48px] leading-[1.0] tracking-[-0.96px] text-foreground mb-4"
+          className="text-[36px] md:text-[48px] leading-[1.0] tracking-[-0.72px] md:tracking-[-0.96px] text-foreground mb-4"
           style={{ fontFamily: "var(--font-dm-serif)" }}
         >
           Data Pipeline
         </h1>
-        <p className="text-[18px] leading-[1.5] text-foreground-secondary max-w-3xl">
+        <p className="text-[16px] md:text-[18px] leading-[1.5] text-foreground-secondary max-w-3xl">
           From 28,619 raw news headlines to 89,688 strategy-annotated training
           pairs — six stages of LLM generation, cross-validation, and stratified
           splitting designed to prevent leakage while capturing all six sarcasm
@@ -219,8 +219,8 @@ export default function PipelinePage() {
       </section>
 
       {/* Stat ribbon */}
-      <section className="px-12 pb-12">
-        <div className="border border-border-card rounded-[22px] p-8 grid grid-cols-5 gap-6">
+      <section className="px-4 md:px-12 pb-8 md:pb-12">
+        <div className="border border-border-card rounded-[22px] p-5 md:p-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5 md:gap-6">
           {[
             { value: "28,619", label: "Raw headlines", sub: "NHDSD v2", href: null },
             { value: "28,536", label: "Generated pairs", sub: "LLM opposites", href: null },
@@ -265,9 +265,9 @@ export default function PipelinePage() {
       </section>
 
       {/* Pipeline stages */}
-      <section className="px-12 pb-12">
+      <section className="px-4 md:px-12 pb-8 md:pb-12">
         <span
-          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-6"
+          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-5 md:mb-6"
           style={{ fontFamily: "var(--font-jetbrains-mono)" }}
         >
           Primary Pipeline — Non-sarcastic → Sarcastic
@@ -290,13 +290,13 @@ export default function PipelinePage() {
                   </span>
                 </div>
                 {/* Content */}
-                <div className="flex-1 border border-border-card rounded-[22px] p-6">
-                  <div className="flex items-baseline justify-between mb-1">
-                    <h3 className="text-[22px] tracking-[-0.22px] text-foreground">
+                <div className="flex-1 min-w-0 border border-border-card rounded-[22px] p-5 md:p-6">
+                  <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-1 mb-1">
+                    <h3 className="text-[20px] md:text-[22px] tracking-[-0.22px] text-foreground">
                       {stage.title}
                     </h3>
                     <span
-                      className="text-[11px] tracking-[0.16px] text-muted"
+                      className="text-[11px] tracking-[0.16px] text-muted break-all md:break-normal"
                       style={{ fontFamily: "var(--font-jetbrains-mono)" }}
                     >
                       {stage.script}
@@ -306,7 +306,7 @@ export default function PipelinePage() {
                     {stage.process}
                   </p>
 
-                  <div className="flex items-center gap-3 text-[13px] font-mono tabular-nums mb-4">
+                  <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3 text-[12px] md:text-[13px] font-mono tabular-nums mb-4">
                     {stage.inputPath ? (
                       <a
                         href={`${REPO}/${stage.inputPath}`}
@@ -325,8 +325,8 @@ export default function PipelinePage() {
                         <span className="text-muted"> · {stage.input}</span>
                       </div>
                     )}
-                    <span className="text-muted">→</span>
-                    <div className="px-3 py-1.5 rounded-lg bg-accent-blue/[0.06] text-accent-blue">
+                    <span className="hidden md:inline text-muted">→</span>
+                    <div className="px-3 py-1.5 rounded-lg bg-accent-blue/[0.06] text-accent-blue break-words">
                       <span className="opacity-60">out </span>
                       {stage.outputCount}
                       <span className="opacity-60"> · {stage.output}</span>
@@ -365,23 +365,23 @@ export default function PipelinePage() {
       </section>
 
       {/* Sarcasm strategies */}
-      <section className="px-12 pb-12">
+      <section className="px-4 md:px-12 pb-8 md:pb-12">
         <span
-          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-6"
+          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-5 md:mb-6"
           style={{ fontFamily: "var(--font-jetbrains-mono)" }}
         >
           Six Sarcasm Strategies
         </span>
-        <p className="text-[15px] text-foreground-secondary max-w-3xl mb-6">
+        <p className="text-[14px] md:text-[15px] text-foreground-secondary max-w-3xl mb-5 md:mb-6">
           Adapted from the iSarcasm taxonomy. Every source headline is expanded
           into six strategy-labeled variants so models see the full distribution
           during training.
         </p>
-        <div className="grid grid-cols-3 gap-4 max-w-6xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl">
           {STRATEGIES.map((s) => (
             <div
               key={s.key}
-              className="border border-border-card rounded-[22px] p-6"
+              className="border border-border-card rounded-[22px] p-5 md:p-6"
             >
               <span
                 className="text-[10px] tracking-[0.16px] uppercase text-muted block mb-2"
@@ -404,18 +404,18 @@ export default function PipelinePage() {
       </section>
 
       {/* Secondary pipelines */}
-      <section className="px-12 pb-12">
+      <section className="px-4 md:px-12 pb-8 md:pb-12">
         <span
-          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-6"
+          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-5 md:mb-6"
           style={{ fontFamily: "var(--font-jetbrains-mono)" }}
         >
           Secondary Datasets
         </span>
-        <div className="grid grid-cols-2 gap-6 max-w-5xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-5xl">
           {SECONDARY_PIPELINE.map((p) => (
             <div
               key={p.label}
-              className="border border-border-card rounded-[22px] p-6"
+              className="border border-border-card rounded-[22px] p-5 md:p-6"
             >
               <h4 className="text-[18px] tracking-[-0.18px] text-foreground mb-2">
                 {p.label}
@@ -473,15 +473,15 @@ export default function PipelinePage() {
       </section>
 
       {/* Quality controls */}
-      <section className="px-12 pb-12">
-        <div className="max-w-5xl border-t border-border-light pt-8">
+      <section className="px-4 md:px-12 pb-8 md:pb-12">
+        <div className="max-w-5xl border-t border-border-light pt-6 md:pt-8">
           <span
-            className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-6"
+            className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-5 md:mb-6"
             style={{ fontFamily: "var(--font-jetbrains-mono)" }}
           >
             Quality Controls
           </span>
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             <div>
               <h4 className="text-[18px] tracking-[-0.18px] text-foreground mb-2">
                 Cross-validation as a data audit
@@ -533,8 +533,8 @@ export default function PipelinePage() {
       </section>
 
       {/* CTA */}
-      <section className="px-12">
-        <div className="max-w-5xl flex items-center justify-between py-6 border-t border-border-light">
+      <section className="px-4 md:px-12">
+        <div className="max-w-5xl flex flex-col md:flex-row md:items-center md:justify-between gap-4 py-6 border-t border-border-light">
           <span className="text-[14px] text-muted">
             See how models trained on this data perform.
           </span>

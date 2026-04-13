@@ -63,17 +63,17 @@ export default function HumanEvalPage() {
     : [];
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-16 md:pb-20">
       {/* Header */}
-      <div className="px-12 pt-12 pb-8">
+      <div className="px-4 md:px-12 pt-8 md:pt-12 pb-6 md:pb-8">
         <span
-          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-4"
+          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-3 md:mb-4"
           style={{ fontFamily: "var(--font-jetbrains-mono)" }}
         >
           Annotations
         </span>
         <h1
-          className="text-[48px] leading-[1.0] tracking-[-0.96px] text-foreground"
+          className="text-[36px] md:text-[48px] leading-[1.0] tracking-[-0.72px] md:tracking-[-0.96px] text-foreground"
           style={{ fontFamily: "var(--font-dm-serif)" }}
         >
           Human Evaluation
@@ -82,12 +82,12 @@ export default function HumanEvalPage() {
 
       {/* Summary stats */}
       {summary && (
-        <div className="px-12 pb-8">
-          <div className="border border-border-card rounded-[22px] p-8">
-            <h3 className="text-[20px] tracking-[-0.2px] text-foreground mb-6">
+        <div className="px-4 md:px-12 pb-6 md:pb-8">
+          <div className="border border-border-card rounded-[22px] p-5 md:p-8">
+            <h3 className="text-[18px] md:text-[20px] tracking-[-0.2px] text-foreground mb-4 md:mb-6">
               Flagged Samples per Model
             </h3>
-            <div className="h-[250px]">
+            <div className="h-[280px] md:h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={summaryChartData}
@@ -129,8 +129,8 @@ export default function HumanEvalPage() {
       )}
 
       {/* Tab selector */}
-      <div className="px-12 pb-6">
-        <div className="flex gap-2">
+      <div className="px-4 md:px-12 pb-6">
+        <div className="flex gap-2 flex-wrap">
           {(
             [
               { key: "gold", label: "Gold Standard" },
@@ -154,10 +154,10 @@ export default function HumanEvalPage() {
       </div>
 
       {/* Tab content */}
-      <div className="px-12">
+      <div className="px-4 md:px-12">
         {tab === "gold" && goldData && (
-          <div className="border border-border-card rounded-[22px] overflow-hidden">
-            <table className="w-full text-[13px]">
+          <div className="border border-border-card rounded-[22px] overflow-x-auto">
+            <table className="w-full text-[13px] min-w-[900px]">
               <thead>
                 <tr className="bg-surface-snow border-b border-border-light">
                   <th className="text-left py-3 px-3 text-muted font-normal w-12">
@@ -255,11 +255,11 @@ export default function HumanEvalPage() {
         )}
 
         {tab === "flagged" && flaggedData && (
-          <div className="space-y-6">
+          <div className="space-y-5 md:space-y-6">
             {Object.entries(flaggedData).map(([modelName, data]) => (
               <div
                 key={modelName}
-                className="border border-border-card rounded-[22px] p-6"
+                className="border border-border-card rounded-[22px] p-5 md:p-6"
               >
                 <div className="flex items-baseline justify-between mb-4">
                   <h3 className="text-[16px] text-foreground">
@@ -316,8 +316,8 @@ export default function HumanEvalPage() {
         )}
 
         {tab === "heldout" && heldoutData && (
-          <div className="border border-border-card rounded-[22px] overflow-hidden">
-            <table className="w-full text-[13px]">
+          <div className="border border-border-card rounded-[22px] overflow-x-auto">
+            <table className="w-full text-[13px] min-w-[700px]">
               <thead>
                 <tr className="bg-surface-snow border-b border-border-light">
                   <th className="text-left py-3 px-3 text-muted font-normal w-12">

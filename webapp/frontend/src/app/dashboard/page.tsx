@@ -102,17 +102,17 @@ export default function DashboardPage() {
       : [];
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-16 md:pb-20">
       {/* Header */}
-      <div className="px-12 pt-12 pb-8">
+      <div className="px-4 md:px-12 pt-8 md:pt-12 pb-6 md:pb-8">
         <span
-          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-4"
+          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-3 md:mb-4"
           style={{ fontFamily: "var(--font-jetbrains-mono)" }}
         >
           Model Comparison
         </span>
         <h1
-          className="text-[48px] leading-[1.0] tracking-[-0.96px] text-foreground"
+          className="text-[36px] md:text-[48px] leading-[1.0] tracking-[-0.72px] md:tracking-[-0.96px] text-foreground"
           style={{ fontFamily: "var(--font-dm-serif)" }}
         >
           Dashboard
@@ -120,7 +120,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Metric selector + filter */}
-      <div className="px-12 pb-8 flex items-center gap-6 flex-wrap">
+      <div className="px-4 md:px-12 pb-6 md:pb-8 flex items-center gap-3 md:gap-6 flex-wrap">
         <div className="flex gap-2">
           {(["all", "main", "ablation"] as const).map((f) => (
             <button
@@ -155,17 +155,17 @@ export default function DashboardPage() {
       </div>
 
       {/* Main bar chart */}
-      <div className="px-12 pb-12">
-        <div className="border border-border-card rounded-[22px] p-8">
-          <div className="flex items-baseline justify-between mb-6">
-            <h3 className="text-[20px] tracking-[-0.2px] text-foreground">
+      <div className="px-4 md:px-12 pb-8 md:pb-12">
+        <div className="border border-border-card rounded-[22px] p-5 md:p-8">
+          <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-1 mb-5 md:mb-6">
+            <h3 className="text-[18px] md:text-[20px] tracking-[-0.2px] text-foreground">
               {METRIC_INFO[activeMetric]?.label}
             </h3>
-            <span className="text-[13px] text-muted">
+            <span className="text-[12px] md:text-[13px] text-muted">
               {METRIC_INFO[activeMetric]?.description}
             </span>
           </div>
-          <div className="h-[400px]">
+          <div className="h-[320px] md:h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={barData}
@@ -218,9 +218,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Two-column: Radar + Strategy */}
-      <div className="px-12 grid grid-cols-2 gap-6 pb-12">
+      <div className="px-4 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 pb-8 md:pb-12">
         {/* Radar */}
-        <div className="border border-border-card rounded-[22px] p-8">
+        <div className="border border-border-card rounded-[22px] p-5 md:p-8">
           <h3 className="text-[20px] tracking-[-0.2px] text-foreground mb-2">
             Model Profiles
           </h3>
@@ -281,7 +281,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Strategy breakdown */}
-        <div className="border border-border-card rounded-[22px] p-8">
+        <div className="border border-border-card rounded-[22px] p-5 md:p-8">
           <div className="flex items-baseline justify-between mb-2">
             <h3 className="text-[20px] tracking-[-0.2px] text-foreground">
               Strategy Breakdown
@@ -357,12 +357,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Aggregate table */}
-      <div className="px-12 pb-12">
-        <div className="border border-border-card rounded-[22px] p-8 overflow-x-auto">
-          <h3 className="text-[20px] tracking-[-0.2px] text-foreground mb-6">
+      <div className="px-4 md:px-12 pb-8 md:pb-12">
+        <div className="border border-border-card rounded-[22px] p-5 md:p-8">
+          <h3 className="text-[18px] md:text-[20px] tracking-[-0.2px] text-foreground mb-4 md:mb-6">
             Aggregate Metrics
           </h3>
-          <table className="w-full text-[13px]">
+          <div className="-mx-5 md:mx-0 overflow-x-auto">
+          <table className="w-full text-[13px] min-w-[720px]">
             <thead>
               <tr className="border-b border-border-light">
                 <th className="text-left py-3 px-3 text-muted font-normal">
@@ -430,6 +431,7 @@ export default function DashboardPage() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </div>

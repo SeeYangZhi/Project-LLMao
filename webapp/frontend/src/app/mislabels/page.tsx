@@ -55,22 +55,22 @@ export default function MislabelsPage() {
   const totalPages = Math.max(1, Math.ceil(total / 15));
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-16 md:pb-20">
       {/* Header */}
-      <section className="px-12 pt-12 pb-8">
+      <section className="px-4 md:px-12 pt-8 md:pt-12 pb-6 md:pb-8">
         <span
-          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-4"
+          className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-3 md:mb-4"
           style={{ fontFamily: "var(--font-jetbrains-mono)" }}
         >
           Data Quality Audit
         </span>
         <h1
-          className="text-[48px] leading-[1.0] tracking-[-0.96px] text-foreground mb-4"
+          className="text-[36px] md:text-[48px] leading-[1.0] tracking-[-0.72px] md:tracking-[-0.96px] text-foreground mb-4"
           style={{ fontFamily: "var(--font-dm-serif)" }}
         >
           Suspected Mislabels
         </h1>
-        <p className="text-[18px] leading-[1.5] text-foreground-secondary max-w-3xl">
+        <p className="text-[16px] md:text-[18px] leading-[1.5] text-foreground-secondary max-w-3xl">
           Headlines where both StepFun 3.5 Flash and Nemotron 3 Nano 30B
           disagreed with the original NHDSD label. Each row links back to the
           source article so you can judge for yourself.
@@ -79,8 +79,8 @@ export default function MislabelsPage() {
 
       {/* Summary stats */}
       {summary && (
-        <section className="px-12 pb-10">
-          <div className="border border-border-card rounded-[22px] p-8 grid grid-cols-5 gap-6">
+        <section className="px-4 md:px-12 pb-8 md:pb-10">
+          <div className="border border-border-card rounded-[22px] p-5 md:p-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5 md:gap-6">
             {[
               { v: summary.total.toLocaleString(), l: "Total mislabels", s: "Both LLMs disagree with NHDSD" },
               { v: summary.over_labeled.toLocaleString(), l: "False sarcastic", s: "NHDSD: sarcastic · LLMs: non-sarcastic" },
@@ -106,8 +106,8 @@ export default function MislabelsPage() {
       )}
 
       {/* Filters */}
-      <section className="px-12 pb-6 flex items-center gap-3 flex-wrap">
-        <div className="flex gap-1.5">
+      <section className="px-4 md:px-12 pb-6 flex items-center gap-3 flex-wrap">
+        <div className="flex gap-1.5 flex-wrap">
           {([
             { key: "", label: "All NHDSD labels" },
             { key: "over", label: "NHDSD: sarcastic" },
@@ -126,8 +126,8 @@ export default function MislabelsPage() {
             </button>
           ))}
         </div>
-        <div className="h-4 w-px bg-border-light" />
-        <div className="flex gap-1.5">
+        <div className="hidden md:block h-4 w-px bg-border-light" />
+        <div className="flex gap-1.5 flex-wrap">
           {([
             { key: "", label: "Both sources" },
             { key: "theonion", label: "TheOnion" },
@@ -146,7 +146,7 @@ export default function MislabelsPage() {
             </button>
           ))}
         </div>
-        <div className="h-4 w-px bg-border-light" />
+        <div className="hidden md:block h-4 w-px bg-border-light" />
         <button
           onClick={() => setConfidence(confidence === "high" ? "" : "high")}
           className={`px-3 py-1.5 rounded-full text-[12px] border transition-all ${
@@ -162,12 +162,12 @@ export default function MislabelsPage() {
           placeholder="Search headlines..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="px-4 py-1.5 border border-border-card rounded-full text-[12px] w-56 bg-white focus:outline-none focus:border-accent-blue placeholder:text-muted/50 ml-auto"
+          className="px-4 py-1.5 border border-border-card rounded-full text-[12px] w-full sm:w-56 bg-white focus:outline-none focus:border-accent-blue placeholder:text-muted/50 md:ml-auto"
         />
       </section>
 
       {/* Results */}
-      <section className="px-12">
+      <section className="px-4 md:px-12">
         <div className="text-[13px] text-muted mb-3">
           {loading ? "Loading..." : `${total.toLocaleString()} mislabels`}
         </div>
@@ -175,15 +175,15 @@ export default function MislabelsPage() {
           {items.map((item) => (
             <div
               key={item.id}
-              className="border border-border-card rounded-[22px] p-5 hover:border-border transition-colors"
+              className="border border-border-card rounded-[22px] p-4 md:p-5 hover:border-border transition-colors"
             >
-              <div className="flex items-start justify-between gap-6">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 md:gap-6">
                 {/* Left: headline + labels */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[16px] leading-[1.5] text-foreground mb-3">
+                  <p className="text-[15px] md:text-[16px] leading-[1.5] text-foreground mb-3">
                     {item.headline}
                   </p>
-                  <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-2 md:gap-3 flex-wrap">
                     <span
                       className="text-[10px] tracking-[0.16px] uppercase text-muted"
                       style={{ fontFamily: "var(--font-jetbrains-mono)" }}
@@ -212,7 +212,7 @@ export default function MislabelsPage() {
                 </div>
 
                 {/* Right: source + link */}
-                <div className="shrink-0 flex flex-col items-end gap-2">
+                <div className="shrink-0 flex flex-row md:flex-col items-center md:items-end gap-3 md:gap-2">
                   <span
                     className="text-[10px] tracking-[0.16px] uppercase px-2 py-0.5 rounded-full border border-border-card text-muted"
                     style={{ fontFamily: "var(--font-jetbrains-mono)" }}
