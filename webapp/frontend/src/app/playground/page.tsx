@@ -72,6 +72,37 @@ export default function PlaygroundPage() {
         </h1>
       </div>
 
+      {/* Static-mode banner: shown when no model is available (Vercel deploy) */}
+      {models.length > 0 && models.every((m) => !m.available) && (
+        <div className="px-12 pb-6">
+          <div className="border border-accent-purple/30 bg-accent-purple/[0.03] rounded-[22px] p-6 max-w-3xl">
+            <span
+              className="text-[10px] tracking-[0.28px] uppercase text-accent-purple block mb-2"
+              style={{ fontFamily: "var(--font-jetbrains-mono)" }}
+            >
+              Hosted version
+            </span>
+            <h3 className="text-[18px] tracking-[-0.18px] text-foreground mb-2">
+              Live inference is disabled in the hosted demo
+            </h3>
+            <p className="text-[14px] leading-[1.6] text-muted mb-3">
+              The Playground requires loading 532 MB of BART weights into a
+              Python process and an LMStudio server for the LLaMA path —
+              neither fits in serverless hosting. Clone the repo and run the
+              FastAPI backend locally to use it.
+            </p>
+            <a
+              href="https://github.com/SeeYangZhi/Project-LLMao#readme"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[13px] text-accent-blue hover:underline"
+            >
+              setup instructions on GitHub ↗
+            </a>
+          </div>
+        </div>
+      )}
+
       <div className="px-12 grid grid-cols-[1fr_360px] gap-8">
         {/* Main panel */}
         <div className="space-y-6">

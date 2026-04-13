@@ -1,0 +1,1 @@
+[{"name":"bart-ce-rl","display":"BART CE+RL","available":false,"loaded":false,"note":"Live inference requires running the backend locally"},{"name":"llama-3.2-1b","display":"LLaMA 3.2 1B","available":false,"loaded":false,"note":"Live inference requires running the backend + LMStudio locally"}]

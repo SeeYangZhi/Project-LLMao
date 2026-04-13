@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Project LLMao Webapp — Frontend
 
-## Getting Started
+Next.js 16 + Tailwind + Recharts dashboard for the CS4248 sarcasm style
+transfer project. Runs in one of two modes depending on a single env var.
 
-First, run the development server:
+## Two modes
+
+### Local (dev) mode
+
+Talks to the FastAPI backend at `http://localhost:8000`. Required for the
+Playground (live BART + LLaMA inference).
 
 ```bash
+# Terminal 1 — backend
+cd ../backend
+../../.venv/bin/python -m uvicorn app.main:app --port 8000
+
+# Terminal 2 — frontend
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Static (Vercel) mode
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Reads pre-exported JSON from `public/data/*` instead of calling the backend.
+Pagination, filtering, and sorting all happen client-side. The Playground
+shows a banner explaining that live inference is disabled.
 
-## Learn More
+```bash
+NEXT_PUBLIC_USE_STATIC=true npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+To deploy to Vercel, set `NEXT_PUBLIC_USE_STATIC=true` in the project's
+environment variables, then push to the connected git branch.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Refreshing the static data
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The static JSON lives in `public/data/` and is committed to git. Whenever
+the underlying CSVs/JSONLs change, regenerate it:
 
-## Deploy on Vercel
+```bash
+cd ../..
+.venv/bin/python webapp/backend/scripts/export_static.py
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This dumps fresh JSON for every endpoint into `public/data/`. Commit the
+diff and Vercel will redeploy automatically.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Output is roughly 20 MB across 23 files — well within Vercel's static asset
+limits. Each per-model sample file is ~1.4 MB.
+
+## Pages
+
+- `/` — landing
+- `/pipeline` — six-stage data pipeline visualization, with file links
+- `/mislabels` — 4,076 NHDSD audit cases, browsable with filters
+- `/dashboard` — 14 models × 7 metrics, charts and aggregate table
+- `/explorer` — per-model sample browser with filters and side-by-side
+  comparison
+- `/playground` — live BART/LLaMA inference (local mode only)
+- `/human-eval` — gold standard, flagged samples, and heldout browser
+
+## Stack
+
+- Next.js 16 (App Router) on React 19
+- Tailwind v4
+- Recharts for charts
+- DM Serif Display + DM Sans + JetBrains Mono via `next/font/google`
