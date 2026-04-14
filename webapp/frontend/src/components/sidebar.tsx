@@ -8,11 +8,12 @@ const NAV_ITEMS = [
   { href: "/", label: "Overview", icon: "01" },
   { href: "/pipeline", label: "Data Pipeline", icon: "02" },
   { href: "/mislabels", label: "Mislabels", icon: "03" },
-  { href: "/eval", label: "Evaluation", icon: "04" },
-  { href: "/dashboard", label: "Dashboard", icon: "05" },
-  { href: "/explorer", label: "Explorer", icon: "06" },
-  { href: "/playground", label: "Playground", icon: "07" },
-  { href: "/human-eval", label: "Human Eval", icon: "08" },
+  { href: "/training", label: "Training", icon: "04" },
+  { href: "/eval", label: "Evaluation", icon: "05" },
+  { href: "/dashboard", label: "Dashboard", icon: "06" },
+  { href: "/explorer", label: "Explorer", icon: "07" },
+  { href: "/playground", label: "Playground", icon: "08" },
+  { href: "/human-eval", label: "Human Eval", icon: "09" },
 ];
 
 export function Sidebar() {
