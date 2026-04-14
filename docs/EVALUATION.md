@@ -264,20 +264,20 @@ The paraphrase score captures what neither metric alone can detect: genuine rewr
 
 | Rank | Model | Perplexity |
 |------|-------|------------|
-| 1 | bart_base_ce | 364.4 |
-| 2 | llama_3_2_1b | 377.8 |
-| 3 | bart_base_ce_rl | 457.4 |
-| 4 | bart_base | 517.9 |
-| 5 | t5_base_joint | 571.2 |
-| 6 | abl_without_understatement | 589.9 |
-| 7 | abl_without_irony | 591.4 |
-| 8 | abl_without_satire | 593.5 |
-| 9 | abl_without_rhet_q | 599.3 |
-| 10 | abl_without_overstatement | 606.7 |
-| 11 | abl_without_sarcasm | 607.8 |
-| 12 | t5_control | 613.7 |
-| 13 | joint | 634.9 |
-| 14 | bart_base_rl | 726.3 |
+| 1 | bart_base_ce | 413 |
+| 2 | llama_3_2_1b | 427 |
+| 3 | bart_base_ce_rl | 579 |
+| 4 | bart_base | 1183 |
+| 5 | abl_without_sarcasm | 1318 |
+| 6 | abl_without_understatement | 1325 |
+| 7 | abl_without_rhet_q | 1470 |
+| 8 | t5_base_joint | 1491 |
+| 9 | abl_without_overstatement | 1520 |
+| 10 | abl_without_irony | 1595 |
+| 11 | abl_without_satire | 1627 |
+| 12 | t5_control | 1790 |
+| 13 | joint | 1912 |
+| 14 | bart_base_rl | 3489 |
 
 #### Best Paraphrase Score (Genuine Rewriting)
 

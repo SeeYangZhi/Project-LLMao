@@ -10,7 +10,7 @@ NON_SARCASTIC = "The company announced quarterly earnings today"
 
 CLASSIFIERS = [
     ("RoBERTa-Twitter", "cardiffnlp/twitter-roberta-base-irony"),
-    ("DistilBERT-Reddit", "helinivan/english-sarcasm-detector"),
+    ("BERT-Kaggle", "helinivan/english-sarcasm-detector"),
     ("RoBERTa-News", "jkhan447/sarcasm-detection-RoBerta-base-POS"),
 ]
 
