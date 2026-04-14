@@ -528,6 +528,30 @@ export default function PipelinePage() {
                 CE+RL BART variants.
               </p>
             </div>
+            <div>
+              <h4 className="text-[18px] tracking-[-0.18px] text-foreground mb-2">
+                T5 data prep (separate pipeline)
+              </h4>
+              <p className="text-[14px] leading-[1.6] text-muted">
+                The T5 family uses its own{" "}
+                <code className="text-[13px] text-accent-purple">
+                  prepare_t5_datasets.py
+                </code>{" "}
+                which takes the same cleaned pairs and produces an 80/10/10
+                split stratified by strategy. It emits three variants: a
+                joint-task split (input prefix predicts strategy, target is{" "}
+                <code className="text-[12px] text-accent-purple">
+                  strategy: X rewrite: Y
+                </code>
+                ), a control split (plain{" "}
+                <code className="text-[12px] text-accent-purple">
+                  rewrite to non-sarcastic:
+                </code>{" "}
+                prefix, plain rewrite target), and 6 ablation splits that
+                drop one subtype each with the pools stratified-downsampled
+                to keep effective size constant.
+              </p>
+            </div>
           </div>
         </div>
       </section>

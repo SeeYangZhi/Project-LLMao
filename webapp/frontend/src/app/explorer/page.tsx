@@ -1,24 +1,21 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { getSamples, compareSample } from "@/lib/api";
+import { getSamples, compareSample, getModels } from "@/lib/api";
 import { STRATEGIES } from "@/lib/constants";
 
 type Sample = Record<string, unknown>;
 
-const MODEL_OPTIONS = [
-  { value: "bart_base_ce_rl", label: "BART CE+RL" },
-  { value: "bart_base_rl", label: "BART RL" },
-  { value: "bart_base_ce", label: "BART CE" },
-  { value: "bart_base", label: "BART Base" },
-  { value: "llama_3_2_1b", label: "LLaMA 3.2 1B" },
-  { value: "t5_control", label: "T5 Control" },
-  { value: "t5_base_joint", label: "T5 Base Joint" },
-  { value: "joint", label: "Joint" },
-];
+type ModelOption = { value: string; label: string; type: string };
+
+// Pin the model order so the UI reads main → baseline → ablation, matching
+// the dashboard filter order. Fetched dynamically so any model added to the
+// backend registry shows up here automatically.
+const MODEL_TYPE_ORDER = ["main", "baseline", "ablation"];
 
 export default function ExplorerPage() {
-  const [model, setModel] = useState("bart_base_ce_rl");
+  const [modelOptions, setModelOptions] = useState<ModelOption[]>([]);
+  const [model, setModel] = useState("t5_base_joint");
   const [strategy, setStrategy] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -53,6 +50,22 @@ export default function ExplorerPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    getModels()
+      .then((models) => {
+        const sorted = [...models].sort((a, b) => {
+          const ai = MODEL_TYPE_ORDER.indexOf(a.type);
+          const bi = MODEL_TYPE_ORDER.indexOf(b.type);
+          if (ai !== bi) return ai - bi;
+          return a.display.localeCompare(b.display);
+        });
+        setModelOptions(
+          sorted.map((m) => ({ value: m.name, label: m.display, type: m.type }))
+        );
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     setPage(1);
@@ -105,11 +118,25 @@ export default function ExplorerPage() {
           onChange={(e) => setModel(e.target.value)}
           className="px-3 py-2 border border-border-card rounded-xl text-[13px] bg-white focus:outline-none focus:border-accent-blue"
         >
-          {MODEL_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
+          {MODEL_TYPE_ORDER.map((group) => {
+            const groupOptions = modelOptions.filter((o) => o.type === group);
+            if (groupOptions.length === 0) return null;
+            const groupLabel =
+              group === "main"
+                ? "BART + LLaMA"
+                : group === "baseline"
+                ? "T5"
+                : "Ablations";
+            return (
+              <optgroup key={group} label={groupLabel}>
+                {groupOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </optgroup>
+            );
+          })}
         </select>
 
         <select

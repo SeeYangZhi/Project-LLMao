@@ -65,8 +65,10 @@ export default function HomePage() {
           </h1>
           <p className="text-[16px] md:text-[18px] leading-[1.5] text-foreground-secondary max-w-2xl">
             Sarcasm style transfer using fine-tuned language models. We train
-            BART and LLaMA variants to rewrite sarcastic news headlines as
-            neutral, factual equivalents while preserving meaning.
+            T5, BART, and LLaMA variants to rewrite sarcastic news headlines
+            as neutral, factual equivalents while preserving meaning. Our
+            best model (T5-Joint) achieves <span className="tabular-nums">43.6%</span>{" "}
+            strict success on human evaluation.
           </p>
         </div>
       </section>
@@ -154,7 +156,7 @@ export default function HomePage() {
               },
               {
                 title: "Model Training",
-                body: "BART with context enhancement and REINFORCE + KL penalty. LLaMA 3.2 1B with LoRA fine-tuning. T5 baselines and 6-way ablation study.",
+                body: "Four recipes across 14 models: T5 joint-task SFT (our best, via Camille's pipeline), BART with context enhancement and REINFORCE + KL, LLaMA 3.2 1B LoRA, and a 6-way subtype ablation on T5.",
                 href: "/training",
               },
               {
