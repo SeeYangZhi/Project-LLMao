@@ -228,14 +228,16 @@ export default function ExplorerPage() {
                           <div className="py-2.5 px-3 truncate text-foreground-secondary">
                             {item.output as string}
                           </div>
-                          <div className="py-2.5 px-3">
+                          <div className="py-2.5 px-3 min-w-0">
                             <span
-                              className="text-[11px] tracking-[0.16px] uppercase text-muted px-2 py-0.5 rounded-full border border-border-card"
+                              className="text-[11px] tracking-[0.16px] uppercase text-muted px-2 py-0.5 rounded-full border border-border-card whitespace-nowrap inline-block"
                               style={{
                                 fontFamily: "var(--font-jetbrains-mono)",
                               }}
                             >
-                              {item.subtype as string}
+                              {STRATEGIES.find(
+                                (s) => s.key === (item.subtype as string)
+                              )?.label ?? (item.subtype as string)}
                             </span>
                           </div>
                           <div className="py-2.5 px-3 text-center">
