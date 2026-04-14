@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: "/explorer", label: "Explorer", icon: "07" },
   { href: "/playground", label: "Playground", icon: "08" },
   { href: "/human-eval", label: "Human Eval", icon: "09" },
+  { href: "/poster-diagrams", label: "Poster Diagrams", icon: "10" },
 ];
 
 export function Sidebar() {
@@ -154,6 +155,13 @@ export function Sidebar() {
             CS4248 Team 14
           </p>
           <p className="text-[11px] text-muted/60 mt-0.5">NUS AY2025/26 S2</p>
+          <Link
+            href="/ai-declaration"
+            className="text-[10px] text-muted/50 hover:text-accent-blue mt-2 block tracking-[0.16px]"
+            style={{ fontFamily: "var(--font-jetbrains-mono)" }}
+          >
+            AI use declaration
+          </Link>
         </div>
       </nav>
     </>
