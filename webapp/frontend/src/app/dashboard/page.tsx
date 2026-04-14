@@ -31,15 +31,15 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState<SummaryData | null>(null);
   const [strategyData, setStrategyData] = useState<StrategyData | null>(null);
   const [activeMetric, setActiveMetric] = useState("hard_flip_rate");
-  const [selectedModel, setSelectedModel] = useState("bart_base_ce_rl");
+  const [selectedModel, setSelectedModel] = useState("t5_base_joint");
   const [radarModels, setRadarModels] = useState<string[]>([
-    "bart_base_ce_rl",
+    "t5_base_joint",
+    "bart_base_rl",
     "llama_3_2_1b",
-    "bart_base",
   ]);
-  const [modelFilter, setModelFilter] = useState<"all" | "main" | "ablation">(
-    "all"
-  );
+  const [modelFilter, setModelFilter] = useState<
+    "all" | "main" | "baseline" | "ablation"
+  >("all");
 
   useEffect(() => {
     getMetricsSummary().then(setSummary);
@@ -121,8 +121,8 @@ export default function DashboardPage() {
 
       {/* Metric selector + filter */}
       <div className="px-4 md:px-12 pb-6 md:pb-8 flex items-center gap-3 md:gap-6 flex-wrap">
-        <div className="flex gap-2">
-          {(["all", "main", "ablation"] as const).map((f) => (
+        <div className="flex gap-2 flex-wrap">
+          {(["all", "main", "baseline", "ablation"] as const).map((f) => (
             <button
               key={f}
               onClick={() => setModelFilter(f)}
@@ -132,7 +132,13 @@ export default function DashboardPage() {
                   : "text-muted hover:text-accent-blue"
               }`}
             >
-              {f === "all" ? "All Models" : f === "main" ? "Main" : "Ablations"}
+              {f === "all"
+                ? "All Models"
+                : f === "main"
+                ? "BART + LLaMA"
+                : f === "baseline"
+                ? "T5 Baselines"
+                : "Ablations"}
             </button>
           ))}
         </div>
@@ -229,7 +235,7 @@ export default function DashboardPage() {
           </p>
           <div className="flex gap-2 mb-4 flex-wrap">
             {Object.entries(summary.registry)
-              .filter(([, m]) => m.type === "main")
+              .filter(([, m]) => m.type === "main" || m.type === "baseline")
               .map(([name, meta]) => (
                 <button
                   key={name}
