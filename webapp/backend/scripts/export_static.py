@@ -115,7 +115,7 @@ def export_multi_classifier():
         OUT_DIR / "multi-classifier.json",
         {
             "models": data_store.multi_classifier,
-            "classifiers": ["RoBERTa-Twitter", "DistilBERT-Reddit", "RoBERTa-News"],
+            "classifiers": ["RoBERTa-Twitter", "Bert-Kaggle", "RoBERTa-News"],
         },
     )
 

@@ -364,8 +364,8 @@ export type GoldenSubtypeRow = {
   mean_edit_dist: number;
   twitter_flip_rate: number;
   twitter_kappa: number;
-  reddit_flip_rate: number;
-  reddit_kappa: number;
+  kaggle_flip_rate: number;
+  kaggle_kappa: number;
   news_flip_rate: number;
   news_kappa: number;
 };

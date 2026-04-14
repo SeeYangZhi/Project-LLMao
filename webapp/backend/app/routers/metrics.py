@@ -60,7 +60,7 @@ def get_multi_classifier():
     """Per-model flip rates from all 3 sarcasm classifiers (commit 29dd7a7)."""
     return {
         "models": data_store.multi_classifier,
-        "classifiers": ["RoBERTa-Twitter", "DistilBERT-Reddit", "RoBERTa-News"],
+        "classifiers": ["RoBERTa-Twitter", "Bert-Kaggle", "RoBERTa-News"],
     }
 
 

@@ -85,7 +85,7 @@ export default function HomePage() {
           {[
             { value: "14", label: "Models Tested", sub: "BART, T5, LLaMA" },
             { value: "2,857", label: "Test Samples", sub: "Per model" },
-            { value: "3×7", label: "Classifier×Metrics", sub: "Roberta/DistilBERT/News" },
+            { value: "3×7", label: "Classifier×Metrics", sub: "Twitter / Kaggle / News" },
             { value: "140", label: "Hand-Labeled", sub: "2 annotators, κ > 0.8" },
           ].map((stat) => (
             <div key={stat.label}>
@@ -161,7 +161,7 @@ export default function HomePage() {
               },
               {
                 title: "Evaluation",
-                body: "7 automatic metrics across 3 sarcasm classifiers (RoBERTa-Twitter, DistilBERT-Reddit, RoBERTa-News) plus 140 hand-labeled samples. The classifiers disagree by up to 33 pp — human eval is essential.",
+                body: "7 automatic metrics across 3 sarcasm classifiers (RoBERTa-Twitter, Bert-Kaggle, RoBERTa-News) plus 140 hand-labeled samples. The classifiers disagree by up to 33 pp — human eval is essential.",
                 href: "/human-eval",
               },
             ].map((item) => (

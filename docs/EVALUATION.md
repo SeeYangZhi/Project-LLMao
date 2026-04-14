@@ -51,9 +51,9 @@ Our evaluation pipeline (`scripts/eval_pipeline.py`) computes 7 complementary me
 
 | Classifier | Architecture | Training Data | Model ID |
 |------------|--------------|---------------|----------|
-| RoBERTa-Twitter | RoBERTa | Twitter | `cardiffnlp/twitter-roberta-base-irony` |
-| DistilBERT-Reddit | DistilBERT | Reddit | `helinivan/english-sarcasm-detector` |
-| RoBERTa-News | RoBERTa | News Headlines | `jkhan447/sarcasm-detection-RoBerta-base-POS` |
+| RoBERTa-Twitter | RoBERTa | Twitter irony | [`cardiffnlp/twitter-roberta-base-irony`](https://huggingface.co/cardiffnlp/twitter-roberta-base-irony) |
+| Bert-Kaggle | BERT | Kaggle headlines | [`helinivan/english-sarcasm-detector`](https://huggingface.co/helinivan/english-sarcasm-detector) |
+| RoBERTa-News | RoBERTa | News headlines | [`jkhan447/sarcasm-detection-RoBerta-base-POS`](https://huggingface.co/jkhan447/sarcasm-detection-RoBerta-base-POS) |
 
 **Interpretation:** Higher flip rate = more outputs classified as non-sarcastic. BUT our study shows classifiers are unreliable (see Section 5).
 
@@ -300,7 +300,7 @@ The paraphrase score captures what neither metric alone can detect: genuine rewr
 
 ### Multi-Classifier Flip Rates (All 3 Classifiers)
 
-| Model | RoBERTa-Twitter | DistilBERT-Reddit | RoBERTa-News | Spread |
+| Model | RoBERTa-Twitter | Bert-Kaggle | RoBERTa-News | Spread |
 |-------|-----------------|-------------------|--------------|--------|
 | t5_base_joint | 8.4% | 41.6% | 21.2% | 33.2 pp |
 | t5_control | 8.1% | 40.9% | 20.3% | 32.9 pp |
@@ -385,7 +385,7 @@ Based on all 7 metrics, models cluster into distinct behavioral patterns:
 |--------|----------|------------|---------|
 | **Human Flip Rate** | **54.3%** | **54.3%** | **52.9%** |
 | Classifier Flip (Twitter) | 5.7% | 5.7% | 4.3% |
-| Classifier Flip (Reddit) | 9.3% | 12.1% | 15.0% |
+| Classifier Flip (Kaggle) | 9.3% | 12.1% | 15.0% |
 | Classifier Flip (News) | 24.3% | 25.0% | 31.4% |
 | **Gap (Best Clf vs Human)** | **30.0 pp** | **29.3 pp** | **21.5 pp** |
 
@@ -414,7 +414,7 @@ We discovered classifiers disagree massively — using only one gives misleading
 | Classifier | Accuracy | Precision | Recall | Cohen's κ |
 |------------|----------|-----------|--------|-----------|
 | RoBERTa-Twitter | 47.6% | 62.5% | 6.2% | +0.019 🟡 |
-| DistilBERT-Reddit | 43.1% | 36.9% | 8.4% | **-0.075** 🔴 |
+| Bert-Kaggle | 43.1% | 36.9% | 8.4% | **-0.075** 🔴 |
 | RoBERTa-News | 53.6% | 64.2% | 31.9% | +0.104 🟡 |
 
 ### Full 9-Cell Breakdown (3 Models × 3 Classifiers)
@@ -422,13 +422,13 @@ We discovered classifiers disagree massively — using only one gives misleading
 | Model | Classifier | Clf Flip | Human Flip | Accuracy | κ |
 |-------|------------|----------|------------|----------|---|
 | T5-Joint | RoBERTa-Twitter | 5.7% | 54.3% | 48.6% | +0.044 |
-| T5-Joint | DistilBERT-Reddit | 9.3% | 54.3% | 43.6% | -0.055 |
+| T5-Joint | Bert-Kaggle | 9.3% | 54.3% | 43.6% | -0.055 |
 | T5-Joint | RoBERTa-News | 24.3% | 54.3% | 57.1% | **+0.179** |
 | T5-Control | RoBERTa-Twitter | 5.7% | 54.3% | 47.1% | +0.017 |
-| T5-Control | DistilBERT-Reddit | 12.1% | 54.3% | 40.7% | **-0.113** |
+| T5-Control | Bert-Kaggle | 12.1% | 54.3% | 40.7% | **-0.113** |
 | T5-Control | RoBERTa-News | 25.0% | 54.3% | 50.7% | +0.055 |
 | BART-RL | RoBERTa-Twitter | 4.3% | 52.9% | 47.1% | -0.005 |
-| BART-RL | DistilBERT-Reddit | 15.0% | 52.9% | 45.0% | -0.058 |
+| BART-RL | Bert-Kaggle | 15.0% | 52.9% | 45.0% | -0.058 |
 | BART-RL | RoBERTa-News | 31.4% | 52.9% | 52.9% | +0.077 |
 
 **4 out of 9 pairs show NEGATIVE κ (anti-correlation with humans)**
@@ -508,7 +508,7 @@ Miss Rate: 70/76 = 92% of real flips MISSED
 
 ### Why Do ALL Classifiers Fail Against Human Judgment?
 
-**Surface-level answer:** Domain mismatch (Twitter/Reddit classifiers on news headlines).
+**Surface-level answer:** Domain mismatch (Twitter / Kaggle headline classifiers on news headlines).
 
 **Deep analysis:**
 

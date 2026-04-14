@@ -25,9 +25,9 @@ export const METRIC_INFO: Record<
     higher_better: true,
     format: "percent",
   },
-  flip_rate_reddit: {
-    label: "Flip Rate (Reddit)",
-    description: "% flagged non-sarcastic by DistilBERT-Reddit — wildly different from the other classifiers",
+  flip_rate_kaggle: {
+    label: "Flip Rate (Kaggle)",
+    description: "% flagged non-sarcastic by Bert-Kaggle (helinivan/english-sarcasm-detector) — wildly different from the other classifiers",
     higher_better: true,
     format: "percent",
   },

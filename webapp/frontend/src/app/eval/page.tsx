@@ -2,6 +2,8 @@ import Link from "next/link";
 
 type ScoreBand = { range: string; meaning: string; tone?: "good" | "ok" | "bad" };
 
+type ToolLink = { label: string; href: string };
+
 type MetricDoc = {
   num: string;
   key: string;
@@ -12,6 +14,7 @@ type MetricDoc = {
   bands?: ScoreBand[];
   limitation?: string;
   note?: string;
+  toolLinks?: ToolLink[];
 };
 
 const METRICS: MetricDoc[] = [
@@ -19,9 +22,23 @@ const METRICS: MetricDoc[] = [
     num: "01",
     key: "flip-rate",
     name: "Sarcasm Flip Rate",
-    tool: "RoBERTa-Twitter · DistilBERT-Reddit · RoBERTa-News",
+    tool: "RoBERTa-Twitter · Bert-Kaggle · RoBERTa-News",
+    toolLinks: [
+      {
+        label: "cardiffnlp/twitter-roberta-base-irony",
+        href: "https://huggingface.co/cardiffnlp/twitter-roberta-base-irony",
+      },
+      {
+        label: "helinivan/english-sarcasm-detector",
+        href: "https://huggingface.co/helinivan/english-sarcasm-detector",
+      },
+      {
+        label: "jkhan447/sarcasm-detection-RoBerta-base-POS",
+        href: "https://huggingface.co/jkhan447/sarcasm-detection-RoBerta-base-POS",
+      },
+    ],
     question: "Does the classifier think sarcasm was removed?",
-    why: "The most direct measure of task success — was the output reclassified as non-sarcastic? We run all three classifiers because they trained on different domains (Twitter, Reddit, News) and disagree by up to 33 percentage points on the same outputs.",
+    why: "The most direct measure of task success — was the output reclassified as non-sarcastic? We run all three classifiers because they trained on different domains (Twitter irony tweets, a Kaggle headlines dataset, news headlines) and disagree by up to 33 percentage points on the same outputs.",
     bands: [
       { range: "Higher", meaning: "More outputs flagged non-sarcastic", tone: "good" },
     ],
@@ -206,6 +223,26 @@ export default function EvalPage() {
                 >
                   {m.tool}
                 </p>
+                {m.toolLinks && (
+                  <ul className="mt-2 space-y-1">
+                    {m.toolLinks.map((link) => (
+                      <li
+                        key={link.href}
+                        className="text-[11px] md:text-[12px]"
+                        style={{ fontFamily: "var(--font-jetbrains-mono)" }}
+                      >
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-accent-blue hover:underline"
+                        >
+                          {link.label} ↗
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </header>
 
               <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-2 md:gap-4 mb-4 md:mb-5">
@@ -337,7 +374,7 @@ export default function EvalPage() {
             <li>
               <strong className="text-foreground">All three classifiers fail.</strong>{" "}
               Cohen&apos;s κ vs human ranges from <span className="tabular-nums">−0.11</span>{" "}
-              (DistilBERT-Reddit on T5-Control) to{" "}
+              (Bert-Kaggle on T5-Control) to{" "}
               <span className="tabular-nums">+0.18</span> (RoBERTa-News on
               T5-Joint). Four of the nine model×classifier cells show negative
               κ — the classifier anti-correlates with humans.

@@ -14,7 +14,17 @@ GOLDEN_DIR = RESULTS_DIR / "golden"
 GOLDEN_SUMMARY_FILE = GOLDEN_DIR / "summary.csv"
 GOLDEN_CLF_SUMMARY_FILE = GOLDEN_DIR / "summary_all_classifiers.csv"
 
-CLASSIFIERS = ["RoBERTa-Twitter", "DistilBERT-Reddit", "RoBERTa-News"]
+CLASSIFIERS = ["RoBERTa-Twitter", "Bert-Kaggle", "RoBERTa-News"]
+
+# Translation from the eval pipeline's CSV labels to our display names.
+# The underlying model is helinivan/english-sarcasm-detector, which is
+# actually a BERT (not DistilBERT) trained on a Kaggle headlines dataset
+# (not Reddit) — the original CSV labels were misleading.
+CLASSIFIER_RENAMES = {
+    "DistilBERT-Reddit": "Bert-Kaggle",
+    "DistilBERT": "BERT",
+    "Reddit": "Kaggle",
+}
 # Golden eval covers exactly these 3 models (140 samples × 2 annotators)
 GOLDEN_MODELS = {
     "t5_base_joint": "T5 Base Joint",

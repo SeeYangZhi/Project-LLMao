@@ -25,7 +25,7 @@ type Tab = "golden" | "classifiers" | "heldout";
 
 const CLASSIFIER_COLORS: Record<string, string> = {
   "RoBERTa-Twitter": "#1863dc",
-  "DistilBERT-Reddit": "#9b60aa",
+  "Bert-Kaggle": "#9b60aa",
   "RoBERTa-News": "#0f3460",
 };
 
@@ -262,7 +262,7 @@ export default function HumanEvalPage() {
                       Twitter
                     </th>
                     <th className="text-right py-3 px-3 text-muted font-normal">
-                      Reddit
+                      Kaggle
                     </th>
                     <th className="text-right py-3 px-3 text-muted font-normal">
                       News
@@ -276,7 +276,7 @@ export default function HumanEvalPage() {
                   {(golden.subtype[activeGoldenModel] || []).map((row) => {
                     const bestKappa = Math.max(
                       row.twitter_kappa ?? -1,
-                      row.reddit_kappa ?? -1,
+                      row.kaggle_kappa ?? -1,
                       row.news_kappa ?? -1
                     );
                     return (
@@ -300,7 +300,7 @@ export default function HumanEvalPage() {
                           {(row.twitter_flip_rate * 100).toFixed(1)}%
                         </td>
                         <td className="py-2.5 px-3 text-right tabular-nums text-foreground-secondary">
-                          {(row.reddit_flip_rate * 100).toFixed(1)}%
+                          {(row.kaggle_flip_rate * 100).toFixed(1)}%
                         </td>
                         <td className="py-2.5 px-3 text-right tabular-nums text-foreground-secondary">
                           {(row.news_flip_rate * 100).toFixed(1)}%

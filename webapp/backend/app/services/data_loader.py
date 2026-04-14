@@ -10,6 +10,7 @@ from typing import Optional
 import pandas as pd
 
 from app.config import (
+    CLASSIFIER_RENAMES,
     CLASSIFIERS,
     CROSS_VAL_FILE,
     DATA_DIR,
@@ -25,6 +26,11 @@ from app.config import (
     RESULTS_DIR,
     STRATEGIES,
 )
+
+
+def _rename_clf(value):
+    """Apply the classifier rename map to a single string value."""
+    return CLASSIFIER_RENAMES.get(value, value) if isinstance(value, str) else value
 
 
 def _to_native(d: dict) -> dict:
@@ -77,13 +83,29 @@ class DataStore:
         for model_name in MODEL_REGISTRY:
             path = RESULTS_DIR / f"{model_name}_results.csv"
             if path.exists():
-                self.results[model_name] = pd.read_csv(path)
+                df = pd.read_csv(path)
+                # Rename the legacy classifier column suffix so downstream
+                # JSON / API consumers see the corrected identifier.
+                df = df.rename(
+                    columns={
+                        c: c.replace("distilbert_reddit", "bert_kaggle")
+                        for c in df.columns
+                    }
+                )
+                self.results[model_name] = df
 
     def _load_human_eval(self):
         for model_name in MODEL_REGISTRY:
             path = RESULTS_DIR / f"{model_name}_results_human_eval.csv"
             if path.exists():
-                self.human_eval[model_name] = pd.read_csv(path)
+                df = pd.read_csv(path)
+                df = df.rename(
+                    columns={
+                        c: c.replace("distilbert_reddit", "bert_kaggle")
+                        for c in df.columns
+                    }
+                )
+                self.human_eval[model_name] = df
 
     def _load_gold_eval(self):
         if HUMAN_EVAL_CSV.exists():
@@ -129,16 +151,22 @@ class DataStore:
         self.mislabels = mislabels
 
     def _load_multi_classifier(self):
-        """Per-model flip rates from all 3 classifiers (long format CSV)."""
+        """Per-model flip rates from all 3 classifiers (long format CSV).
+
+        The eval pipeline labels the helinivan/english-sarcasm-detector
+        rows as 'DistilBERT-Reddit' even though the model is actually a
+        BERT trained on a Kaggle headlines dataset; we rename here so
+        every downstream JSON / page uses the corrected names.
+        """
         if not MULTI_CLF_FILE.exists():
             return
         df = pd.read_csv(MULTI_CLF_FILE)
         for model_name, sub in df.groupby("model"):
             self.multi_classifier[model_name] = [
                 {
-                    "classifier": row["classifier"],
-                    "type": row["type"],
-                    "training": row["training"],
+                    "classifier": _rename_clf(row["classifier"]),
+                    "type": _rename_clf(row["type"]),
+                    "training": _rename_clf(row["training"]),
                     "flip_rate": float(row["flip_rate"]),
                     "mean_flip_delta": float(row["mean_flip_delta"]),
                 }
@@ -155,9 +183,18 @@ class DataStore:
         """
         if GOLDEN_CLF_SUMMARY_FILE.exists():
             df = pd.read_csv(GOLDEN_CLF_SUMMARY_FILE)
-            self.golden_classifier_breakdown = [
-                _to_native(r) for r in df.to_dict(orient="records")
-            ]
+            records = []
+            for r in df.to_dict(orient="records"):
+                rec = _to_native(r)
+                # Rename the classifier label columns
+                if "classifier" in rec:
+                    rec["classifier"] = _rename_clf(rec["classifier"])
+                if "classifier_type" in rec:
+                    rec["classifier_type"] = _rename_clf(rec["classifier_type"])
+                if "training_data" in rec:
+                    rec["training_data"] = _rename_clf(rec["training_data"])
+                records.append(rec)
+            self.golden_classifier_breakdown = records
         for model_key in GOLDEN_MODELS:
             merged_path = GOLDEN_DIR / f"{model_key}_merged.csv"
             if merged_path.exists():
@@ -184,12 +221,20 @@ class DataStore:
                         )
                 self.golden_summary.append(stats)
 
+                # Rename the classifier columns up-front so downstream JSON
+                # uses the corrected identifier
+                df = df.rename(
+                    columns={
+                        c: c.replace("distilbert_reddit", "bert_kaggle")
+                        for c in df.columns
+                    }
+                )
                 # Keep only the columns the frontend needs for sample browsing
                 keep = [
                     "id", "input", "output", "subtype",
                     "human_flipped_strict", "meaning_change", "human_strict_success",
                     "human_meaning_preserved",
-                    "hard_flipped_roberta_twitter", "hard_flipped_distilbert_reddit",
+                    "hard_flipped_roberta_twitter", "hard_flipped_bert_kaggle",
                     "hard_flipped_roberta_news", "similarity", "edit_dist_norm",
                     "paraphrase_score", "error_type",
                 ]
@@ -201,6 +246,11 @@ class DataStore:
             sub_path = GOLDEN_DIR / f"{model_key}_subtype_analysis.csv"
             if sub_path.exists():
                 df = pd.read_csv(sub_path)
+                # Rename reddit_* columns to kaggle_* to match the corrected
+                # classifier identifier
+                df = df.rename(
+                    columns={c: c.replace("reddit_", "kaggle_") for c in df.columns}
+                )
                 self.golden_subtype[model_key] = [
                     _to_native(r) for r in df.to_dict(orient="records")
                 ]
@@ -211,10 +261,12 @@ class DataStore:
             self.summary[model_name] = _to_native(df[cols].mean().to_dict())
             if "hard_flipped" in df.columns:
                 self.summary[model_name]["hard_flip_rate"] = float(df["hard_flipped"].mean() * 100)
-            # Per-classifier flip rates so the dashboard can show all 3
+            # Per-classifier flip rates so the dashboard can show all 3.
+            # Column names already renamed in _load_results to use the
+            # corrected classifier identifier.
             for col, key in (
                 ("hard_flipped_roberta_twitter", "flip_rate_twitter"),
-                ("hard_flipped_distilbert_reddit", "flip_rate_reddit"),
+                ("hard_flipped_bert_kaggle", "flip_rate_kaggle"),
                 ("hard_flipped_roberta_news", "flip_rate_news"),
             ):
                 if col in df.columns:
@@ -223,7 +275,7 @@ class DataStore:
             # unreliable any single flip rate is.
             clf_rates = [
                 self.summary[model_name].get(k)
-                for k in ("flip_rate_twitter", "flip_rate_reddit", "flip_rate_news")
+                for k in ("flip_rate_twitter", "flip_rate_kaggle", "flip_rate_news")
                 if self.summary[model_name].get(k) is not None
             ]
             if len(clf_rates) >= 2:
