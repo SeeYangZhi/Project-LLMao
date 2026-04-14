@@ -1,6 +1,6 @@
 # Poster Content: Project LLMao
 
-> Sarcasm Style Transfer — De-sarcasm via Strategy-Aware Fine-Tuning of Small Language Models
+> **LLMao: Lightweight Language Models for Anti-sarcasm Output**
 
 **CS4248 Team 14**: 
 **Mentor**: Xiao Yu

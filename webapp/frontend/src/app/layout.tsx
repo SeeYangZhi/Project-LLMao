@@ -22,8 +22,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Project LLMao",
-  description: "Sarcasm Style Transfer - CS4248 Team 14",
+  title: "LLMao: Lightweight Language Models for Anti-sarcasm Output",
+  description:
+    "Sarcasm style transfer with 14 small language models. CS4248 Team 14, NUS.",
 };
 
 export default function RootLayout({

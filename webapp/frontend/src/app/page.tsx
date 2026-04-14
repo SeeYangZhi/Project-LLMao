@@ -58,14 +58,20 @@ export default function HomePage() {
             CS4248 / NUS / Team 14
           </span>
           <h1
-            className="text-[44px] md:text-[72px] leading-[1.0] tracking-[-0.88px] md:tracking-[-1.44px] text-foreground mb-4 md:mb-6"
+            className="text-[44px] md:text-[72px] leading-[1.0] tracking-[-0.88px] md:tracking-[-1.44px] text-foreground mb-3 md:mb-4"
             style={{ fontFamily: "var(--font-dm-serif)" }}
           >
             Project LLMao
           </h1>
+          <p
+            className="text-[16px] md:text-[20px] leading-[1.35] tracking-[-0.2px] text-foreground-secondary mb-5 md:mb-6 max-w-2xl"
+            style={{ fontFamily: "var(--font-dm-serif)" }}
+          >
+            Lightweight Language Models for Anti-sarcasm Output
+          </p>
           <p className="text-[16px] md:text-[18px] leading-[1.5] text-foreground-secondary max-w-2xl">
-            Sarcasm style transfer using fine-tuned language models. We train
-            T5, BART, and LLaMA variants to rewrite sarcastic news headlines
+            Sarcasm style transfer with 14 small language models — T5, BART,
+            and LLaMA variants fine-tuned to rewrite sarcastic news headlines
             as neutral, factual equivalents while preserving meaning. Our
             best model (T5-Joint) achieves <span className="tabular-nums">43.6%</span>{" "}
             strict success on human evaluation.

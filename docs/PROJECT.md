@@ -1,7 +1,6 @@
 # Project LLMao
 
-> **Decoding Sarcasm with LLMao: Lightweight Language Models with
-> Aspect-aware Objectives**
+> **LLMao: Lightweight Language Models for Anti-sarcasm Output**
 
 CS4248 · Team 14 · National University of Singapore · AY2025/26 S2
 
