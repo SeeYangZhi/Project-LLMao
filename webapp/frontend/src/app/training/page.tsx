@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 const REPO = "https://github.com/SeeYangZhi/Project-LLMao/blob/main";
+const T5_REPO = "https://github.com/camille-readbean/CS4248-project-AY2526S2/blob/main";
 
 type HyperRow = { key: string; value: string };
 
@@ -54,38 +55,65 @@ const SFT_SEQ2SEQ: ModelTraining[] = [
       { key: "Best metric", value: "BLEU on val" },
     ],
   },
-  {
-    key: "t5-control",
-    display: "T5-Control",
-    base: "google-t5/t5-small (60M)",
-    summary:
-      "T5 baseline with no strategy information — the model has to figure out what's sarcastic and how to fix it in a single step. Input is prefixed with the task token `desarcasm:` because T5 was pretrained with task prefixes.",
-    script: { label: "scripts/train.py", href: `${REPO}/scripts/train.py` },
-    rows: [
-      { key: "Input format", value: '"desarcasm: {headline}"' },
-      { key: "Train size", value: "10,868 pairs" },
-      { key: "Epochs", value: "5 (early stop, patience 2)" },
-      { key: "Batch size", value: "16" },
-      { key: "Learning rate", value: "3e-4" },
-      { key: "Max length", value: "128 tokens" },
-    ],
-  },
+];
+
+// T5 models live in a separate repo with a different training recipe.
+// Source: github.com/camille-readbean/CS4248-project-AY2526S2
+//   scripts/finetune_T5.py
+//   scripts/slurm_finetune_t5.sh → slurm_finetune_t5.py
+//   scripts/prepare_t5_datasets.py
+const T5_MODELS: ModelTraining[] = [
   {
     key: "t5-joint",
     display: "T5-Joint",
-    base: "google/t5-base (220M)",
+    base: "google-t5/t5-base (220M)",
     highlight: "Best model by human eval",
     summary:
-      "T5-base trained to do two things at once: classify the sarcasm strategy AND rewrite the headline. The target string has the format `strategy: <type> rewrite: <headline>`. The strategy prefix forces task decomposition before generation — identify what's sarcastic first, then remove it — and this is why T5-Joint wins on meaning preservation (16.4% meaning change vs T5-Control's 25%).",
-    script: { label: "scripts/train.py", href: `${REPO}/scripts/train.py` },
+      "T5-base trained to do two things at once on every example: classify the sarcasm strategy AND rewrite the headline. The input is prefixed with 'rewrite to non-sarcastic and predict strategy: ' and the target is 'strategy: <type> rewrite: <headline>'. Forcing the model to emit the strategy token before the rewrite makes it decompose the task (identify what's sarcastic first, then remove it) and is why T5-Joint wins human eval on meaning preservation — 16.4% meaning change vs T5-Control's 25%.",
+    script: {
+      label: "camille-readbean/scripts/finetune_T5.py",
+      href: `${T5_REPO}/scripts/finetune_T5.py`,
+    },
     rows: [
-      { key: "Output format", value: '"strategy: X rewrite: Y"' },
-      { key: "Train size", value: "10,868 strategy-labeled pairs" },
-      { key: "Epochs", value: "5 (early stop, patience 2)" },
-      { key: "Batch size", value: "16" },
+      {
+        key: "Input prefix",
+        value: '"rewrite to non-sarcastic and predict strategy: "',
+      },
+      { key: "Target format", value: '"strategy: {strategy} rewrite: {rewrite}"' },
+      { key: "Data split", value: "data/joint_and_ablate_prepared/joint (80/10/10 stratified)" },
+      { key: "Epochs", value: "4" },
+      { key: "Per-device batch", value: "8" },
+      { key: "Grad accum", value: "2 (effective batch 16)" },
       { key: "Learning rate", value: "3e-4" },
-      { key: "Max length", value: "128 tokens" },
-      { key: "Why it wins", value: "Decomposition before generation" },
+      { key: "Scheduler", value: "Cosine, 6% warmup" },
+      { key: "Weight decay", value: "0.01" },
+      { key: "Max source/target len", value: "1248 tokens" },
+      { key: "Best metric", value: "eval_loss (predict_with_generate=True)" },
+      { key: "Precision", value: "fp16" },
+      { key: "Compute", value: "1× NV GPU, 32G mem, SLURM gpu-long" },
+    ],
+  },
+  {
+    key: "t5-control",
+    display: "T5-Control",
+    base: "google-t5/t5-base (220M)",
+    summary:
+      "Same T5 recipe and split as T5-Joint but the strategy token is stripped from both input and output — the model only sees 'rewrite to non-sarcastic: {sarcastic}' and outputs the plain rewrite. This isolates the contribution of the strategy-prefix trick: any difference on meaning preservation between T5-Joint and T5-Control is attributable to the joint objective, not data or backbone.",
+    script: {
+      label: "camille-readbean/scripts/slurm_finetune_t5_control.sh",
+      href: `${T5_REPO}/scripts/slurm_finetune_t5_control.sh`,
+    },
+    rows: [
+      { key: "Input prefix", value: '"rewrite to non-sarcastic: "' },
+      { key: "Target format", value: "Plain rewrite (no strategy token)" },
+      { key: "Data split", value: "data/joint_and_ablate_prepared/control (same as joint)" },
+      { key: "Epochs", value: "4" },
+      { key: "Per-device batch", value: "8" },
+      { key: "Grad accum", value: "2 (effective batch 16)" },
+      { key: "Learning rate", value: "3e-4" },
+      { key: "Scheduler", value: "Cosine, 6% warmup" },
+      { key: "Max source/target len", value: "1248 tokens" },
+      { key: "Precision", value: "fp16" },
     ],
   },
   {
@@ -93,13 +121,16 @@ const SFT_SEQ2SEQ: ModelTraining[] = [
     display: "T5-Joint (small)",
     base: "google-t5/t5-small (60M)",
     summary:
-      "Older T5-small variant of the joint model — same training recipe, smaller backbone. Kept for comparison to show that T5-Joint's edge comes from the strategy-prefix trick, not from model size.",
-    script: { label: "scripts/train.py", href: `${REPO}/scripts/train.py` },
+      "Earlier T5-small variant of the joint model using the default model flag in Camille's slurm script. Same training recipe as T5-Joint, smaller backbone — kept in the evaluation to show that the joint model's edge comes from the strategy prefix, not just capacity. Still listed in the dashboard under the original name 'joint'.",
+    script: {
+      label: "camille-readbean/scripts/finetune_T5.py",
+      href: `${T5_REPO}/scripts/finetune_T5.py`,
+    },
     rows: [
-      { key: "Output format", value: '"strategy: X rewrite: Y"' },
-      { key: "Epochs", value: "5 (early stop, patience 2)" },
-      { key: "Batch size", value: "16" },
-      { key: "Learning rate", value: "3e-4" },
+      { key: "Input prefix", value: '"rewrite to non-sarcastic and predict strategy: "' },
+      { key: "Target format", value: '"strategy: {strategy} rewrite: {rewrite}"' },
+      { key: "Backbone", value: "t5-small (60M params)" },
+      { key: "Everything else", value: "Identical to T5-Joint" },
     ],
   },
 ];
@@ -296,6 +327,20 @@ export default function TrainingPage() {
           </Link>
           .
         </p>
+        <p className="text-[13px] md:text-[14px] leading-[1.6] text-muted max-w-3xl mt-4">
+          Note: the T5 family was trained on a separate stratified split with
+          its own pipeline (Camille&apos;s{" "}
+          <a
+            href="https://github.com/camille-readbean/CS4248-project-AY2526S2"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-accent-blue hover:underline"
+          >
+            CS4248-project-AY2526S2
+          </a>{" "}
+          repo). Same epochs and LR as the BART pipeline but different batch
+          shape, max length, and best-metric criterion.
+        </p>
       </section>
 
       {/* Overview */}
@@ -307,10 +352,16 @@ export default function TrainingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
             {[
               {
-                tag: "01",
-                title: "Supervised Fine-Tuning (seq2seq)",
-                body: "BART and T5 variants trained with cross-entropy on 10,868 sarcastic→non-sarcastic headline pairs. 5 epochs, early stopping on val BLEU.",
-                models: 5,
+                tag: "01a",
+                title: "BART SFT (Yang Zhi)",
+                body: "BART-Base and BART-CE trained with cross-entropy on the sar-to-non splits. 5 epochs, early stopping on val BLEU, HuggingFace Seq2SeqTrainer.",
+                models: 2,
+              },
+              {
+                tag: "01b",
+                title: "T5 SFT (Camille)",
+                body: "T5-Joint, T5-Control, and the 6 ablations — 4 epochs, effective batch 16, max length 1248, fp16, eval_loss as best metric, SLURM orchestration.",
+                models: 9,
               },
               {
                 tag: "02",
@@ -323,12 +374,6 @@ export default function TrainingPage() {
                 title: "LoRA Instruction Tuning",
                 body: "LLaMA 3.2 1B fine-tuned via low-rank adapters on 7 projection layers. Loss masked to the assistant response only.",
                 models: 2,
-              },
-              {
-                tag: "04",
-                title: "Ablation study",
-                body: "Six T5-Joint retrains, each with one of the six sarcasm subtypes held out of the training data to measure its contribution.",
-                models: 6,
               },
             ].map((item) => (
               <div
@@ -361,32 +406,115 @@ export default function TrainingPage() {
         </div>
       </section>
 
-      {/* Section 1: SFT seq2seq */}
+      {/* Section 1a: BART SFT */}
       <section className="px-4 md:px-12 pb-10 md:pb-12">
         <span
           className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-3"
           style={{ fontFamily: "var(--font-jetbrains-mono)" }}
         >
-          Section 01
+          Section 01a
         </span>
         <h2
           className="text-[24px] md:text-[32px] leading-[1.05] tracking-[-0.32px] md:tracking-[-0.48px] text-foreground mb-3"
           style={{ fontFamily: "var(--font-dm-serif)" }}
         >
-          Supervised Fine-Tuning
+          BART Supervised Fine-Tuning
         </h2>
         <p className="text-[14px] md:text-[16px] leading-[1.6] text-foreground-secondary max-w-3xl mb-6 md:mb-8">
-          Standard cross-entropy training with the HuggingFace{" "}
-          <code className="text-[13px] text-accent-purple">Seq2SeqTrainer</code>,
-          early stopping on validation BLEU (patience 2), and a cosine warmup
-          schedule. Every seq2seq model below uses the same trainer — the
-          differences are the base checkpoint and whether the input carries a
-          strategy prefix.
+          Yang Zhi&apos;s BART pipeline — cross-entropy training with the
+          HuggingFace{" "}
+          <code className="text-[13px] text-accent-purple">Seq2SeqTrainer</code>
+          , early stopping on validation BLEU (patience 2), and a cosine warmup
+          schedule. BART doesn&apos;t need a task prefix: it&apos;s pretrained
+          with its own denoising objective, so the input is the raw sarcastic
+          headline.
         </p>
         <div className="space-y-4 md:space-y-5 max-w-4xl">
           {SFT_SEQ2SEQ.map((m) => (
             <ModelCard key={m.key} m={m} />
           ))}
+        </div>
+      </section>
+
+      {/* Section 1b: T5 SFT (Camille's pipeline) */}
+      <section className="px-4 md:px-12 pb-10 md:pb-12">
+        <div className="border-t border-border-light pt-10 md:pt-12 max-w-4xl">
+          <span
+            className="text-[11px] tracking-[0.28px] uppercase text-muted block mb-3"
+            style={{ fontFamily: "var(--font-jetbrains-mono)" }}
+          >
+            Section 01b
+          </span>
+          <h2
+            className="text-[24px] md:text-[32px] leading-[1.05] tracking-[-0.32px] md:tracking-[-0.48px] text-foreground mb-3"
+            style={{ fontFamily: "var(--font-dm-serif)" }}
+          >
+            T5 Supervised Fine-Tuning
+          </h2>
+          <p className="text-[14px] md:text-[16px] leading-[1.6] text-foreground-secondary mb-5">
+            Camille&apos;s T5 pipeline runs in a{" "}
+            <a
+              href="https://github.com/camille-readbean/CS4248-project-AY2526S2"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent-blue hover:underline"
+            >
+              separate repo
+            </a>{" "}
+            with its own stratified split, SLURM orchestration, and a longer
+            max-sequence length to fit the combined input+target with the
+            strategy token. Same HuggingFace{" "}
+            <code className="text-[13px] text-accent-purple">Seq2SeqTrainer</code>{" "}
+            as the BART side, but different hyperparameters — the table below
+            is the shared recipe; each model card then notes where it differs.
+          </p>
+
+          {/* Shared T5 recipe card */}
+          <div className="border border-border-card rounded-[22px] p-5 md:p-6 mb-6 md:mb-8">
+            <h4
+              className="text-[11px] tracking-[0.28px] uppercase text-muted mb-3"
+              style={{ fontFamily: "var(--font-jetbrains-mono)" }}
+            >
+              Shared T5 recipe (joint · control · ablations)
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1.5 text-[12px] md:text-[13px]">
+              {[
+                ["Data prep", "prepare_t5_datasets.py (80/10/10 stratified)"],
+                ["Trainer", "Seq2SeqTrainer, predict_with_generate=True"],
+                ["Epochs", "4 (no early stopping)"],
+                ["Per-device batch", "8"],
+                ["Grad accum", "2 (effective 16)"],
+                ["Learning rate", "3e-4"],
+                ["Scheduler", "Cosine, warmup_ratio 0.06"],
+                ["Weight decay", "0.01"],
+                ["Max source/target", "1248 tokens"],
+                ["Best metric", "eval_loss"],
+                ["Precision", "fp16"],
+                ["Seed", "42"],
+                ["Compute", "1× NV GPU, 32G mem, SLURM gpu-long, 5h limit"],
+                ["Orchestration", "slurm_finetune_t5.sh → .py"],
+              ].map(([k, v]) => (
+                <div
+                  key={k}
+                  className="flex items-baseline justify-between gap-3 py-1 border-b border-border-card/60"
+                >
+                  <span
+                    className="text-muted"
+                    style={{ fontFamily: "var(--font-jetbrains-mono)" }}
+                  >
+                    {k}
+                  </span>
+                  <span className="text-foreground-secondary text-right">{v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-4 md:space-y-5">
+            {T5_MODELS.map((m) => (
+              <ModelCard key={m.key} m={m} />
+            ))}
+          </div>
         </div>
       </section>
 
@@ -560,31 +688,37 @@ export default function TrainingPage() {
             Ablation Study
           </h2>
           <p className="text-[14px] md:text-[16px] leading-[1.6] text-foreground-secondary mb-5 md:mb-6">
-            Six retrainings of the T5-Joint recipe, each with one sarcasm
-            subtype dropped from the training data. The goal: measure whether
-            any single subtype is load-bearing for the joint model&apos;s
-            performance. The finding on the{" "}
+            Six retrainings of the T5 control recipe (not joint — the
+            ablations use the plain{" "}
+            <code className="text-[12px] text-accent-purple">
+              rewrite to non-sarcastic:
+            </code>{" "}
+            prefix and emit the plain rewrite), each with one sarcasm subtype
+            dropped from the training data. To keep effective dataset size
+            constant across the six variants, every ablation pool is stratified-
+            sampled down to the minimum across all drops. The finding on the{" "}
             <Link href="/dashboard" className="text-accent-blue hover:underline">
               dashboard
             </Link>
-            : ablation models cluster within{" "}
+            : the six ablations cluster within{" "}
             <span className="tabular-nums">0.005</span> of each other on
             similarity — the model learns generic sarcasm patterns that
-            transfer across subtypes.
+            transfer across subtypes, so no single one is load-bearing.
           </p>
 
           <div className="border border-border-card rounded-[22px] p-5 md:p-6 mb-5">
             <h4 className="text-[14px] md:text-[15px] text-foreground mb-3">
-              Shared training recipe
+              Ablation-specific recipe
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1.5 text-[12px] md:text-[13px]">
               {[
-                ["Base", "google/t5-base (220M)"],
-                ["Output format", "strategy: X rewrite: Y"],
-                ["Epochs", "5 (early stop, patience 2)"],
-                ["Batch size", "16"],
-                ["Learning rate", "3e-4"],
-                ["Max length", "128 tokens"],
+                ["Base", "t5-small (default in slurm script)"],
+                ["Input prefix", '"rewrite to non-sarcastic: "'],
+                ["Target format", "Plain rewrite (no strategy token)"],
+                ["Train pool", "Stratified downsample to min-across-drops"],
+                ["Val pool", "Stratified downsample, same rule"],
+                ["Test set", "Full held-out split (shared across all six)"],
+                ["Everything else", "Same as T5 shared recipe above"],
               ].map(([k, v]) => (
                 <div
                   key={k}
