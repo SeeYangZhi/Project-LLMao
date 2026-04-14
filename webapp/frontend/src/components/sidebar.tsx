@@ -14,7 +14,7 @@ const NAV_ITEMS = [
   { href: "/explorer", label: "Explorer", icon: "07" },
   { href: "/playground", label: "Playground", icon: "08" },
   { href: "/human-eval", label: "Human Eval", icon: "09" },
-  { href: "/poster-diagrams", label: "Poster Diagrams", icon: "10" },
+  { href: "/faq", label: "FAQ", icon: "10" },
 ];
 
 export function Sidebar() {

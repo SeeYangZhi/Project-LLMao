@@ -8,11 +8,18 @@ type ToolRow = {
 
 const DECLARED_TOOLS: ToolRow[] = [
   {
-    tool: "OpenAI GPT-4o / GPT-4o-mini (via API)",
+    tool: "Step 3.5 Flash (stepfun/step-3.5-flash:free, via OpenRouter)",
     purpose:
-      "Strategy-label annotation of 28,619 NHDSD headlines and synthetic non-sarcastic rewrite generation for the training corpus.",
+      "Primary teacher model for the training corpus — generated non-sarcastic rewrites and initial sarcasm-strategy labels for 28,619 NHDSD headlines.",
     usage:
-      "Outputs were cross-validated (two independent annotations per headline), filtered by agreement, and manually audited on a 200-sample subset before entering the training pool. See /pipeline for the full procedure.",
+      "Outputs were filtered, de-duplicated, and entered the training pool only after passing cross-validation (see Nemotron below) and a manual 200-sample audit. See /pipeline.",
+  },
+  {
+    tool: "Nemotron Nano 30B (nvidia/nemotron-3-nano-30b-a3b:free, via OpenRouter)",
+    purpose:
+      "Cross-validation annotator — re-labelled strategy/rewrite pairs where Step 3.5 Flash produced ambiguous or low-confidence outputs.",
+    usage:
+      "Disagreements between the two teachers were either resolved by majority vote on a third pass or dropped from the training pool. The final 89,688 training pairs are only those where the two teachers agreed after this pipeline. See /pipeline.",
   },
   {
     tool: "Google Gemini 2.5 Flash (via API)",
