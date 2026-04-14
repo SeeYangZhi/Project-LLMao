@@ -10,16 +10,16 @@ const DECLARED_TOOLS: ToolRow[] = [
   {
     tool: "Step 3.5 Flash (stepfun/step-3.5-flash:free, via OpenRouter)",
     purpose:
-      "Primary teacher model for the training corpus — generated non-sarcastic rewrites and initial sarcasm-strategy labels for 28,619 NHDSD headlines.",
+      "Primary teacher for the training corpus. Generated the non-sarcastic → sarcastic rewrite pairs from NHDSD source headlines, and then in a second pass produced the five missing strategy variants per source (sarcasm, irony, satire, understatement, overstatement, rhetorical_question).",
     usage:
-      "Outputs were filtered, de-duplicated, and entered the training pool only after passing cross-validation (see Nemotron below) and a manual 200-sample audit. See /pipeline.",
+      "The two Step 3.5 Flash passes together produce the 89,688-record training pool (14,948 sources × 6 strategies). Used as-is for training — no downstream LLM filter was applied to these pairs.",
   },
   {
     tool: "Nemotron Nano 30B (nvidia/nemotron-3-nano-30b-a3b:free, via OpenRouter)",
     purpose:
-      "Cross-validation annotator — re-labelled strategy/rewrite pairs where Step 3.5 Flash produced ambiguous or low-confidence outputs.",
+      "Independent binary sarcasm classifier used to cross-validate source-headline labels in NHDSD where the original NHDSD label and Step 3.5 Flash disagreed.",
     usage:
-      "Disagreements between the two teachers were either resolved by majority vote on a third pass or dropped from the training pool. The final 89,688 training pairs are only those where the two teachers agreed after this pipeline. See /pipeline.",
+      "Ran only on the disagreement subset as a tiebreaker to estimate NHDSD mislabel rate. This is a QA pass on source headline labels upstream of pair generation — it does not filter or re-annotate the 89,688 training pairs themselves.",
   },
   {
     tool: "Google Gemini 2.5 Flash (via API)",

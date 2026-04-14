@@ -49,12 +49,15 @@ const SECTIONS: FaqSection[] = [
             </ul>
             <p className="mb-3">
               Concretely the preprocessing pipeline uses two OpenRouter models
-              on the free tier: <strong>Step 3.5 Flash</strong>{" "}
+              on the free tier. <strong>Step 3.5 Flash</strong>{" "}
               (<code className="text-[13px]">stepfun/step-3.5-flash:free</code>)
-              generates the non-sarcastic rewrites and initial strategy
-              labels, and <strong>Nemotron Nano 30B</strong>{" "}
+              is the primary teacher — it generates the rewrite pairs and the
+              six strategy variants per source that together make up the
+              89,688-record training pool. <strong>Nemotron Nano 30B</strong>{" "}
               (<code className="text-[13px]">nvidia/nemotron-3-nano-30b-a3b:free</code>)
-              re-annotates disagreements for cross-validation.
+              is used separately as an independent binary sarcasm classifier,
+              re-checking NHDSD source-headline labels where the original
+              NHDSD label and Step 3.5 Flash disagreed.
             </p>
             <p>
               This is the standard strong-teacher → small-student distillation
