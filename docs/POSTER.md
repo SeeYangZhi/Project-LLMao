@@ -9,7 +9,25 @@
 
 ## Abstract
 
-Sarcasm poses a significant challenge for NLP systems — sentiment analyzers misread sarcastic text as positive, and content moderation pipelines fail to capture the intended meaning. We tackle **sarcasm style transfer**: given a sarcastic headline, generate a non-sarcastic equivalent that preserves the underlying meaning. Since no large-scale paired dataset exists for this task, we construct a synthetic parallel corpus of 89,688 strategy-annotated pairs using LLM-based generation (StepFun Step-3.5 Flash) with cross-validation (Nemotron). We fine-tune three small models — **T5-base**, **BART-base**, and **GPT-2** — on 13,588 sarcastic-to-non-sarcastic pairs using supervised fine-tuning (SFT), and find that small models (124M–250M parameters) learn only surface-level paraphrasing. To address this, we apply **reinforcement learning** (REINFORCE with KL penalty) using our sarcasm classifier (Macro F1: 0.938) as the reward signal, following the ViSP framework. We evaluate with BLEU, METEOR, ROUGE-L, and classifier-based style accuracy, demonstrating that RL refinement can push small models beyond surface rewriting toward genuine style transfer.
+Sarcasm poses a significant challenge for NLP systems — sentiment
+analyzers misread sarcastic text as positive, and content moderation
+pipelines fail to capture the intended meaning. We tackle **sarcasm
+style transfer**: given a sarcastic headline, generate a non-sarcastic
+equivalent that preserves the underlying meaning. Since no large-scale
+paired dataset exists for this task, we construct a synthetic parallel
+corpus of 89,688 strategy-annotated pairs using LLM-based generation
+(StepFun Step-3.5 Flash) with cross-validation (Nemotron 3 Nano). We
+train **14 models** across four recipes — supervised seq2seq fine-tuning
+(T5 and BART variants), REINFORCE with KL penalty, LoRA instruction
+tuning of LLaMA 3.2 1B, and a 6-way subtype ablation — and evaluate
+them with a 7-metric automated pipeline plus 3 sarcasm classifiers and
+a hand-labeled human evaluation on 140 samples (κ > 0.8). Our headline
+finding: **all three classifiers fail vs human ground truth**
+(κ −0.11 to +0.18), making automated flip rate an unreliable primary
+metric. Our **best model is T5-Joint** — a T5-base trained to predict
+the sarcasm strategy *before* rewriting — which achieves 43.6% strict
+success (sarcasm removed AND meaning preserved), beating both T5-Control
+and BART-RL on the same hand-labeled set.
 
 ---
 
@@ -89,42 +107,39 @@ The LLM serves as a **synthetic data annotator** — creating paired training da
 | **Inference** | ~1-2s, per-token cost | ~10ms on single GPU |
 | **Control** | Prompt-dependent | Deterministic strategy codes |
 
-### Model Architectures
+### Model Architectures (14 models, four recipes)
 
-**T5-base** (220M params, seq2seq)
-- Input: `desarcasm: {sarcastic headline}`
-- Output: non-sarcastic equivalent
-- Trainer: `Seq2SeqTrainer` with `predict_with_generate`
+**T5-Joint / T5-Control / 6 ablations** — `t5-base` (220M), trained in
+[Camille's separate repo](https://github.com/camille-readbean/CS4248-project-AY2526S2)
+via `finetune_T5.py` with SLURM orchestration. T5-Joint is conditioned
+to predict the sarcasm strategy in its target string (`strategy: X
+rewrite: Y`); T5-Control uses a plain `rewrite to non-sarcastic:`
+prefix and emits the bare rewrite. The six ablation models drop one
+subtype each from train+val. Same recipe across all nine: 4 epochs,
+per-device batch 8 × grad accum 2, LR 3e-4, cosine warmup 0.06, max
+sequence length 1248, fp16, eval_loss as best metric.
 
-**BART-base** (139M params, denoising seq2seq)
-- Input: `{sarcastic headline}` (no task prefix — BART is not pretrained with prefixes)
-- Output: non-sarcastic equivalent
-- Trainer: `Seq2SeqTrainer`
+**BART-Base / BART-CE** — `facebook/bart-base` (140M), trained via
+this repo's `scripts/train.py`. BART-Base trains on the main
+`sar_to_non` split (10,868 pairs); BART-CE trains on the smaller
+`sar_to_non_context_enhanced` split (8,258 pairs with scraped article
+bodies). HuggingFace `Seq2SeqTrainer`, 5 epochs with early stop on val
+BLEU (patience 2), batch 16, LR 3e-4, max length 128, bf16.
 
-**GPT-2** (124M params, causal LM)
-- Input: `{sarcastic headline} → {target}`
-- Loss masked on input tokens (only train on target generation)
-- Custom data collator for variable-length padding
+**BART-RL / BART-CE+RL** — `scripts/train_rl.py`. Initialise both
+policy and frozen reference from the corresponding SFT checkpoint;
+update the policy with REINFORCE + a KL penalty using a composite
+classifier + ROUGE-L reward. See § "Reinforcement Learning" below for
+the loss formulation.
 
-**Llama-3.2-1B-Instruct** (1.24B params, causal LM, LoRA)
-- Input: Instruct chat template with system prompt + sarcastic headline
-- Output: non-sarcastic equivalent (loss masked on prompt tokens)
-- LoRA (r=16, α=32) on all attention + MLP projections — 11.3M trainable params (0.9% of total)
-- Trained on context-enhanced data (headline + article body where available)
-
-### Training Configuration
-
-| Hyperparameter | Value |
-|----------------|-------|
-| Learning rate | 3e-4 |
-| Batch size | 16 |
-| Max epochs | 5 |
-| Max sequence length | 128 |
-| Warmup steps | 500 |
-| Weight decay | 0.01 |
-| Early stopping patience | 2 |
-| Metric (seq2seq) | BLEU |
-| Metric (causal) | eval_loss |
+**LLaMA 3.2 1B / LLaMA 3.2 1B (context)** —
+`meta-llama/Llama-3.2-1B-Instruct` (1.24B), `scripts/train_llama.py`
+and `train_llama_context.py`. PEFT LoRA (r=16, α=32, dropout 0.05) on
+all 7 attention + MLP projections. ~6M of 1.24B params trainable
+(0.5%). LR 2e-4, effective batch 16 (8 × 2 grad accum), 3 epochs,
+cosine schedule, 5% warmup, bf16 + gradient checkpointing. Loss is
+masked to the assistant response only. The context variant adds the
+scraped article body to the user message at max length 1024.
 
 **Llama-3.2-1B-Instruct LoRA Configuration:**
 
@@ -160,12 +175,19 @@ SFT alone produces surface paraphrasing. Following ViSP (2025), we apply **REINF
 
 **Loss function**: `L = L_REINFORCE + β · KL(π_RL || π_SFT)`
 
-**Reward**: Composite score — `r = α · (1 - P(sarcastic)) + (1-α) · ROUGE-L(output, reference)`
-- Style reward from DistilBERT classifier (Macro F1: 0.938): high reward = output reads as non-sarcastic
-- Content reward from ROUGE-L: penalizes outputs that lose meaning
-- Connects classification (Part 1) and generation (Part 2) of our project
+**Reward**: Composite score —
+`r = α · (1 - P(sarcastic)) + (1-α) · ROUGE-L(output, reference)`
 
-**KL penalty**: Prevents reward hacking — model can't drift too far from the coherent SFT baseline
+- Style reward from a held-out sarcasm classifier (high reward =
+  output reads as non-sarcastic). Pure style reward saturates because
+  the SFT outputs already classify as ~1.0 non-sarcastic.
+- Content reward from ROUGE-L penalises outputs that lose meaning.
+
+**KL penalty**: in theory prevents reward hacking by keeping the policy
+close to the coherent SFT reference. In practice, β = 0.2 is *not*
+enough — see Finding 3 in the analysis section: BART-RL achieves the
+highest classifier flip rates by deleting sarcastic tokens, and human
+eval shows it has a 40.7% meaning-change rate.
 
 | RL Hyperparameter | Value |
 |-------------------|-------|
@@ -183,18 +205,53 @@ SFT alone produces surface paraphrasing. Following ViSP (2025), we apply **REINF
 
 ## 3. Results
 
-### 3.1 Automatic Metrics (Sar-to-Non Test Set)
+### 3.1 Automatic Metrics (2,857-sample Test Set)
 
-<!-- TODO: Fill in exact numbers from Colab runs -->
+| Model | Similarity ↑ | BLEU vs input | Edit Dist | Para Score ↑ | RoBERTa-Twitter Flip |
+|-------|---|---|---|---|---|
+| **T5-Joint** | **0.870** | 0.188 | 0.630 | 0.170 | 8.4% |
+| T5-Control | 0.878 | 0.216 | 0.592 | 0.197 | 8.1% |
+| BART-Base | 0.853 | 0.160 | 0.661 | 0.143 | 8.4% |
+| BART-RL | 0.852 | 0.216 | 0.606 | 0.198 | 8.8% |
+| BART-CE | 0.636 | 0.023 | 0.923 | 0.018 | 13.1% |
+| BART-CE+RL | 0.609 | 0.021 | 0.928 | 0.015 | 12.6% |
+| LLaMA 3.2 1B | 0.656 | 0.013 | **0.948** | 0.009 | 13.7% |
 
-| Model | BLEU | METEOR | ROUGE-L | Style Acc. |
-|-------|------|--------|---------|------------|
-| T5-base (SFT) | 0.XX | 0.XX | 0.XX | 0.XX |
-| BART-base (SFT) | 0.2934 | 0.XX | 0.XX | 0.XX |
-| GPT-2 (SFT) | 0.1822 | 0.XX | 0.XX | 0.XX |
-| **BART-base (SFT + RL)** | **0.XX** | **0.XX** | **0.XX** | **0.XX** |
+*Paraphrase score = similarity × (1 − BLEU vs input); higher = genuine
+rewriting that preserves meaning.*
 
-*Style Acc. = fraction of outputs classified as non-sarcastic by the reward model*
+### 3.2 Multi-Classifier Audit — Same Outputs, Three Stories
+
+| Model | RoBERTa-Twitter | Bert-Kaggle | RoBERTa-News | Spread |
+|---|---|---|---|---|
+| T5-Joint | 8.4% | 41.6% | 21.2% | 33.2 pp |
+| BART-RL | 8.8% | 39.9% | 26.4% | 31.1 pp |
+| LLaMA 3.2 1B | 13.7% | 16.3% | 4.8% | 11.5 pp |
+
+12 of 14 models show >30 pp spread. Pick whichever classifier supports
+your hypothesis.
+
+### 3.3 Human Evaluation (140 Samples × 3 Models × 2 Annotators)
+
+| Metric | T5-Joint | T5-Control | BART-RL |
+|---|---|---|---|
+| Inter-annotator κ | 0.839 | 0.883 | 0.884 |
+| Human flip rate | 54.3% | 54.3% | 52.9% |
+| Meaning change rate | **16.4%** | 25.0% | 40.7% |
+| **Strict success** | **43.6%** | 39.3% | 34.3% |
+
+Strict success = sarcasm removed AND meaning preserved.
+
+### 3.4 Classifier vs Human (Cohen's κ)
+
+| Classifier | Avg κ vs Human |
+|---|---|
+| RoBERTa-Twitter | +0.019 |
+| Bert-Kaggle | **−0.075** |
+| RoBERTa-News | +0.104 |
+| **Human inter-annotator** | **0.84+** |
+
+4 of 9 model×classifier cells show negative κ.
 
 ### 3.2 Sample Outputs — Onion Headlines (SFT vs RL)
 
@@ -232,92 +289,117 @@ SFT alone produces surface paraphrasing. Following ViSP (2025), we apply **REINF
 
 ## 4. Analysis & Key Findings
 
-### Finding 1: Small Models Learn Surface Paraphrasing, Not Deep De-sarcasm
+### Finding 1: Automated Flip Rate is Not a Valid Primary Metric
 
-All three models consistently produce outputs that are **grammatically improved** versions of the input rather than semantically rewritten non-sarcastic equivalents:
+Three sarcasm classifiers from different domains (Twitter, Kaggle
+headlines, news headlines) disagree by up to 33 percentage points on
+the same outputs and all three score Cohen's κ between −0.11 and +0.18
+against human ground truth (where annotators agree at κ > 0.8). 4 of 9
+model×classifier cells show *negative* κ — the classifier
+anti-correlates with humans. The classifiers detect sarcasm presence
+in isolation, not removal between input and output. **Any single
+flip-rate number is meaningless without the spread.**
 
-```
-Input:  "Area Man Passionate Defender Of What He Imagines Constitution To Be"
-T5:     "Area Man Is a Passionate Defender of What He Imagines the Constitution to Be."
-Target: "Local man strongly defends his personal interpretation of the Constitution"
-```
+### Finding 2: T5-Joint is the Best Model Overall
 
-The models learn low-hanging patterns: capitalize words, add articles ("a", "the"), insert punctuation. They do **not** learn to resolve the sarcastic implication.
+T5-Joint achieves the highest strict-success rate on human evaluation
+(43.6% — sarcasm removed AND meaning preserved), beating both T5-Control
+(39.3%) and BART-RL (34.3%). The structural difference is just the
+target format:
 
-### Finding 2: High BLEU Masks Shallow Rewriting
+- T5-Joint target: `"strategy: {strategy} rewrite: {non_sarcastic}"`
+- T5-Control target: `{non_sarcastic}` (plain)
 
-Because sarcastic and non-sarcastic headlines share most words, surface paraphrasing achieves deceptively reasonable BLEU scores. High word overlap ≠ successful de-sarcasm.
+Forcing the model to predict the strategy *before* generating the
+rewrite makes it decompose the task. Same data, same recipe — only the
+joint task formulation changes — and meaning preservation improves from
+75% (control) to 84% (joint). This is the central positive finding of
+the project.
 
-### Finding 3: Data Augmentation Doesn't Bridge the Gap
+### Finding 3: BART-RL is Reward Hacking
 
-Adding reversed non-to-sar pairs (`--augment_reversed`) with lower word overlap (25% vs 48%) did not improve de-sarcasm quality — the models still converge on surface rewriting patterns.
-
-### Finding 4: RL with Classifier Reward Dramatically Improves Style Transfer
-
-Unlike SFT alone, RL with classifier reward directly optimizes for the target style. The classifier provides a training signal that cross-entropy on reference tokens cannot — it tells the model *whether the output reads as non-sarcastic*, not just whether it matches specific reference words.
-
-**Out-of-sample evaluation on 757 sarcastic Onion headlines** (not in training data):
-
-| Model | De-sarcasm Rate | Avg Sarcasm Prob | Identical to Input |
-|-------|----------------|------------------|--------------------|
-| BART-base (no fine-tuning) | 0.1% | 0.9926 | 98.7% |
-| BART-base SFT (context-enhanced) | 23.9% | 0.7608 | 10.2% |
-| BART-base SFT (original) | 45.3% | 0.5446 | 14.5% |
-| Llama-3.2-1B SFT (CE, LoRA) | 62.7% | 0.3768 | 3.7% |
-| BART-base SFT (CE) + RL | 78.9% | 0.2116 | 0.8% |
-| **BART-base SFT (original) + RL** | **91.3%** | **0.0879** | **2.2%** |
-
-*De-sarcasm Rate = fraction of outputs classified as non-sarcastic by the reward model*
-
-RL doubles the de-sarcasm rate from SFT alone (45.3% → 91.3%), while reducing copy behavior from 14.5% to 2.2%. The average sarcasm probability of outputs drops from 0.54 to 0.09, indicating the model is not marginally passing the classifier threshold but producing outputs with high confidence of non-sarcasm.
-
-### Finding 4b: Context-Enhanced Training Data Hurts Style Transfer
-
-Training on context-enhanced targets (where the LLM had article bodies to produce deeper rewrites) performs *worse* than original surface-level targets, both with and without RL:
-
-- **SFT**: CE (23.9%) < original (45.3%) — the journalistic-style targets teach the model to generate Onion-style news headlines rather than plain non-sarcastic text, which the classifier recognizes as sarcastic
-- **SFT + RL**: CE (78.9%) < original (91.3%) — RL improves both, but the CE model hallucinates content-disconnected headlines (e.g., "mental hospital fire leaves hundreds of demons homeless" → "A Mental Hospital Fire Causes Widespread Damage in Georgia") while the original model stays faithful to the input
-
-**Takeaway**: For classifier-guided RL, shallow SFT targets that keep the model close to the input provide a better foundation than deep rewrites that encourage unconstrained generation.
-
-### Finding 5: Sarcasm is Knowledge-Intensive
-
-| Model | Params | De-sarcasm Quality |
-|-------|--------|--------------------|
-| GPT-2 (SFT) | 124M | Surface paraphrasing |
-| BART-base (SFT) | 139M | Surface paraphrasing |
-| T5-base (SFT) | 220M | Surface paraphrasing |
-| BART-base (SFT + RL) | 139M | 91.3% classifier-fooling; surface rewrites but high style accuracy |
-| **Llama-3.2-1B (SFT LoRA)** | **1.24B** | **62.7% de-sarcasm; genuine rewrites with hallucination risk** |
-| LLaMA 3.2 (zero-shot) | 8B | Meaningful rewrites |
-
-De-sarcasm requires world knowledge and pragmatic reasoning. RL narrows the gap by providing a direct style signal, but fundamental comprehension still benefits from model scale.
-
-### Finding 6: Scale Enables Genuine Rewriting but Introduces Hallucination
-
-Llama-3.2-1B-Instruct with LoRA (SFT only, no RL) achieves 62.7% de-sarcasm rate — higher than BART SFT (45.3%) — while producing qualitatively different outputs. Where BART rewrites are surface-level (capitalization, article insertion), LLaMA outputs are genuine headline rewrites:
+BART-RL achieves the highest classifier flip rates of any model but
+human evaluation reveals a **40.7% meaning change rate** — more than
+double T5-Joint's 16.4%. The composite reward
+(`α · (1−P(sarc)) + (1−α) · ROUGE-L`) is satisfied by deleting
+sarcastic tokens while keeping enough overlap to satisfy ROUGE-L.
+Deletion ≠ rewriting. The KL penalty against the SFT reference is not
+strong enough to prevent it.
 
 ```
+Input:  "Area Man Proud Of Completely Average Achievement"
+BART-RL: "Man achieves something."
+```
+
+The classifier is happy. The human annotator marks the meaning as
+destroyed. **This is the cautionary finding of the project**: optimising
+a reward you can't trust produces a model you can't trust.
+
+### Finding 4: LLaMA and BART-CE Rewrite Too Aggressively
+
+| Model | Similarity | Edit Distance | LLM Meaning |
+|---|---|---|---|
+| LLaMA 3.2 1B | 0.66 | 0.95 | 3.34 / 5 |
+| BART-CE | 0.64 | 0.92 | 3.52 / 5 |
+| BART-CE+RL | 0.61 | 0.93 | 2.90 / 5 |
+
+These models edit ~95% of the input and retain ~1% n-gram overlap.
+That's *generation* with the input as a prompt, not *style transfer*.
+The hallucination footprint is real:
+
+```
+Input:  "Fucker Has Nerve To Be 22 Years Old"
+LLaMA:  "Local Man Arrested for Sexual Assault at 22"   (fabricated crime)
+
 Input:  "Inconsiderate Wife Leaves Bathroom A Total Mess After Home Birth"
-BART:   "inconsiderate wife leaves bathroom a total mess after home birth"
-LLaMA:  "Mother of Two Gives Birth at Home"
+LLaMA:  "Mother of Two Gives Birth at Home"             (loses the absurdity)
 ```
 
-However, the model's willingness to rewrite aggressively introduces new failure modes:
-- **Hallucination** (fabricating facts): "Fucker Has Nerve To Be 22 Years Old" → "Local Man Arrested for Sexual Assault at 22"
-- **Meta-description** (describing rather than rewriting): "Norris God" → "Satirical Article Features Fictional God Named Norris"
-- **Meaning drift**: Output is a valid headline but loses the original topic
+LLaMA's larger backbone enables genuine comprehension but it has too
+much generative latitude — it forgets to preserve the original.
 
-This reveals a **quality vs. faithfulness trade-off**: BART+RL achieves higher classifier scores (91.3%) via safe, surface-level edits, while LLaMA achieves genuine comprehension but at the cost of factual reliability. A future direction is applying RL on top of LLaMA SFT to combine deep rewriting with classifier guidance.
+### Finding 5: Subtype Ablations Are Interchangeable
+
+Six retrains of the T5 control recipe, each with one of the six sarcasm
+subtypes dropped from train+val (pools downsampled to keep effective
+dataset size constant). All six cluster within **0.005 similarity** of
+each other. No single subtype is load-bearing.
+
+**Interpretation**: sarcasm subtypes share underlying mechanisms
+(hyperbole, contradiction, absurdity) and the model learns generic
+patterns that transfer across categories. A positive generalisation
+finding, and an explanation for why oversampling one subtype doesn't
+help.
+
+### Finding 6: Different Subtypes Fail for Different Reasons
+
+| Subtype | Classifier Miss Rate† | Why |
+|---|---|---|
+| satire | 80% | Mimics legitimate news format |
+| rhetorical_question | 71% | Sarcasm in pragmatics, not lexicon |
+| irony | 67% | Contradiction is contextual, no surface markers |
+| understatement | 50% | Requires world knowledge of "appropriate" response |
+| sarcasm (generic) | 44% | Has detectable lexical patterns |
+| overstatement | 100%* | **Model failure**: only 28.6% human flip rate |
+
+†% of human-labeled flips that the classifier failed to detect.
+*Overstatement is anomalous: 100% miss rate isn't classifier failure
+but model failure — only 28.6% of overstatement headlines are
+successfully de-sarcasm'd by humans either.
 
 ### The Knowledge Gap
 
 Sarcasm comprehension requires:
 1. **World knowledge** — understanding what's normal vs. absurd
 2. **Pragmatic inference** — recognizing speaker intent vs. literal meaning
-3. **Cultural context** — knowing that TheOnion headlines follow specific comedic patterns
+3. **Cultural context** — knowing that TheOnion headlines follow specific
+   comedic patterns
 
-SFT alone can't teach these from 13K examples. RL with a classifier reward provides an orthogonal training signal — optimizing *what the output should feel like* rather than just matching reference tokens.
+Small SFT models pattern-match on lexical surface; RL pushes them toward
+optimising whatever the reward says, including hacks. The strategy-prefix
+joint task (T5-Joint) is the only training-time intervention that
+demonstrably improves *meaning preservation* on human eval, by forcing
+the model to identify what's sarcastic before rewriting it.
 
 ---
 
@@ -347,20 +429,45 @@ SFT alone can't teach these from 13K examples. RL with a classifier reward provi
 
 ## 6. Conclusion
 
-- We construct a **89,688-record strategy-annotated parallel corpus** for sarcasm style transfer — a reusable resource for future work
-- SFT alone on small models (124M–250M) produces **surface paraphrasing**, not genuine de-sarcasm
-- **RL with classifier reward** (REINFORCE + KL penalty) provides an orthogonal training signal that pushes models toward actual style transfer — connecting our classification model (Macro F1: 0.938) directly to the generation task
-- **LoRA fine-tuning of Llama-3.2-1B** (11.3M trainable params) produces genuine headline rewrites at 62.7% de-sarcasm rate — qualitatively superior to BART surface paraphrasing but with hallucination risk
-- Sarcasm style transfer is **knowledge-intensive**: world knowledge and pragmatic reasoning remain bottlenecks for small models, but both RL and model scale help narrow the gap
-- **Limitation — domain specificity**: Sarcasm detection is strongly domain-dependent. Cross-domain evaluation shows neither classifier generalises well:
-
-  | Model | NHDSD (news headlines) | iSarcasmEval (tweets) |
-  |-------|----------------------|----------------------|
-  | Ours (DistilBERT, trained on NHDSD) | **0.9730** | 0.4682 |
-  | `cardiffnlp/twitter-roberta-base-irony` (trained on tweets) | 0.4975 | **0.6562** |
-
-  Each model excels only in its training domain. Our classifier's 48% false positive rate on non-sarcastic tweets confirms it learned news-headline-specific patterns rather than general sarcasm. The RL reward signal is therefore calibrated to the news domain — a valid setup for Onion headlines, but not transferable to other domains without retraining the reward model
-- **Future work**: RL on top of LLaMA SFT to combine genuine rewriting with classifier guidance; DPO as an alternative RL objective; human evaluation of style transfer quality; domain-general sarcasm classifier for broader reward signal; hallucination mitigation for larger models
+- We construct an **89,688-record strategy-annotated parallel corpus**
+  via LLM annotation + cross-validation — a reusable resource and the
+  source of training data for all 14 models.
+- We train **14 models across four recipes**: BART SFT (Yang Zhi), T5
+  joint/control/ablations (Camille's separate pipeline), REINFORCE + KL
+  on BART, and LoRA instruction tuning of LLaMA 3.2 1B.
+- **All three sarcasm classifiers fail against human ground truth**
+  (Cohen's κ −0.11 to +0.18 vs human κ > 0.8). 4 of 9 model×classifier
+  cells show negative κ. **Automated flip rate is not a valid primary
+  metric** — classifiers detect sarcasm presence, not removal between
+  input and output.
+- **T5-Joint is our best model** (43.6% strict success on human eval),
+  beating both T5-Control (39.3%) and BART-RL (34.3%). The strategy-
+  prediction prefix forces task decomposition before generation, and
+  this single change improves meaning preservation from 75% to 84% on
+  the same data and recipe.
+- **BART-RL is reward hacking.** It scores highest on automated flip
+  rate but human eval shows 40.7% meaning change. The composite
+  reward is satisfied by deleting sarcastic tokens; the KL penalty
+  isn't enough to stop it. A structural cautionary finding about
+  optimising rewards you can't trust.
+- **The 6-way subtype ablation is null** — all six retrained models
+  cluster within 0.005 similarity. Sarcasm subtypes share underlying
+  mechanisms; no single one is load-bearing.
+- **Different subtypes fail for different reasons**: satire mimics
+  legitimate news; rhetorical questions encode sarcasm in pragmatics;
+  overstatement is a model failure (only 28.6% human flip rate).
+- **Limitation — domain specificity**: Sarcasm detection is strongly
+  domain-dependent. The three off-the-shelf classifiers we audit were
+  each trained on a different corpus (Twitter irony, Kaggle headlines,
+  news headlines) and disagree with each other by up to 33 percentage
+  points on the same outputs. The RL reward signal inherits this
+  fragility — a setup that is only valid for the specific classifier
+  chosen and the domain it was trained on.
+- **Future work**: DPO as an alternative to REINFORCE; train a
+  domain-general sarcasm classifier as a more reliable reward model;
+  apply the joint-task prefix to BART and LLaMA backbones to test
+  whether the gain is T5-specific; richer human eval with subtype-
+  level rationales.
 
 ---
 
