@@ -402,7 +402,7 @@ def compute_paraphrase_score(sim_per_sample, bleu_per_sample):
     per_sample = []
     for sim, bleu in zip(sim_per_sample, bleu_per_sample):
         clamped_sim = max(0.0, min(1.0, sim))
-        score = clamped_sim * bleu
+        score = clamped_sim * (1 - bleu)
         per_sample.append(float(score))
     return {
         "mean_paraphrase_score": float(np.mean(per_sample)),
