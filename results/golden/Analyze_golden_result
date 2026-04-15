@@ -4,7 +4,7 @@ ANALYZING: t5_base_joint
 ================================================================================
 Golden samples: 140
 Results samples: 140
-Classifier columns found: ['hard_flipped_roberta_twitter', 'hard_flipped_distilbert_reddit', 'hard_flipped_roberta_news', 'hard_flipped']
+Classifier columns found: ['hard_flipped_roberta_twitter', 'hard_flipped_bert_kaggle', 'hard_flipped_roberta_news', 'hard_flipped']
 
 Inter-annotator agreement: 92.1%
 Inter-annotator Cohen's κ: 0.839
@@ -91,11 +91,11 @@ CLASSIFIER: RoBERTa-Twitter (RoBERTa, trained on Twitter)
     
 
 ──────────────────────────────────────────────────────────────────────
-CLASSIFIER: DistilBERT-Reddit (DistilBERT, trained on Reddit)
+CLASSIFIER: Bert-Kaggle (Bert, trained on Kaggle)
 ──────────────────────────────────────────────────────────────────────
 
     ┌─────────────────────────────────────────────────────────────┐
-    │                     DistilBERT-Reddit                     │
+    │                        Bert-Kaggle                        │
     ├─────────────────────────────────────────────────────────────┤
     │                    CONFUSION MATRIX                         │
     ├─────────────────────────────────────────────────────────────┤
@@ -254,7 +254,7 @@ CLASSIFIER COMPARISON SUMMARY
     │ Classifier        │ Acc   │ Prec  │ Recall │ Spec  │ F1    │ MCC    │ κ      │ Flip% │
     ├───────────────────┼───────┼───────┼────────┼───────┼───────┼────────┼────────┼───────┤
     │ 🟡RoBERTa-Twitter  │ 48.6% │ 75.0% │   7.9% │ 96.9% │ 0.143 │ +0.102  │ +0.044  │  5.7% │
-    │ 🔴DistilBERT-Reddit │ 43.6% │ 38.5% │   6.6% │ 87.5% │ 0.112 │ -0.102  │ -0.055  │  9.3% │
+    │ 🔴Bert-Kaggle      │ 43.6% │ 38.5% │   6.6% │ 87.5% │ 0.112 │ -0.102  │ -0.055  │  9.3% │
     │ 🟡RoBERTa-News     │ 57.1% │ 73.5% │  32.9% │ 85.9% │ 0.455 │ +0.219  │ +0.179  │ 24.3% │
     └──────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -262,15 +262,15 @@ CLASSIFIER COMPARISON SUMMARY
     Classifier              TP    TN    FP    FN │    FP%    FN% │  Error%
     ---------------------------------------------------------------------------
     RoBERTa-Twitter          6    62     2    70 │   1.4%  50.0% │   51.4%
-    DistilBERT-Reddit        5    56     8    71 │   5.7%  50.7% │   56.4%
+    Bert-Kaggle              5    56     8    71 │   5.7%  50.7% │   56.4%
     RoBERTa-News            25    55     9    51 │   6.4%  36.4% │   42.9%
 
     Human flip rate: 54.3%
 
     INTER-CLASSIFIER AGREEMENT (do classifiers agree with each other?):
-      🔴 RoBERTa-Twitter vs DistilBERT-Reddit: κ = +0.026
+      🔴 RoBERTa-Twitter vs Bert-Kaggle: κ = +0.026
       🔴 RoBERTa-Twitter vs RoBERTa-News: κ = +0.055
-      🔴 DistilBERT-Reddit vs RoBERTa-News: κ = -0.155
+      🔴 Bert-Kaggle vs RoBERTa-News: κ = -0.155
 
 ============================================================
 SURFACE EDIT ANALYSIS
@@ -283,13 +283,13 @@ SURFACE EDIT ANALYSIS
     Classifier            Clf Says Flip%  Human Says Flip%    Fooled?
     -----------------------------------------------------------------
     RoBERTa-Twitter                 0.0%              0.0%       No 🟢
-    DistilBERT-Reddit               7.1%              0.0%       No 🟢
+    Bert-Kaggle                     7.1%              0.0%       No 🟢
     RoBERTa-News                    0.0%              0.0%       No 🟢
     REAL REWRITES DETECTION BY CLASSIFIER:
     Classifier            Clf Says Flip%  Human Says Flip%        Gap
     -----------------------------------------------------------------
     RoBERTa-Twitter                 6.3%             60.3%     +54.0pp
-    DistilBERT-Reddit               9.5%             60.3%     +50.8pp
+    Bert-Kaggle                     9.5%             60.3%     +50.8pp
     RoBERTa-News                   27.0%             60.3%     +33.3pp
 
 ============================================================
@@ -328,16 +328,16 @@ CORRELATION: What predicts classifier error?
     edit_dist_norm                     -0.207 *       0.0141 Higher → less correct         
     similarity                         +0.233**       0.0056 Higher → more correct         
     bleu                               +0.220**       0.0089 Higher → more correct         
-    paraphrase_score                   +0.232**       0.0057 Higher → more correct         
+    paraphrase_score                   -0.147         0.0826 Higher → less correct         
     flip_delta_roberta_twitter         +0.088         0.2992 No correlation                
-    flip_delta_distilbert_reddit       +0.142         0.0948 Higher → more correct         
+    flip_delta_bert_kaggle             +0.142         0.0948 Higher → more correct         
     flip_delta_roberta_news            -0.256**       0.0023 Higher → less correct         
 
 ============================================================
 SUBTYPE BREAKDOWN: ALL CLASSIFIERS vs HUMAN
 ============================================================
 
-Subtype                 N   Hum% │  TWIT%       κ │  REDD%       κ │  NEWS%       κ │
+Subtype                 N   Hum% │  TWIT%       κ │  KAGG%       κ │  NEWS%       κ │
 ----------------------------------------------------------------------------------------------------
 sarcasm                69  59.4% │   4.3% +0.060 │   7.2% -0.048 │  33.3% +0.182 │
 irony                  30  50.0% │   3.3% +0.067 │   6.7% -0.133 │  16.7% +0.200 │
@@ -356,7 +356,7 @@ overstatement           7  28.6% │   0.0% +0.000 │   0.0% +0.000 │   0.0% 
       5. 🟡 sarcasm              κ = +0.060
       6. 🟡 irony                κ = +0.067
 
-    DistilBERT-Reddit:
+    Bert-Kaggle:
       1. 🔴 understatement       κ = -0.185
       2. 🔴 irony                κ = -0.133
       3. 🔴 satire               κ = -0.098
@@ -442,7 +442,7 @@ AUTOMATED METRICS SUMMARY
     Similarity:       0.915 ± 0.103
     Edit distance:    0.628 ± 0.289
     BLEU vs input:    0.236 ± 0.252
-    Paraphrase score: 0.2255 ± 0.2499
+    Paraphrase score: 0.6894 ± 0.2305
     Perplexity:       740.0 ± 1164.1
 
 Saved merged data to: results\golden\t5_base_joint_merged.csv
@@ -453,7 +453,7 @@ ANALYZING: t5_base_control
 ================================================================================
 Golden samples: 140
 Results samples: 140
-Classifier columns found: ['hard_flipped_roberta_twitter', 'hard_flipped_distilbert_reddit', 'hard_flipped_roberta_news', 'hard_flipped']
+Classifier columns found: ['hard_flipped_roberta_twitter', 'hard_flipped_bert_kaggle', 'hard_flipped_roberta_news', 'hard_flipped']
 
 Inter-annotator agreement: 94.3%
 Inter-annotator Cohen's κ: 0.883
@@ -540,11 +540,11 @@ CLASSIFIER: RoBERTa-Twitter (RoBERTa, trained on Twitter)
     
 
 ──────────────────────────────────────────────────────────────────────
-CLASSIFIER: DistilBERT-Reddit (DistilBERT, trained on Reddit)
+CLASSIFIER: Bert-Kaggle (Bert, trained on Kaggle)
 ──────────────────────────────────────────────────────────────────────
 
     ┌─────────────────────────────────────────────────────────────┐
-    │                     DistilBERT-Reddit                     │
+    │                        Bert-Kaggle                        │
     ├─────────────────────────────────────────────────────────────┤
     │                    CONFUSION MATRIX                         │
     ├─────────────────────────────────────────────────────────────┤
@@ -703,7 +703,7 @@ CLASSIFIER COMPARISON SUMMARY
     │ Classifier        │ Acc   │ Prec  │ Recall │ Spec  │ F1    │ MCC    │ κ      │ Flip% │
     ├───────────────────┼───────┼───────┼────────┼───────┼───────┼────────┼────────┼───────┤
     │ 🟡RoBERTa-Twitter  │ 47.1% │ 62.5% │   6.6% │ 95.3% │ 0.119 │ +0.041  │ +0.017  │  5.7% │
-    │ 🔴DistilBERT-Reddit │ 40.7% │ 29.4% │   6.6% │ 81.2% │ 0.108 │ -0.186  │ -0.113  │ 12.1% │
+    │ 🔴Bert-Kaggle      │ 40.7% │ 29.4% │   6.6% │ 81.2% │ 0.108 │ -0.186  │ -0.113  │ 12.1% │
     │ 🟡RoBERTa-News     │ 50.7% │ 60.0% │  27.6% │ 78.1% │ 0.378 │ +0.066  │ +0.055  │ 25.0% │
     └──────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -711,15 +711,15 @@ CLASSIFIER COMPARISON SUMMARY
     Classifier              TP    TN    FP    FN │    FP%    FN% │  Error%
     ---------------------------------------------------------------------------
     RoBERTa-Twitter          5    61     3    71 │   2.1%  50.7% │   52.9%
-    DistilBERT-Reddit        5    52    12    71 │   8.6%  50.7% │   59.3%
+    Bert-Kaggle              5    52    12    71 │   8.6%  50.7% │   59.3%
     RoBERTa-News            21    50    14    55 │  10.0%  39.3% │   49.3%
 
     Human flip rate: 54.3%
 
     INTER-CLASSIFIER AGREEMENT (do classifiers agree with each other?):
-      🔴 RoBERTa-Twitter vs DistilBERT-Reddit: κ = -0.084
+      🔴 RoBERTa-Twitter vs Bert-Kaggle: κ = -0.084
       🔴 RoBERTa-Twitter vs RoBERTa-News: κ = +0.154
-      🔴 DistilBERT-Reddit vs RoBERTa-News: κ = -0.195
+      🔴 Bert-Kaggle vs RoBERTa-News: κ = -0.195
 
 ============================================================
 SURFACE EDIT ANALYSIS
@@ -732,13 +732,13 @@ SURFACE EDIT ANALYSIS
     Classifier            Clf Says Flip%  Human Says Flip%    Fooled?
     -----------------------------------------------------------------
     RoBERTa-Twitter                 0.0%              0.0%       No 🟢
-    DistilBERT-Reddit               0.0%              0.0%       No 🟢
+    Bert-Kaggle                     0.0%              0.0%       No 🟢
     RoBERTa-News                   16.7%              0.0%      YES 🔴
     REAL REWRITES DETECTION BY CLASSIFIER:
     Classifier            Clf Says Flip%  Human Says Flip%        Gap
     -----------------------------------------------------------------
     RoBERTa-Twitter                 6.2%             59.4%     +53.1pp
-    DistilBERT-Reddit              13.3%             59.4%     +46.1pp
+    Bert-Kaggle                    13.3%             59.4%     +46.1pp
     RoBERTa-News                   25.8%             59.4%     +33.6pp
 
 ============================================================
@@ -777,16 +777,16 @@ CORRELATION: What predicts classifier error?
     edit_dist_norm                     -0.174 *       0.0394 Higher → less correct         
     similarity                         +0.195 *       0.0207 Higher → more correct         
     bleu                               +0.160         0.0593 Higher → more correct         
-    paraphrase_score                   +0.173 *       0.0410 Higher → more correct         
+    paraphrase_score                   -0.035         0.6812 No correlation                
     flip_delta_roberta_twitter         +0.023         0.7863 No correlation                
-    flip_delta_distilbert_reddit       +0.130         0.1272 Higher → more correct         
+    flip_delta_bert_kaggle             +0.130         0.1272 Higher → more correct         
     flip_delta_roberta_news            -0.089         0.2973 No correlation                
 
 ============================================================
 SUBTYPE BREAKDOWN: ALL CLASSIFIERS vs HUMAN
 ============================================================
 
-Subtype                 N   Hum% │  TWIT%       κ │  REDD%       κ │  NEWS%       κ │
+Subtype                 N   Hum% │  TWIT%       κ │  KAGG%       κ │  NEWS%       κ │
 ----------------------------------------------------------------------------------------------------
 sarcasm                69  59.4% │   8.7% +0.022 │   8.7% -0.028 │  33.3% +0.018 │
 irony                  30  53.3% │   0.0% +0.000 │  10.0% -0.203 │  16.7% +0.043 │
@@ -805,7 +805,7 @@ overstatement           7  28.6% │   0.0% +0.000 │   0.0% +0.000 │  14.3% 
       5. 🟡 overstatement        κ = +0.000
       6. 🟡 sarcasm              κ = +0.022
 
-    DistilBERT-Reddit:
+    Bert-Kaggle:
       1. 🔴 irony                κ = -0.203
       2. 🔴 understatement       κ = -0.189
       3. 🔴 rhetorical_question  κ = -0.145
@@ -891,8 +891,8 @@ AUTOMATED METRICS SUMMARY
     Similarity:       0.881 ± 0.154
     Edit distance:    0.680 ± 0.278
     BLEU vs input:    0.187 ± 0.224
-    Paraphrase score: 0.1747 ± 0.2177
-    Perplexity:       750.6 ± 1390.4
+    Paraphrase score: 0.7063 ± 0.2225
+    Perplexity:       750.6 ± 1390.5
 
 Saved merged data to: results\golden\t5_base_control_merged.csv
 Saved subtype analysis to: results\golden\t5_base_control_subtype_analysis.csv
@@ -902,7 +902,7 @@ ANALYZING: bart_base_rl
 ================================================================================
 Golden samples: 140
 Results samples: 140
-Classifier columns found: ['hard_flipped_roberta_twitter', 'hard_flipped_distilbert_reddit', 'hard_flipped_roberta_news', 'hard_flipped']
+Classifier columns found: ['hard_flipped_roberta_twitter', 'hard_flipped_bert_kaggle', 'hard_flipped_roberta_news', 'hard_flipped']
 
 Inter-annotator agreement: 94.3%
 Inter-annotator Cohen's κ: 0.884
@@ -989,11 +989,11 @@ CLASSIFIER: RoBERTa-Twitter (RoBERTa, trained on Twitter)
     
 
 ──────────────────────────────────────────────────────────────────────
-CLASSIFIER: DistilBERT-Reddit (DistilBERT, trained on Reddit)
+CLASSIFIER: Bert-Kaggle (Bert, trained on Kaggle)
 ──────────────────────────────────────────────────────────────────────
 
     ┌─────────────────────────────────────────────────────────────┐
-    │                     DistilBERT-Reddit                     │
+    │                        Bert-Kaggle                        │
     ├─────────────────────────────────────────────────────────────┤
     │                    CONFUSION MATRIX                         │
     ├─────────────────────────────────────────────────────────────┤
@@ -1152,7 +1152,7 @@ CLASSIFIER COMPARISON SUMMARY
     │ Classifier        │ Acc   │ Prec  │ Recall │ Spec  │ F1    │ MCC    │ κ      │ Flip% │
     ├───────────────────┼───────┼───────┼────────┼───────┼───────┼────────┼────────┼───────┤
     │ 🔴RoBERTa-Twitter  │ 47.1% │ 50.0% │   4.1% │ 95.5% │ 0.075 │ -0.012  │ -0.005  │  4.3% │
-    │ 🔴DistilBERT-Reddit │ 45.0% │ 42.9% │  12.2% │ 81.8% │ 0.189 │ -0.084  │ -0.058  │ 15.0% │
+    │ 🔴Bert-Kaggle      │ 45.0% │ 42.9% │  12.2% │ 81.8% │ 0.189 │ -0.084  │ -0.058  │ 15.0% │
     │ 🟡RoBERTa-News     │ 52.9% │ 59.1% │  35.1% │ 72.7% │ 0.441 │ +0.085  │ +0.077  │ 31.4% │
     └──────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -1160,15 +1160,15 @@ CLASSIFIER COMPARISON SUMMARY
     Classifier              TP    TN    FP    FN │    FP%    FN% │  Error%
     ---------------------------------------------------------------------------
     RoBERTa-Twitter          3    63     3    71 │   2.1%  50.7% │   52.9%
-    DistilBERT-Reddit        9    54    12    65 │   8.6%  46.4% │   55.0%
+    Bert-Kaggle              9    54    12    65 │   8.6%  46.4% │   55.0%
     RoBERTa-News            26    48    18    48 │  12.9%  34.3% │   47.1%
 
     Human flip rate: 52.9%
 
     INTER-CLASSIFIER AGREEMENT (do classifiers agree with each other?):
-      🔴 RoBERTa-Twitter vs DistilBERT-Reddit: κ = -0.071
+      🔴 RoBERTa-Twitter vs Bert-Kaggle: κ = -0.071
       🔴 RoBERTa-Twitter vs RoBERTa-News: κ = +0.091
-      🔴 DistilBERT-Reddit vs RoBERTa-News: κ = -0.139
+      🔴 Bert-Kaggle vs RoBERTa-News: κ = -0.139
 
 ============================================================
 SURFACE EDIT ANALYSIS
@@ -1181,13 +1181,13 @@ SURFACE EDIT ANALYSIS
     Classifier            Clf Says Flip%  Human Says Flip%    Fooled?
     -----------------------------------------------------------------
     RoBERTa-Twitter                 0.0%              0.0%       No 🟢
-    DistilBERT-Reddit               7.1%              0.0%       No 🟢
+    Bert-Kaggle                     7.1%              0.0%       No 🟢
     RoBERTa-News                    0.0%              0.0%       No 🟢
     REAL REWRITES DETECTION BY CLASSIFIER:
     Classifier            Clf Says Flip%  Human Says Flip%        Gap
     -----------------------------------------------------------------
     RoBERTa-Twitter                 4.8%             58.7%     +54.0pp
-    DistilBERT-Reddit              15.9%             58.7%     +42.9pp
+    Bert-Kaggle                    15.9%             58.7%     +42.9pp
     RoBERTa-News                   34.9%             58.7%     +23.8pp
 
 ============================================================
@@ -1226,16 +1226,16 @@ CORRELATION: What predicts classifier error?
     edit_dist_norm                     -0.177 *       0.0365 Higher → less correct         
     similarity                         +0.002         0.9801 No correlation                
     bleu                               +0.195 *       0.0212 Higher → more correct         
-    paraphrase_score                   +0.209 *       0.0131 Higher → more correct         
+    paraphrase_score                   -0.231**       0.0061 Higher → less correct         
     flip_delta_roberta_twitter         +0.067         0.4303 No correlation                
-    flip_delta_distilbert_reddit       +0.033         0.6984 No correlation                
+    flip_delta_bert_kaggle             +0.033         0.6984 No correlation                
     flip_delta_roberta_news            -0.080         0.3463 No correlation                
 
 ============================================================
 SUBTYPE BREAKDOWN: ALL CLASSIFIERS vs HUMAN
 ============================================================
 
-Subtype                 N   Hum% │  TWIT%       κ │  REDD%       κ │  NEWS%       κ │
+Subtype                 N   Hum% │  TWIT%       κ │  KAGG%       κ │  NEWS%       κ │
 ----------------------------------------------------------------------------------------------------
 sarcasm                69  56.5% │   7.2% +0.009 │   7.2% -0.043 │  40.6% +0.066 │
 irony                  30  53.3% │   0.0% +0.000 │  30.0% +0.026 │  23.3% +0.034 │
@@ -1254,7 +1254,7 @@ overstatement           7  14.3% │   0.0% +0.000 │  14.3% -0.167 │   0.0% 
       5. 🟡 overstatement        κ = +0.000
       6. 🟡 sarcasm              κ = +0.009
 
-    DistilBERT-Reddit:
+    Bert-Kaggle:
       1. 🔴 satire               κ = -0.216
       2. 🔴 overstatement        κ = -0.167
       3. 🔴 sarcasm              κ = -0.043
@@ -1340,7 +1340,7 @@ AUTOMATED METRICS SUMMARY
     Similarity:       0.864 ± 0.158
     Edit distance:    0.623 ± 0.296
     BLEU vs input:    0.241 ± 0.288
-    Paraphrase score: 0.2284 ± 0.2829
+    Paraphrase score: 0.6355 ± 0.2550
     Perplexity:       1794.4 ± 8896.2
 
 Saved merged data to: results\golden\bart_base_rl_merged.csv
@@ -1356,13 +1356,13 @@ FINAL SUMMARY: ALL MODELS × ALL CLASSIFIERS
     │ Model           │ Classifier        │ Acc   │ Prec  │ Recall │ Spec  │ F1    │ MCC    │ κ      │
     ├─────────────────┼───────────────────┼───────┼───────┼────────┼───────┼───────┼────────┼────────┤
     │ t5_base_joint   │ 🟡RoBERTa-Twitter  │ 48.6% │ 75.0% │   7.9% │ 96.9% │ 0.143 │ +0.102  │ +0.044  │
-    │ t5_base_joint   │ 🔴DistilBERT-Reddit │ 43.6% │ 38.5% │   6.6% │ 87.5% │ 0.112 │ -0.102  │ -0.055  │
+    │ t5_base_joint   │ 🔴Bert-Kaggle      │ 43.6% │ 38.5% │   6.6% │ 87.5% │ 0.112 │ -0.102  │ -0.055  │
     │ t5_base_joint   │ 🟡RoBERTa-News     │ 57.1% │ 73.5% │  32.9% │ 85.9% │ 0.455 │ +0.219  │ +0.179  │
     │ t5_base_control │ 🟡RoBERTa-Twitter  │ 47.1% │ 62.5% │   6.6% │ 95.3% │ 0.119 │ +0.041  │ +0.017  │
-    │ t5_base_control │ 🔴DistilBERT-Reddit │ 40.7% │ 29.4% │   6.6% │ 81.2% │ 0.108 │ -0.186  │ -0.113  │
+    │ t5_base_control │ 🔴Bert-Kaggle      │ 40.7% │ 29.4% │   6.6% │ 81.2% │ 0.108 │ -0.186  │ -0.113  │
     │ t5_base_control │ 🟡RoBERTa-News     │ 50.7% │ 60.0% │  27.6% │ 78.1% │ 0.378 │ +0.066  │ +0.055  │
     │ bart_base_rl    │ 🔴RoBERTa-Twitter  │ 47.1% │ 50.0% │   4.1% │ 95.5% │ 0.075 │ -0.012  │ -0.005  │
-    │ bart_base_rl    │ 🔴DistilBERT-Reddit │ 45.0% │ 42.9% │  12.2% │ 81.8% │ 0.189 │ -0.084  │ -0.058  │
+    │ bart_base_rl    │ 🔴Bert-Kaggle      │ 45.0% │ 42.9% │  12.2% │ 81.8% │ 0.189 │ -0.084  │ -0.058  │
     │ bart_base_rl    │ 🟡RoBERTa-News     │ 52.9% │ 59.1% │  35.1% │ 72.7% │ 0.441 │ +0.085  │ +0.077  │
     └───────────────────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -1370,20 +1370,20 @@ FINAL SUMMARY: ALL MODELS × ALL CLASSIFIERS
     Model           Classifier              TP    TN    FP    FN │    FP%    FN% │ Surface%
     -----------------------------------------------------------------------------------------------
     t5_base_joint   RoBERTa-Twitter          6    62     2    70 │   1.4%  50.0% │    10.0%
-    t5_base_joint   DistilBERT-Reddit        5    56     8    71 │   5.7%  50.7% │    10.0%
+    t5_base_joint   Bert-Kaggle              5    56     8    71 │   5.7%  50.7% │    10.0%
     t5_base_joint   RoBERTa-News            25    55     9    51 │   6.4%  36.4% │    10.0%
     t5_base_control RoBERTa-Twitter          5    61     3    71 │   2.1%  50.7% │     8.6%
-    t5_base_control DistilBERT-Reddit        5    52    12    71 │   8.6%  50.7% │     8.6%
+    t5_base_control Bert-Kaggle              5    52    12    71 │   8.6%  50.7% │     8.6%
     t5_base_control RoBERTa-News            21    50    14    55 │  10.0%  39.3% │     8.6%
     bart_base_rl    RoBERTa-Twitter          3    63     3    71 │   2.1%  50.7% │    10.0%
-    bart_base_rl    DistilBERT-Reddit        9    54    12    65 │   8.6%  46.4% │    10.0%
+    bart_base_rl    Bert-Kaggle              9    54    12    65 │   8.6%  46.4% │    10.0%
     bart_base_rl    RoBERTa-News            26    48    18    48 │  12.9%  34.3% │    10.0%
 
     AVERAGE BY CLASSIFIER (across all models):
     Classifier               Acc    Prec   Recall      MCC        κ
     -----------------------------------------------------------------
     🟡 RoBERTa-Twitter      47.6%   62.5%     6.2%  +0.044  +0.019
-    🔴 DistilBERT-Reddit    43.1%   36.9%     8.4%  -0.124  -0.075
+    🔴 Bert-Kaggle          43.1%   36.9%     8.4%  -0.124  -0.075
     🟡 RoBERTa-News         53.6%   64.2%    31.9%  +0.123  +0.104
 
 ================================================================================
@@ -1398,13 +1398,13 @@ KEY FINDINGS FOR POSTER
        │ Model          │ Classifier       │ κ       │ MCC     │ Acc   │ Prec  │ Recall │
        ├────────────────┼──────────────────┼─────────┼─────────┼───────┼───────┼────────┤
        │ t5_base_joint  │ RoBERTa-Twitter  │ +0.044  │ +0.102  │ 48.6% │ 75.0% │   7.9% │ 🟡
-       │ t5_base_joint  │ DistilBERT-Reddit │ -0.055  │ -0.102  │ 43.6% │ 38.5% │   6.6% │ 🔴
+       │ t5_base_joint  │ Bert-Kaggle      │ -0.055  │ -0.102  │ 43.6% │ 38.5% │   6.6% │ 🔴
        │ t5_base_joint  │ RoBERTa-News     │ +0.179  │ +0.219  │ 57.1% │ 73.5% │  32.9% │ 🟡
        │ t5_base_control │ RoBERTa-Twitter  │ +0.017  │ +0.041  │ 47.1% │ 62.5% │   6.6% │ 🟡
-       │ t5_base_control │ DistilBERT-Reddit │ -0.113  │ -0.186  │ 40.7% │ 29.4% │   6.6% │ 🔴
+       │ t5_base_control │ Bert-Kaggle      │ -0.113  │ -0.186  │ 40.7% │ 29.4% │   6.6% │ 🔴
        │ t5_base_control │ RoBERTa-News     │ +0.055  │ +0.066  │ 50.7% │ 60.0% │  27.6% │ 🟡
        │ bart_base_rl   │ RoBERTa-Twitter  │ -0.005  │ -0.012  │ 47.1% │ 50.0% │   4.1% │ 🔴
-       │ bart_base_rl   │ DistilBERT-Reddit │ -0.058  │ -0.084  │ 45.0% │ 42.9% │  12.2% │ 🔴
+       │ bart_base_rl   │ Bert-Kaggle      │ -0.058  │ -0.084  │ 45.0% │ 42.9% │  12.2% │ 🔴
        │ bart_base_rl   │ RoBERTa-News     │ +0.077  │ +0.085  │ 52.9% │ 59.1% │  35.1% │ 🟡
 
        This is NOT a single classifier problem - ALL classifiers fail:

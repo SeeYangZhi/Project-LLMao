@@ -3,17 +3,17 @@
 python ./scripts/clean_golden_data.py
 
 # Step 2: Run eval_pipeline.py on each golden data file
-python scripts/eval_pipeline.py --input data/golden/cleaned/t5_base_joint_golden.csv --output results/golden/t5_base_joint_results.csv --multi_classifier --gemini_key your gemini_key
+python scripts/eval_pipeline.py --input data/golden/cleaned/t5_base_joint_golden.csv --output results/golden/t5_base_joint_results.csv --multi_classifier --gemini_key AIzaSyA5fB4kh2klbouyofqX69hL8MHGZbjfOuk
 
-python scripts/eval_pipeline.py --input data/golden/cleaned/t5_base_control_golden.csv --output results/golden/t5_base_control_results.csv --multi_classifier --gemini_key your gemini_key
+python scripts/eval_pipeline.py --input data/golden/cleaned/t5_base_control_golden.csv --output results/golden/t5_base_control_results.csv --multi_classifier --gemini_key AIzaSyA5fB4kh2klbouyofqX69hL8MHGZbjfOuk
 
-python scripts/eval_pipeline.py --input data/golden/cleaned/bart_base_rl_golden.csv --output results/golden/bart_base_rl_results.csv --multi_classifier --gemini_key your gemini_key
+python scripts/eval_pipeline.py --input data/golden/cleaned/bart_base_rl_golden.csv --output results/golden/bart_base_rl_results.csv --multi_classifier --gemini_key AIzaSyA5fB4kh2klbouyofqX69hL8MHGZbjfOuk
 
 # Step 3: Run analyze_golden_results.py
-python scripts/analyze_golden_results.py > results/golden/Analyze_golden_result.txt
+python -X utf8 scripts/analyze_golden_results.py > results/golden/Analyze_golden_result
 
 
 # Run batch_eval to eval all 14 models
-python scripts/batch_eval.py --multi_classifier --gemini_key your gemini_key
+python scripts/batch_eval.py --multi_classifier --gemini_key AIzaSyA5fB4kh2klbouyofqX69hL8MHGZbjfOuk
 
 # gemini_key deprecated,

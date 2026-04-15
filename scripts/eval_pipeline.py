@@ -29,10 +29,10 @@ CLASSIFIERS = [
         'non_sarcastic_labels': ['non_irony'],
     },
     {
-        'name': 'DistilBERT-Reddit',
+        'name': 'Bert-Kaggle',
         'model': 'helinivan/english-sarcasm-detector',
-        'type': 'DistilBERT',
-        'training': 'Reddit',
+        'type': 'Bert',
+        'training': 'Kaggle',
         'sarcastic_labels': ['LABEL_1', 'sarcasm', 'sarcastic'],
         'non_sarcastic_labels': ['LABEL_0', 'not_sarcasm', 'normal'],
     },

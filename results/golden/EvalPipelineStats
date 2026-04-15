@@ -1,11 +1,11 @@
-(environment) D:\TranKhoiNguyen2023\NUS\CS4248\Project-LLMao>python scripts/eval_pipeline.py --input data/golden/cleaned/t5_base_joint_golden.csv --output results/golden/t5_base_joint_results.csv --multi_classifier
+(environment) D:\TranKhoiNguyen2023\NUS\CS4248\Project-LLMao>python scripts/eval_pipeline.py --input data/golden/cleaned/t5_base_joint_golden.csv --output results/golden/t5_base_joint_results.csv --multi_classifier --gemini_key AIzaSyA5fB4kh2klbouyofqX69hL8MHGZbjfOuk
 
 Loading data from: data/golden/cleaned/t5_base_joint_golden.csv
   Total samples: 140
   Columns: ['id', 'input', 'output', 'subtype', 'human_sarcasm_removed_1', 'human_sarcasm_removed_2', 'human_flipped_strict', 'human_flipped_lenient', 'meaning_change', 'human_meaning_preserved', 'human_strict_success']
-  Subtypes: {'sarcasm': 69, 'irony': 30, 'rhetorical_question': 14, 'understatement': 11, 'satire': 9, 'overstatement': 7}        
+  Subtypes: {'sarcasm': 69, 'irony': 30, 'rhetorical_question': 14, 'understatement': 11, 'satire': 9, 'overstatement': 7}
 
-Device: cpu
+Device: cuda
 
 ======================================================================
 MULTI-CLASSIFIER EVALUATION
@@ -16,21 +16,22 @@ C:\Users\ADMIN\anaconda3\envs\environment\Lib\site-packages\transformers\tokeniz
   warnings.warn(
 
 [1/7] Computing Sarcasm Flip Rate (RoBERTa-Twitter)...
-100%|██████████████████████████████████████████████████████████████████████████████████████████| 140/140 [00:19<00:00,  7.13it/s]
+  1%|▌                                                                                 | 1/140 [00:00<00:20,  6.66it/s]You seem to be using the pipelines sequentially on GPU. In order to maximize efficiency please use a dataset
+100%|████████████████████████████████████████████████████████████████████████████████| 140/140 [00:02<00:00, 53.62it/s]
     Hard Flip Rate:   5.71%
     Mean Flip Delta:  -0.0688
 
---- Loading: DistilBERT-Reddit (DistilBERT, Reddit) ---
+--- Loading: Bert-Kaggle (Bert, Kaggle) ---
 
-[1/7] Computing Sarcasm Flip Rate (DistilBERT-Reddit)...
-100%|██████████████████████████████████████████████████████████████████████████████████████████| 140/140 [00:18<00:00,  7.46it/s] 
+[1/7] Computing Sarcasm Flip Rate (Bert-Kaggle)...
+100%|████████████████████████████████████████████████████████████████████████████████| 140/140 [00:02<00:00, 69.53it/s]
     Hard Flip Rate:   9.29%
     Mean Flip Delta:  +0.0356
 
 --- Loading: RoBERTa-News (RoBERTa, News) ---
 
 [1/7] Computing Sarcasm Flip Rate (RoBERTa-News)...
-100%|██████████████████████████████████████████████████████████████████████████████████████████| 140/140 [00:18<00:00,  7.40it/s] 
+100%|████████████████████████████████████████████████████████████████████████████████| 140/140 [00:02<00:00, 51.96it/s]
     Hard Flip Rate:   24.29%
     Mean Flip Delta:  +0.0824
 
@@ -41,7 +42,7 @@ CLASSIFIER COMPARISON
 Classifier                Type         Training    Flip Rate   Flip Delta
 ---------------------------------------------------------------------------
 RoBERTa-Twitter           RoBERTa      Twitter          5.7%     -0.0688
-DistilBERT-Reddit         DistilBERT   Reddit           9.3%     +0.0356
+Bert-Kaggle               Bert         Kaggle           9.3%     +0.0356
 RoBERTa-News              RoBERTa      News            24.3%     +0.0824
 
 Multi-classifier results saved to: results/golden/t5_base_joint_results_multi_classifier.csv
@@ -54,37 +55,42 @@ C:\Users\ADMIN\anaconda3\envs\environment\Lib\site-packages\transformers\tokeniz
 Models loaded.
 
 [2/7] Computing semantic similarity...
-Batches: 100%|█████████████████████████████████████████████████████████████████████████████████████| 5/5 [00:01<00:00,  3.43it/s] 
-Batches: 100%|█████████████████████████████████████████████████████████████████████████████████████| 5/5 [00:00<00:00,  6.72it/s]
+Batches: 100%|███████████████████████████████████████████████████████████████████████████| 5/5 [00:00<00:00, 24.92it/s]
+Batches: 100%|███████████████████████████████████████████████████████████████████████████| 5/5 [00:00<00:00, 34.40it/s]
   Mean similarity: 0.9150
 
 [3/7] Computing perplexity...
-Perplexity: 100%|██████████████████████████████████████████████████████████████████████████████| 140/140 [00:15<00:00,  8.86it/s]
+Perplexity: 100%|███████████████████████████████████████████████████████████████████| 140/140 [00:01<00:00, 130.57it/s]
   Mean perplexity: 740.01
 
 [4/7] Computing BLEU score...
-BLEU (input): 100%|█████████████████████████████████████████████████████████████████████████| 140/140 [00:00<00:00, 12301.30it/s]
+BLEU (input): 100%|███████████████████████████████████████████████████████████████| 140/140 [00:00<00:00, 12726.26it/s]
   Mean BLEU (vs_input): 0.2361
 
-[5/7] Skipping LLM judge (no Gemini API key provided)
 
+[5/7] Running LLM-as-Judge (Gemini, batch of 50 samples)...
+    Sending 50 pairs in one API call...
+    Samples judged: 50
+    LLM Judge - Sarcasm Removed: 3.34/5
+    LLM Judge - Meaning Preserved: 4.58/5
+    LLM Judge - Fluency: 4.14/5
 [6/7] Computing word-level edit distance...
-Edit distance: 100%|████████████████████████████████████████████████████████████████████████| 140/140 [00:00<00:00, 23171.12it/s] 
+Edit distance: 100%|██████████████████████████████████████████████████████████████| 140/140 [00:00<00:00, 19791.12it/s]
   Mean edit distance (norm): 0.6281
 
 [7/7] Computing paraphrase score...
-  Mean paraphrase score: 0.2255
+  Mean paraphrase score: 0.6894
 
 ============================================================
 SUBTYPE BREAKDOWN
 ============================================================
             subtype  count flip_rate mean_sim mean_bleu mean_edit_dist mean_para_score
-              irony     30      3.3%    0.928     0.225           0.64          0.2141
-      overstatement      7      0.0%    0.976     0.353           0.51          0.3512
-rhetorical_question     14     14.3%    0.949     0.367           0.48          0.3524
-            sarcasm     69      4.3%    0.899     0.205           0.66          0.1949
-             satire      9      0.0%    0.922     0.147           0.77          0.1361
-     understatement     11     18.2%    0.893     0.292           0.54          0.2803
+              irony     30      3.3%    0.928     0.225           0.64          0.7140
+      overstatement      7      0.0%    0.976     0.353           0.51          0.6253
+rhetorical_question     14     14.3%    0.949     0.367           0.48          0.5962
+            sarcasm     69      4.3%    0.899     0.205           0.66          0.7037
+             satire      9      0.0%    0.922     0.147           0.77          0.7861
+     understatement     11     18.2%    0.893     0.292           0.54          0.6131
 
 Per-sample results saved to: results/golden/t5_base_joint_results.csv
 
@@ -100,18 +106,22 @@ EVALUATION SUMMARY
   Perplexity (GPT-2):    740.01
   BLEU (    vs_input):  0.2361
   Edit dist (norm):      0.6281
-  Paraphrase score:      0.2255
+  Paraphrase score:      0.6894
+  LLM sarcasm_removed:   3.34
+  LLM meaning_preserved: 4.58
+  LLM fluency:           4.14
 ============================================================
 Done.
 
-(environment) D:\TranKhoiNguyen2023\NUS\CS4248\Project-LLMao>python scripts/eval_pipeline.py --input data/golden/cleaned/t5_base_control_golden.csv --output results/golden/t5_base_control_results.csv --multi_classifier
+(environment) D:\TranKhoiNguyen2023\NUS\CS4248\Project-LLMao>
+(environment) D:\TranKhoiNguyen2023\NUS\CS4248\Project-LLMao>python scripts/eval_pipeline.py --input data/golden/cleaned/t5_base_control_golden.csv --output results/golden/t5_base_control_results.csv --multi_classifier --gemini_key AIzaSyA5fB4kh2klbouyofqX69hL8MHGZbjfOuk
 
 Loading data from: data/golden/cleaned/t5_base_control_golden.csv
   Total samples: 140
   Columns: ['id', 'input', 'output', 'subtype', 'human_sarcasm_removed_1', 'human_sarcasm_removed_2', 'human_flipped_strict', 'human_flipped_lenient', 'meaning_change', 'human_meaning_preserved', 'human_strict_success']
-  Subtypes: {'sarcasm': 69, 'irony': 30, 'rhetorical_question': 14, 'understatement': 11, 'satire': 9, 'overstatement': 7}        
+  Subtypes: {'sarcasm': 69, 'irony': 30, 'rhetorical_question': 14, 'understatement': 11, 'satire': 9, 'overstatement': 7}
 
-Device: cpu
+Device: cuda
 
 ======================================================================
 MULTI-CLASSIFIER EVALUATION
@@ -122,21 +132,22 @@ C:\Users\ADMIN\anaconda3\envs\environment\Lib\site-packages\transformers\tokeniz
   warnings.warn(
 
 [1/7] Computing Sarcasm Flip Rate (RoBERTa-Twitter)...
-100%|██████████████████████████████████████████████████████████████████████████████████████████| 140/140 [00:18<00:00,  7.59it/s] 
+  1%|▌                                                                                 | 1/140 [00:00<00:21,  6.57it/s]You seem to be using the pipelines sequentially on GPU. In order to maximize efficiency please use a dataset
+100%|████████████████████████████████████████████████████████████████████████████████| 140/140 [00:02<00:00, 55.29it/s]
     Hard Flip Rate:   5.71%
     Mean Flip Delta:  -0.0914
 
---- Loading: DistilBERT-Reddit (DistilBERT, Reddit) ---
+--- Loading: Bert-Kaggle (Bert, Kaggle) ---
 
-[1/7] Computing Sarcasm Flip Rate (DistilBERT-Reddit)...
-100%|██████████████████████████████████████████████████████████████████████████████████████████| 140/140 [00:41<00:00,  3.35it/s]
+[1/7] Computing Sarcasm Flip Rate (Bert-Kaggle)...
+100%|████████████████████████████████████████████████████████████████████████████████| 140/140 [00:02<00:00, 65.24it/s]
     Hard Flip Rate:   12.14%
     Mean Flip Delta:  +0.0241
 
 --- Loading: RoBERTa-News (RoBERTa, News) ---
 
 [1/7] Computing Sarcasm Flip Rate (RoBERTa-News)...
-100%|██████████████████████████████████████████████████████████████████████████████████████████| 140/140 [00:28<00:00,  4.90it/s]
+100%|████████████████████████████████████████████████████████████████████████████████| 140/140 [00:02<00:00, 53.01it/s]
     Hard Flip Rate:   25.00%
     Mean Flip Delta:  +0.0849
 
@@ -147,7 +158,7 @@ CLASSIFIER COMPARISON
 Classifier                Type         Training    Flip Rate   Flip Delta
 ---------------------------------------------------------------------------
 RoBERTa-Twitter           RoBERTa      Twitter          5.7%     -0.0914
-DistilBERT-Reddit         DistilBERT   Reddit          12.1%     +0.0241
+Bert-Kaggle               Bert         Kaggle          12.1%     +0.0241
 RoBERTa-News              RoBERTa      News            25.0%     +0.0849
 
 Multi-classifier results saved to: results/golden/t5_base_control_results_multi_classifier.csv
@@ -160,37 +171,42 @@ C:\Users\ADMIN\anaconda3\envs\environment\Lib\site-packages\transformers\tokeniz
 Models loaded.
 
 [2/7] Computing semantic similarity...
-Batches: 100%|█████████████████████████████████████████████████████████████████████████████████████| 5/5 [00:01<00:00,  4.86it/s] 
-Batches: 100%|█████████████████████████████████████████████████████████████████████████████████████| 5/5 [00:02<00:00,  1.83it/s] 
+Batches: 100%|███████████████████████████████████████████████████████████████████████████| 5/5 [00:00<00:00, 25.08it/s]
+Batches: 100%|███████████████████████████████████████████████████████████████████████████| 5/5 [00:00<00:00, 30.43it/s]
   Mean similarity: 0.8808
 
 [3/7] Computing perplexity...
-Perplexity: 100%|██████████████████████████████████████████████████████████████████████████████| 140/140 [00:16<00:00,  8.44it/s] 
+Perplexity: 100%|███████████████████████████████████████████████████████████████████| 140/140 [00:01<00:00, 131.20it/s]
   Mean perplexity: 677.14
 
 [4/7] Computing BLEU score...
-BLEU (input): 100%|██████████████████████████████████████████████████████████████████████████| 140/140 [00:00<00:00, 9576.97it/s]
+BLEU (input): 100%|███████████████████████████████████████████████████████████████| 140/140 [00:00<00:00, 12706.71it/s]
   Mean BLEU (vs_input): 0.1870
 
-[5/7] Skipping LLM judge (no Gemini API key provided)
 
+[5/7] Running LLM-as-Judge (Gemini, batch of 50 samples)...
+    Sending 50 pairs in one API call...
+    Samples judged: 50
+    LLM Judge - Sarcasm Removed: 3.46/5
+    LLM Judge - Meaning Preserved: 4.34/5
+    LLM Judge - Fluency: 4.74/5
 [6/7] Computing word-level edit distance...
-Edit distance: 100%|████████████████████████████████████████████████████████████████████████| 140/140 [00:00<00:00, 22563.89it/s] 
+Edit distance: 100%|██████████████████████████████████████████████████████████████| 140/140 [00:00<00:00, 17030.73it/s]
   Mean edit distance (norm): 0.6803
 
 [7/7] Computing paraphrase score...
-  Mean paraphrase score: 0.1747
+  Mean paraphrase score: 0.7063
 
 ============================================================
 SUBTYPE BREAKDOWN
 ============================================================
             subtype  count flip_rate mean_sim mean_bleu mean_edit_dist mean_para_score
-              irony     30      0.0%    0.925     0.201           0.65          0.1875
-      overstatement      7      0.0%    0.961     0.263           0.56          0.2579
-rhetorical_question     14      0.0%    0.828     0.193           0.68          0.1672
-            sarcasm     69      8.7%    0.864     0.171           0.70          0.1620
-             satire      9      0.0%    0.922     0.102           0.81          0.0981
-     understatement     11     18.2%    0.847     0.261           0.60          0.2386
+              irony     30      0.0%    0.925     0.201           0.65          0.7379
+      overstatement      7      0.0%    0.961     0.263           0.56          0.7028
+rhetorical_question     14      0.0%    0.828     0.193           0.68          0.6606
+            sarcasm     69      8.7%    0.864     0.171           0.70          0.7025
+             satire      9      0.0%    0.922     0.102           0.81          0.8242
+     understatement     11     18.2%    0.847     0.261           0.60          0.6080
 
 Per-sample results saved to: results/golden/t5_base_control_results.csv
 
@@ -206,18 +222,22 @@ EVALUATION SUMMARY
   Perplexity (GPT-2):    677.14
   BLEU (    vs_input):  0.1870
   Edit dist (norm):      0.6803
-  Paraphrase score:      0.1747
+  Paraphrase score:      0.7063
+  LLM sarcasm_removed:   3.46
+  LLM meaning_preserved: 4.34
+  LLM fluency:           4.74
 ============================================================
 Done.
 
-(environment) D:\TranKhoiNguyen2023\NUS\CS4248\Project-LLMao>python scripts/eval_pipeline.py --input data/golden/cleaned/bart_base_rl_golden.csv --output results/golden/bart_base_rl_results.csv --multi_classifier
+(environment) D:\TranKhoiNguyen2023\NUS\CS4248\Project-LLMao>
+(environment) D:\TranKhoiNguyen2023\NUS\CS4248\Project-LLMao>python scripts/eval_pipeline.py --input data/golden/cleaned/bart_base_rl_golden.csv --output results/golden/bart_base_rl_results.csv --multi_classifier --gemini_key AIzaSyA5fB4kh2klbouyofqX69hL8MHGZbjfOuk
 
 Loading data from: data/golden/cleaned/bart_base_rl_golden.csv
   Total samples: 140
   Columns: ['id', 'input', 'output', 'subtype', 'human_sarcasm_removed_1', 'human_sarcasm_removed_2', 'human_flipped_strict', 'human_flipped_lenient', 'meaning_change', 'human_meaning_preserved', 'human_strict_success']
-  Subtypes: {'sarcasm': 69, 'irony': 30, 'rhetorical_question': 14, 'understatement': 11, 'satire': 9, 'overstatement': 7}        
+  Subtypes: {'sarcasm': 69, 'irony': 30, 'rhetorical_question': 14, 'understatement': 11, 'satire': 9, 'overstatement': 7}
 
-Device: cpu
+Device: cuda
 
 ======================================================================
 MULTI-CLASSIFIER EVALUATION
@@ -228,21 +248,22 @@ C:\Users\ADMIN\anaconda3\envs\environment\Lib\site-packages\transformers\tokeniz
   warnings.warn(
 
 [1/7] Computing Sarcasm Flip Rate (RoBERTa-Twitter)...
-100%|██████████████████████████████████████████████████████████████████████████████████████████| 140/140 [00:36<00:00,  3.81it/s] 
+  1%|▌                                                                                 | 1/140 [00:00<00:18,  7.62it/s]You seem to be using the pipelines sequentially on GPU. In order to maximize efficiency please use a dataset
+100%|████████████████████████████████████████████████████████████████████████████████| 140/140 [00:02<00:00, 55.02it/s]
     Hard Flip Rate:   4.29%
     Mean Flip Delta:  -0.0981
 
---- Loading: DistilBERT-Reddit (DistilBERT, Reddit) ---
+--- Loading: Bert-Kaggle (Bert, Kaggle) ---
 
-[1/7] Computing Sarcasm Flip Rate (DistilBERT-Reddit)...
-100%|██████████████████████████████████████████████████████████████████████████████████████████| 140/140 [00:46<00:00,  3.04it/s] 
+[1/7] Computing Sarcasm Flip Rate (Bert-Kaggle)...
+100%|████████████████████████████████████████████████████████████████████████████████| 140/140 [00:01<00:00, 72.19it/s]
     Hard Flip Rate:   15.00%
     Mean Flip Delta:  +0.0810
 
 --- Loading: RoBERTa-News (RoBERTa, News) ---
 
 [1/7] Computing Sarcasm Flip Rate (RoBERTa-News)...
-100%|██████████████████████████████████████████████████████████████████████████████████████████| 140/140 [00:19<00:00,  7.10it/s] 
+100%|████████████████████████████████████████████████████████████████████████████████| 140/140 [00:02<00:00, 57.37it/s]
     Hard Flip Rate:   31.43%
     Mean Flip Delta:  +0.0918
 
@@ -253,7 +274,7 @@ CLASSIFIER COMPARISON
 Classifier                Type         Training    Flip Rate   Flip Delta
 ---------------------------------------------------------------------------
 RoBERTa-Twitter           RoBERTa      Twitter          4.3%     -0.0981
-DistilBERT-Reddit         DistilBERT   Reddit          15.0%     +0.0810
+Bert-Kaggle               Bert         Kaggle          15.0%     +0.0810
 RoBERTa-News              RoBERTa      News            31.4%     +0.0918
 
 Multi-classifier results saved to: results/golden/bart_base_rl_results_multi_classifier.csv
@@ -266,37 +287,42 @@ C:\Users\ADMIN\anaconda3\envs\environment\Lib\site-packages\transformers\tokeniz
 Models loaded.
 
 [2/7] Computing semantic similarity...
-Batches: 100%|█████████████████████████████████████████████████████████████████████████████████████| 5/5 [00:01<00:00,  3.48it/s] 
-Batches: 100%|█████████████████████████████████████████████████████████████████████████████████████| 5/5 [00:00<00:00,  7.46it/s] 
+Batches: 100%|███████████████████████████████████████████████████████████████████████████| 5/5 [00:00<00:00, 26.23it/s]
+Batches: 100%|██████████████████████████████████████████████████████████████████████████| 5/5 [00:00<00:00, 132.81it/s]
   Mean similarity: 0.8639
 
 [3/7] Computing perplexity...
-Perplexity: 100%|██████████████████████████████████████████████████████████████████████████████| 140/140 [00:15<00:00,  9.23it/s] 
+Perplexity: 100%|███████████████████████████████████████████████████████████████████| 140/140 [00:01<00:00, 133.40it/s]
   Mean perplexity: 766.94
 
 [4/7] Computing BLEU score...
-BLEU (input): 100%|██████████████████████████████████████████████████████████████████████████| 140/140 [00:00<00:00, 8743.08it/s]
+BLEU (input): 100%|███████████████████████████████████████████████████████████████| 140/140 [00:00<00:00, 13956.09it/s]
   Mean BLEU (vs_input): 0.2413
 
-[5/7] Skipping LLM judge (no Gemini API key provided)
 
+[5/7] Running LLM-as-Judge (Gemini, batch of 50 samples)...
+    Sending 50 pairs in one API call...
+    Samples judged: 50
+    LLM Judge - Sarcasm Removed: 3.96/5
+    LLM Judge - Meaning Preserved: 3.68/5
+    LLM Judge - Fluency: 3.94/5
 [6/7] Computing word-level edit distance...
-Edit distance: 100%|████████████████████████████████████████████████████████████████████████| 140/140 [00:00<00:00, 24188.60it/s] 
+Edit distance: 100%|██████████████████████████████████████████████████████████████| 140/140 [00:00<00:00, 24995.85it/s]
   Mean edit distance (norm): 0.6231
 
 [7/7] Computing paraphrase score...
-  Mean paraphrase score: 0.2284
+  Mean paraphrase score: 0.6355
 
 ============================================================
 SUBTYPE BREAKDOWN
 ============================================================
             subtype  count flip_rate mean_sim mean_bleu mean_edit_dist mean_para_score
-              irony     30      0.0%    0.877     0.190           0.66          0.1779
-      overstatement      7      0.0%    0.962     0.489           0.42          0.4760
-rhetorical_question     14      0.0%    0.802     0.191           0.68          0.1731
-            sarcasm     69      7.2%    0.849     0.252           0.63          0.2409
-             satire      9      0.0%    0.941     0.250           0.58          0.2325
-     understatement     11      9.1%    0.873     0.214           0.58          0.1969
+              irony     30      0.0%    0.877     0.190           0.66          0.6994
+      overstatement      7      0.0%    0.962     0.489           0.42          0.4858
+rhetorical_question     14      0.0%    0.802     0.191           0.68          0.6288
+            sarcasm     69      7.2%    0.849     0.252           0.63          0.6084
+             satire      9      0.0%    0.941     0.250           0.58          0.7080
+     understatement     11      9.1%    0.873     0.214           0.58          0.6757
 
 Per-sample results saved to: results/golden/bart_base_rl_results.csv
 
@@ -312,8 +338,12 @@ EVALUATION SUMMARY
   Perplexity (GPT-2):    766.94
   BLEU (    vs_input):  0.2413
   Edit dist (norm):      0.6231
-  Paraphrase score:      0.2284
+  Paraphrase score:      0.6355
+  LLM sarcasm_removed:   3.96
+  LLM meaning_preserved: 3.68
+  LLM fluency:           3.94
 ============================================================
 Done.
 
-Last update: 9:27 AM 4/13/2026
+
+Last update: 10:01 AM 4/15/2026

@@ -28,12 +28,12 @@ CLASSIFIERS = [
         'short': 'twitter',
     },
     {
-        'name': 'DistilBERT-Reddit',
-        'column': 'hard_flipped_distilbert_reddit',
-        'delta_column': 'flip_delta_distilbert_reddit',
-        'type': 'DistilBERT',
-        'training': 'Reddit',
-        'short': 'reddit',
+        'name': 'Bert-Kaggle',
+        'column': 'hard_flipped_bert_kaggle',
+        'delta_column': 'flip_delta_bert_kaggle',
+        'type': 'Bert',
+        'training': 'Kaggle',
+        'short': 'kaggle',
     },
     {
         'name': 'RoBERTa-News',
