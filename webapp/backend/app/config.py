@@ -80,5 +80,5 @@ BASELINES = {
     "bleu": 0.1018,
     "perplexity": 230.85,
     "edit_dist_norm": 0.8187,
-    "paraphrase_score": 0.0757,
+    "paraphrase_score": 0.5052,
 }

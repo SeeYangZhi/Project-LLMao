@@ -131,12 +131,13 @@ const METRICS: MetricDoc[] = [
     question: "Is the model rewriting genuinely while still preserving meaning?",
     why: "Existing metrics fail individually — high similarity alone doesn't catch copying, low BLEU alone doesn't distinguish rewriting from destruction. Paraphrase score multiplies them so a model has to score well on BOTH to win.",
     bands: [
-      { range: "> 0.20", meaning: "Good — high similarity + low copying", tone: "good" },
-      { range: "0.10–0.20", meaning: "Moderate", tone: "ok" },
-      { range: "< 0.05", meaning: "Either copying or meaning lost", tone: "bad" },
+      { range: "> 0.70", meaning: "Strong rewriting — preserves meaning and diverges from input", tone: "good" },
+      { range: "0.60–0.70", meaning: "Moderate — where most fine-tuned models land", tone: "good" },
+      { range: "0.50–0.60", meaning: "Around the human-baseline level", tone: "ok" },
+      { range: "< 0.50", meaning: "Below human baseline — copying or meaning loss", tone: "bad" },
     ],
     note:
-      "Concrete example. Input: \"Man Shocked By Obvious Fact\". Output A: \"man shocked by obvious fact\" → similarity 0.99, BLEU 0.95 → paraphrase 0.05 (just copied). Output B: \"A person was surprised to learn something widely known\" → similarity 0.85, BLEU 0.08 → paraphrase 0.78 (genuine rewrite).",
+      "Concrete example. Input: \"Man Shocked By Obvious Fact\". Output A: \"man shocked by obvious fact\" → similarity 0.99, BLEU 0.95 → paraphrase 0.05 (just copied). Output B: \"A person was surprised to learn something widely known\" → similarity 0.85, BLEU 0.08 → paraphrase 0.78 (genuine rewrite). The gold human rewrites from iSarcasmEval land around 0.51 on this metric.",
   },
 ];
 
