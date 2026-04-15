@@ -5,7 +5,7 @@ import time
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from app.services import bart_inference, llama_inference, metric_computer
+from app.services import bart_inference, llama_inference, metric_computer, t5_joint_inference
 
 router = APIRouter(prefix="/api/generate", tags=["inference"])
 
@@ -29,6 +29,8 @@ async def generate(req: GenerateRequest):
 
     if req.model == "llama-3.2-1b":
         output = await llama_inference.generate(req.text)
+    elif req.model == "t5-base-joint":
+        output = await t5_joint_inference.generate(req.text)
     else:
         output = await bart_inference.generate(req.text)
 
@@ -61,5 +63,12 @@ async def available_models():
             "available": lmstudio_ok,
             "loaded": lmstudio_ok,
             "note": "Via LMStudio" if lmstudio_ok else "LMStudio not connected",
+        },
+        {
+            "name": "t5-base-joint",
+            "display": "T5 Joint",
+            "available": True,
+            "loaded": t5_joint_inference.is_loaded(),
+            "note": "HF Hub: smolmodel/CS4248-project-AY2526S2-14-t5-base-joint",
         },
     ]

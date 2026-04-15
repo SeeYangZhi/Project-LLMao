@@ -36,6 +36,9 @@ LMSTUDIO_BASE_URL = "http://localhost:1234/v1"
 
 BART_CE_RL_PATH = PROJECT_ROOT / "outputs" / "bart-base-ce-rl" / "sar-to-non" / "best"
 
+T5_JOINT_HF_ID = "smolmodel/CS4248-project-AY2526S2-14-t5-base-joint"
+T5_JOINT_PREFIX = "rewrite to non-sarcastic and predict strategy: "
+
 LLAMA_SYSTEM_PROMPT = (
     "You are a writing assistant. Rewrite sarcastic news headlines as neutral, "
     "factual equivalents that preserve the core meaning without irony or mockery. "
