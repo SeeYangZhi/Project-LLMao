@@ -40,6 +40,11 @@ const DECLARED_TOOLS: ToolRow[] = [
     purpose: "Inline autocomplete during routine coding (loops, boilerplate, type signatures).",
     usage: "Suggestions were accepted or rejected line-by-line by the author.",
   },
+  {
+    tool: "ChatGPT + Codex",
+    purpose: "Generating training and other code. Asking ML engineering related tasks", 
+    usage: "Output reviewed manually before use. AI did not suggest what experiment to run, human set research directions and directive on what to do and the expected end output, e.g. I want a customisable SLURM training script.",
+  },
 ];
 
 const NOT_USED_FOR = [
